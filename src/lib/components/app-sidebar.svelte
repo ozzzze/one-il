@@ -14,6 +14,27 @@
 	import * as Sidebar from "$lib/components/ui/sidebar/index.js";
 	import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
 	import * as Avatar from "$lib/components/ui/avatar/index.js";
+	import { Badge } from "$lib/components/ui/badge/index.js";
+
+	type Props = {
+		user: {
+			name: string;
+			email: string;
+			username: string;
+			role: string;
+		};
+	};
+
+	let { user }: Props = $props();
+
+	function getInitials(name: string) {
+		return name
+			.split(" ")
+			.map((n) => n[0])
+			.join("")
+			.toUpperCase()
+			.slice(0, 2);
+	}
 
 	type NavItem = {
 		title: string;
@@ -116,18 +137,21 @@
 								{...props}
 							>
 								<Avatar.Root class="size-8 rounded-lg">
-									<Avatar.Fallback class="rounded-lg">AD</Avatar.Fallback>
+									<Avatar.Fallback class="rounded-lg">{getInitials(user.name)}</Avatar.Fallback>
 								</Avatar.Root>
 								<div class="grid flex-1 text-left text-sm leading-tight">
-									<span class="truncate font-semibold">Admin User</span>
-									<span class="text-muted-foreground truncate text-xs">admin@svelteforge.dev</span>
+									<span class="truncate font-semibold">{user.name}</span>
+									<span class="text-muted-foreground truncate text-xs">{user.email}</span>
 								</div>
 								<ChevronDownIcon class="ml-auto size-4" />
 							</Sidebar.MenuButton>
 						{/snippet}
 					</DropdownMenu.Trigger>
 					<DropdownMenu.Content class="w-56" align="end" side="top">
-						<DropdownMenu.Label>My Account</DropdownMenu.Label>
+						<DropdownMenu.Label class="flex items-center gap-2">
+							My Account
+							<Badge variant="outline" class="text-xs capitalize">{user.role}</Badge>
+						</DropdownMenu.Label>
 						<DropdownMenu.Separator />
 						<DropdownMenu.Item>
 							{#snippet child({ props })}

@@ -7,7 +7,7 @@
 	import { Toaster } from "$lib/components/ui/sonner/index.js";
 	import ThemeToggle from "$lib/components/theme-toggle.svelte";
 
-	let { children } = $props();
+	let { children, data } = $props();
 
 	function getBreadcrumbs() {
 		const path = page.url.pathname;
@@ -22,7 +22,7 @@
 </script>
 
 <Sidebar.Provider>
-	<AppSidebar />
+	<AppSidebar user={data.user} />
 	<Sidebar.Inset>
 		<header
 			class="bg-background sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 border-b px-4"
