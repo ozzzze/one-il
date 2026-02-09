@@ -5,6 +5,7 @@
 	import { Separator } from "$lib/components/ui/separator/index.js";
 	import { page } from "$app/state";
 	import { Toaster } from "$lib/components/ui/sonner/index.js";
+	import ThemeToggle from "$lib/components/theme-toggle.svelte";
 
 	let { children } = $props();
 
@@ -44,6 +45,10 @@
 					{/each}
 				</Breadcrumb.List>
 			</Breadcrumb.Root>
+
+			<div class="ml-auto">
+				<ThemeToggle />
+			</div>
 		</header>
 
 		<main class="flex-1 p-4 md:p-6">
