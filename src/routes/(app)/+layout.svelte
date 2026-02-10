@@ -6,7 +6,7 @@
 	import { page } from "$app/state";
 	import { Toaster } from "$lib/components/ui/sonner/index.js";
 	import ThemeToggle from "$lib/components/theme-toggle.svelte";
-	import NavbarSearch from "$lib/components/navbar-search.svelte";
+	import CommandPalette from "$lib/components/command-palette.svelte";
 	import NotificationBell from "$lib/components/notification-bell.svelte";
 	import AppsMenu from "$lib/components/apps-menu.svelte";
 
@@ -50,7 +50,7 @@
 			</Breadcrumb.Root>
 
 			<div class="ml-auto flex items-center gap-1">
-				<NavbarSearch />
+				<CommandPalette />
 				<NotificationBell
 					count={data.unreadNotificationCount}
 					notifications={data.recentNotifications}

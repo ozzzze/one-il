@@ -2,9 +2,20 @@
 	import favicon from "$lib/assets/favicon.svg";
 	import { ModeWatcher } from "mode-watcher";
 	import { MetaTags } from "svelte-meta-tags";
+	import { onNavigate } from "$app/navigation";
 	import "../app.css";
 
 	let { children } = $props();
+
+	onNavigate((navigation) => {
+		if (!document.startViewTransition) return;
+		return new Promise((resolve) => {
+			document.startViewTransition(async () => {
+				resolve();
+				await navigation.complete;
+			});
+		});
+	});
 </script>
 
 <MetaTags

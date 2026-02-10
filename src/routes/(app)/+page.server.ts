@@ -1,5 +1,5 @@
 import { db } from "$lib/server/db/index.js";
-import { users, sessions, pages, notifications } from "$lib/server/db/schema.js";
+import { users, sessions, pages, notifications, appSettings } from "$lib/server/db/schema.js";
 import { sql, eq, gt, desc, or, isNull } from "drizzle-orm";
 import type { PageServerLoad } from "./$types.js";
 
@@ -134,6 +134,35 @@ export const load: PageServerLoad = async ({ locals }) => {
 		.from(users)
 		.where(eq(users.role, "editor"));
 
+	// Pages by status distribution
+	const pagesByStatus = await db
+		.select({
+			status: pages.status,
+			count: sql<number>`count(*)`,
+		})
+		.from(pages)
+		.groupBy(pages.status);
+
+	// Content creation trend (last 6 months, by status)
+	const sixMonthsAgoSec = Math.floor(
+		new Date(Date.now() - 180 * 86400000).getTime() / 1000
+	);
+	const contentTrend = await db
+		.select({
+			month: sql<string>`strftime('%Y-%m-01', created_at, 'unixepoch')`,
+			status: pages.status,
+			count: sql<number>`count(*)`,
+		})
+		.from(pages)
+		.where(sql`created_at >= ${sixMonthsAgoSec}`)
+		.groupBy(sql`strftime('%Y-%m', created_at, 'unixepoch')`, pages.status)
+		.orderBy(sql`strftime('%Y-%m', created_at, 'unixepoch')`);
+
+	// System status
+	const maintenanceSetting = await db.query.appSettings.findFirst({
+		where: eq(appSettings.key, "maintenanceMode"),
+	});
+
 	return {
 		stats: {
 			totalUsers: userCount.count,
@@ -155,6 +184,11 @@ export const load: PageServerLoad = async ({ locals }) => {
 		quickStats: {
 			publishedPages: publishedCount.count,
 			activeEditors: editorCount.count,
+		},
+		pagesByStatus,
+		contentTrend,
+		systemStatus: {
+			maintenanceMode: maintenanceSetting?.value === "true",
 		},
 	};
 };

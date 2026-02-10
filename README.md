@@ -2,6 +2,35 @@
 
 A production-ready admin dashboard template built with **SvelteKit 2**, **Svelte 5**, **Tailwind CSS 4**, and **Drizzle ORM**. Features custom session-based authentication, optional OAuth (Google & GitHub), role-based access control, and a full suite of admin tools — all with zero external auth dependencies.
 
+## Screenshots
+
+<table>
+  <tr>
+    <td align="center"><strong>Dashboard (Light)</strong></td>
+    <td align="center"><strong>Dashboard (Dark)</strong></td>
+  </tr>
+  <tr>
+    <td><img src="screenshots/dashboard-light-framed.png" alt="Dashboard Light Mode" /></td>
+    <td><img src="screenshots/dashboard-dark-framed.png" alt="Dashboard Dark Mode" /></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>User Management</strong></td>
+    <td align="center"><strong>Analytics</strong></td>
+  </tr>
+  <tr>
+    <td><img src="screenshots/users-light-framed.png" alt="User Management" /></td>
+    <td><img src="screenshots/analytics-light-framed.png" alt="Analytics" /></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>Command Palette (Cmd+K)</strong></td>
+    <td align="center"><strong>Login</strong></td>
+  </tr>
+  <tr>
+    <td><img src="screenshots/command-palette-framed.png" alt="Command Palette" /></td>
+    <td><img src="screenshots/login-framed.png" alt="Login Page" /></td>
+  </tr>
+</table>
+
 ---
 
 ## Tech Stack
@@ -108,10 +137,12 @@ Three built-in roles with different permission levels:
 
 ### Additional Features
 
+- **Command palette (Cmd+K)** — Keyboard-driven command palette with navigation, live search, and quick actions (toggle theme, create page).
+- **Animated KPI counters** — Dashboard numbers animate from zero on load with easeOutExpo easing.
+- **Page view transitions** — Smooth cross-fade between pages via the View Transitions API.
 - **Responsive design** — Fully responsive layout with collapsible sidebar on mobile.
 - **Dark/light mode** — System-aware theme with manual toggle, persisted across sessions.
 - **Breadcrumb navigation** — Auto-generated breadcrumbs from URL pathname.
-- **Global search** — Navbar search component for quick navigation.
 - **Apps menu** — Quick-access grid menu for jumping between sections.
 - **Toast notifications** — Svelte Sonner for action feedback (success, error, info).
 - **SEO ready** — OpenGraph and Twitter meta tags via svelte-meta-tags.
@@ -246,11 +277,12 @@ src/
 │   ├── assets/                      # Static assets (favicon)
 │   ├── components/
 │   │   ├── ui/                      # shadcn-svelte components
+│   │   ├── animated-counter.svelte   # Animated number counter (KPI cards)
 │   │   ├── app-sidebar.svelte       # Main navigation sidebar
 │   │   ├── apps-menu.svelte         # Quick-access grid menu
+│   │   ├── command-palette.svelte   # Cmd+K command palette
 │   │   ├── data-table-pagination.svelte
 │   │   ├── delete-confirm-dialog.svelte
-│   │   ├── navbar-search.svelte     # Global search
 │   │   ├── notification-bell.svelte # Notification badge + popover
 │   │   ├── role-change-dialog.svelte
 │   │   ├── theme-toggle.svelte      # Dark/light mode toggle
