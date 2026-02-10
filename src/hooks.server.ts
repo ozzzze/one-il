@@ -1,29 +1,39 @@
-import { lucia } from "$lib/server/auth.js";
+import {
+	validateSession,
+	setSessionCookie,
+	deleteSessionCookie,
+	SESSION_COOKIE_NAME,
+} from "$lib/server/auth.js";
+import { db } from "$lib/server/db/index.js";
+import { sessions } from "$lib/server/db/schema.js";
+import { eq } from "drizzle-orm";
 import type { Handle } from "@sveltejs/kit";
 
 export const handle: Handle = async ({ event, resolve }) => {
-	const sessionId = event.cookies.get(lucia.sessionCookieName);
-	if (!sessionId) {
+	const token = event.cookies.get(SESSION_COOKIE_NAME);
+	if (!token) {
 		event.locals.user = null;
 		event.locals.session = null;
 		return resolve(event);
 	}
 
-	const { session, user } = await lucia.validateSession(sessionId);
-	if (session && session.fresh) {
-		const sessionCookie = lucia.createSessionCookie(session.id);
-		event.cookies.set(sessionCookie.name, sessionCookie.value, {
-			path: ".",
-			...sessionCookie.attributes,
-		});
+	const { session, user } = await validateSession(token);
+
+	if (session) {
+		// Refresh cookie with current expiresAt (handles auto-extension)
+		setSessionCookie(event.cookies, token, session.expiresAt);
+
+		// Update session metadata
+		const ua = event.request.headers.get("user-agent");
+		const ip = event.getClientAddress();
+		await db
+			.update(sessions)
+			.set({ userAgent: ua, ipAddress: ip })
+			.where(eq(sessions.id, session.id));
+	} else {
+		deleteSessionCookie(event.cookies);
 	}
-	if (!session) {
-		const sessionCookie = lucia.createBlankSessionCookie();
-		event.cookies.set(sessionCookie.name, sessionCookie.value, {
-			path: ".",
-			...sessionCookie.attributes,
-		});
-	}
+
 	event.locals.user = user;
 	event.locals.session = session;
 	return resolve(event);

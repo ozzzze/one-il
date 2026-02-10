@@ -1,4 +1,5 @@
-import { lucia } from "$lib/server/auth.js";
+import { generateSessionToken, createSession, setSessionCookie } from "$lib/server/auth.js";
+import { getEnabledProviders } from "$lib/server/oauth.js";
 import { db } from "$lib/server/db/index.js";
 import { users } from "$lib/server/db/schema.js";
 import { fail, redirect } from "@sveltejs/kit";
@@ -8,10 +9,13 @@ import type { Actions, PageServerLoad } from "./$types.js";
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (locals.user) redirect(302, "/");
+	return {
+		enabledProviders: getEnabledProviders(),
+	};
 };
 
 export const actions: Actions = {
-	default: async ({ request, cookies }) => {
+	default: async ({ request, cookies, getClientAddress }) => {
 		const formData = await request.formData();
 		const username = formData.get("username");
 		const password = formData.get("password");
@@ -42,12 +46,14 @@ export const actions: Actions = {
 			return fail(400, { message: "Incorrect username or password" });
 		}
 
-		const session = await lucia.createSession(existingUser.id, {});
-		const sessionCookie = lucia.createSessionCookie(session.id);
-		cookies.set(sessionCookie.name, sessionCookie.value, {
-			path: ".",
-			...sessionCookie.attributes,
+		const token = generateSessionToken();
+		const ua = request.headers.get("user-agent");
+		const ip = getClientAddress();
+		const session = await createSession(token, existingUser.id, {
+			userAgent: ua,
+			ipAddress: ip,
 		});
+		setSessionCookie(cookies, token, session.expiresAt);
 
 		redirect(302, "/");
 	},

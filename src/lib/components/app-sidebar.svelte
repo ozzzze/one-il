@@ -23,9 +23,10 @@
 			username: string;
 			role: string;
 		};
+		notificationCount?: number;
 	};
 
-	let { user }: Props = $props();
+	let { user, notificationCount = 0 }: Props = $props();
 
 	function getInitials(name: string) {
 		return name
@@ -48,7 +49,7 @@
 		items: NavItem[];
 	};
 
-	const navigation: NavGroup[] = [
+	const navigation: NavGroup[] = $derived([
 		{
 			label: "Overview",
 			items: [
@@ -59,7 +60,7 @@
 		{
 			label: "Management",
 			items: [
-				{ title: "Users", url: "/users", icon: UsersIcon, badge: "12" },
+				{ title: "Users", url: "/users", icon: UsersIcon },
 				{ title: "Content", url: "/content", icon: FileTextIcon },
 				{ title: "Roles", url: "/roles", icon: ShieldIcon },
 			],
@@ -67,12 +68,17 @@
 		{
 			label: "System",
 			items: [
-				{ title: "Notifications", url: "/notifications", icon: BellIcon, badge: "3" },
+				{
+					title: "Notifications",
+					url: "/notifications",
+					icon: BellIcon,
+					badge: notificationCount > 0 ? String(notificationCount) : undefined,
+				},
 				{ title: "Database", url: "/database", icon: DatabaseIcon },
 				{ title: "Settings", url: "/settings", icon: SettingsIcon },
 			],
 		},
-	];
+	]);
 </script>
 
 <Sidebar.Root>

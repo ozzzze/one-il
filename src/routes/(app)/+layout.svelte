@@ -6,6 +6,9 @@
 	import { page } from "$app/state";
 	import { Toaster } from "$lib/components/ui/sonner/index.js";
 	import ThemeToggle from "$lib/components/theme-toggle.svelte";
+	import NavbarSearch from "$lib/components/navbar-search.svelte";
+	import NotificationBell from "$lib/components/notification-bell.svelte";
+	import AppsMenu from "$lib/components/apps-menu.svelte";
 
 	let { children, data } = $props();
 
@@ -22,7 +25,7 @@
 </script>
 
 <Sidebar.Provider>
-	<AppSidebar user={data.user} />
+	<AppSidebar user={data.user} notificationCount={data.unreadNotificationCount} />
 	<Sidebar.Inset>
 		<header
 			class="bg-background sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 border-b px-4"
@@ -46,7 +49,13 @@
 				</Breadcrumb.List>
 			</Breadcrumb.Root>
 
-			<div class="ml-auto">
+			<div class="ml-auto flex items-center gap-1">
+				<NavbarSearch />
+				<NotificationBell
+					count={data.unreadNotificationCount}
+					notifications={data.recentNotifications}
+				/>
+				<AppsMenu />
 				<ThemeToggle />
 			</div>
 		</header>

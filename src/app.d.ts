@@ -1,11 +1,12 @@
 // See https://svelte.dev/docs/kit/types#app.d.ts
-import type { Session, User } from "lucia";
+import type { Session } from "$lib/server/db/schema.js";
+import type { SessionUser } from "$lib/server/auth.js";
 
 declare global {
 	namespace App {
 		// interface Error {}
 		interface Locals {
-			user: User | null;
+			user: SessionUser | null;
 			session: Session | null;
 		}
 		// interface PageData {}

@@ -1,9 +1,13 @@
-import { lucia } from "$lib/server/auth.js";
+import {
+	generateSessionToken,
+	createSession,
+	setSessionCookie,
+	generateId,
+} from "$lib/server/auth.js";
 import { db } from "$lib/server/db/index.js";
 import { users } from "$lib/server/db/schema.js";
 import { fail, redirect } from "@sveltejs/kit";
 import { hash } from "@node-rs/argon2";
-import { generateIdFromEntropySize } from "lucia";
 import type { Actions, PageServerLoad } from "./$types.js";
 
 export const load: PageServerLoad = async ({ locals }) => {
@@ -11,7 +15,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 };
 
 export const actions: Actions = {
-	default: async ({ request, cookies }) => {
+	default: async ({ request, cookies, getClientAddress }) => {
 		const formData = await request.formData();
 		const name = formData.get("name");
 		const email = formData.get("email");
@@ -45,7 +49,7 @@ export const actions: Actions = {
 			parallelism: 1,
 		});
 
-		const userId = generateIdFromEntropySize(10);
+		const userId = generateId(10);
 
 		try {
 			await db.insert(users).values({
@@ -60,12 +64,14 @@ export const actions: Actions = {
 			return fail(400, { message: "Username or email already taken" });
 		}
 
-		const session = await lucia.createSession(userId, {});
-		const sessionCookie = lucia.createSessionCookie(session.id);
-		cookies.set(sessionCookie.name, sessionCookie.value, {
-			path: ".",
-			...sessionCookie.attributes,
+		const token = generateSessionToken();
+		const ua = request.headers.get("user-agent");
+		const ip = getClientAddress();
+		const session = await createSession(token, userId, {
+			userAgent: ua,
+			ipAddress: ip,
 		});
+		setSessionCookie(cookies, token, session.expiresAt);
 
 		redirect(302, "/");
 	},

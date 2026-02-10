@@ -1,6 +1,9 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+@source "../node_modules/layerchart";
+@source "../node_modules/svelte-ux";
+
 @custom-variant dark (&:is(.dark *));
 
 :root {
