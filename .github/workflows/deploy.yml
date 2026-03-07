@@ -21,15 +21,14 @@ jobs:
 
       - run: pnpm build
 
-      - name: Deploy to server
-        uses: easingthemes/ssh-deploy@v5
-        with:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
-          REMOTE_USER: deploy
-          SOURCE: build/
-          TARGET: /var/www/svelteforge/build/
-          ARGS: -azP --delete
+      - name: Rsync build to server
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.REMOTE_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+          rsync -azP --delete -e "ssh -i ~/.ssh/deploy_key" build/ deploy@${{ secrets.REMOTE_HOST }}:/var/www/svelteforge/build/
+          rm ~/.ssh/deploy_key
 
       - name: Restart PM2
         uses: appleboy/ssh-action@v1
