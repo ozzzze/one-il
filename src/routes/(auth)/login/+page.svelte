@@ -33,9 +33,9 @@
 			<div class="bg-muted mb-4 rounded-md p-3 text-sm">
 				<p class="font-medium">Demo Access</p>
 				<p class="text-muted-foreground mt-1">
-					Use <span class="font-mono font-semibold">demo</span> /
-					<span class="font-mono font-semibold">demo123</span> to explore the dashboard (read-only), or
-					<a href="/register" class="text-primary underline-offset-4 hover:underline">register</a> a new account.
+					Credentials are pre-filled: <span class="font-mono font-semibold">demo</span> /
+					<span class="font-mono font-semibold">SvelteDemo2026!</span> — just click
+					<strong>Sign in</strong> to explore (read-only).
 				</p>
 			</div>
 			{#if form?.message}
@@ -53,6 +53,7 @@
 						placeholder="Enter your username"
 						required
 						autocomplete="username"
+						value="demo"
 					/>
 				</div>
 				<div class="space-y-2">
@@ -64,6 +65,7 @@
 						placeholder="Enter your password"
 						required
 						autocomplete="current-password"
+						value="SvelteDemo2026!"
 					/>
 				</div>
 				<Button type="submit" class="w-full">Sign in</Button>

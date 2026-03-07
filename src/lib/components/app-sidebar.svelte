@@ -7,9 +7,15 @@
 	import ShieldIcon from "@lucide/svelte/icons/shield";
 	import BellIcon from "@lucide/svelte/icons/bell";
 	import DatabaseIcon from "@lucide/svelte/icons/database";
+	import BookOpenIcon from "@lucide/svelte/icons/book-open";
 	import ChevronDownIcon from "@lucide/svelte/icons/chevron-down";
 	import LogOutIcon from "@lucide/svelte/icons/log-out";
+	import UserIcon from "@lucide/svelte/icons/user";
+	import BellRingIcon from "@lucide/svelte/icons/bell-ring";
+	import LockIcon from "@lucide/svelte/icons/lock";
 	import ZapIcon from "@lucide/svelte/icons/zap";
+	import KeyboardIcon from "@lucide/svelte/icons/keyboard";
+	import HelpCircleIcon from "@lucide/svelte/icons/help-circle";
 
 	import * as Sidebar from "$lib/components/ui/sidebar/index.js";
 	import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
@@ -76,6 +82,7 @@
 				},
 				{ title: "Database", url: "/database", icon: DatabaseIcon },
 				{ title: "Settings", url: "/settings", icon: SettingsIcon },
+				{ title: "Documentation", url: "/docs", icon: BookOpenIcon },
 			],
 		},
 	]);
@@ -162,6 +169,25 @@
 						<DropdownMenu.Item>
 							{#snippet child({ props })}
 								<a href="/settings" {...props}>
+									<UserIcon class="mr-2 size-4" />
+									Profile
+								</a>
+							{/snippet}
+						</DropdownMenu.Item>
+						<DropdownMenu.Item>
+							{#snippet child({ props })}
+								<a href="/notifications" {...props}>
+									<BellRingIcon class="mr-2 size-4" />
+									Notifications
+									{#if notificationCount > 0}
+										<Badge variant="secondary" class="ml-auto text-[10px] h-5 px-1.5">{notificationCount}</Badge>
+									{/if}
+								</a>
+							{/snippet}
+						</DropdownMenu.Item>
+						<DropdownMenu.Item>
+							{#snippet child({ props })}
+								<a href="/settings" {...props}>
 									<SettingsIcon class="mr-2 size-4" />
 									Settings
 								</a>
@@ -170,15 +196,38 @@
 						<DropdownMenu.Separator />
 						<DropdownMenu.Item>
 							{#snippet child({ props })}
-								<form method="POST" action="/logout" class="w-full">
-									<button type="submit" {...props} class="flex w-full items-center">
-										<LogOutIcon class="mr-2 size-4" />
-										Log out
-									</button>
-								</form>
+								<a href="/lock" {...props}>
+									<LockIcon class="mr-2 size-4" />
+									Lock Screen
+								</a>
 							{/snippet}
 						</DropdownMenu.Item>
+						<DropdownMenu.Item>
+							{#snippet child({ props })}
+								<a href="/settings" {...props}>
+									<KeyboardIcon class="mr-2 size-4" />
+									Keyboard Shortcuts
+								</a>
+							{/snippet}
+						</DropdownMenu.Item>
+						<DropdownMenu.Item>
+							{#snippet child({ props })}
+								<a href="/" {...props}>
+									<HelpCircleIcon class="mr-2 size-4" />
+									Help & Support
+								</a>
+							{/snippet}
+						</DropdownMenu.Item>
+						<DropdownMenu.Separator />
+						<DropdownMenu.Item
+							variant="destructive"
+							onclick={() => document.getElementById('logout-form')?.requestSubmit()}
+						>
+							<LogOutIcon class="mr-2 size-4" />
+							Log out
+						</DropdownMenu.Item>
 					</DropdownMenu.Content>
+					<form id="logout-form" method="POST" action="/logout" class="hidden"></form>
 				</DropdownMenu.Root>
 			</Sidebar.MenuItem>
 		</Sidebar.Menu>
