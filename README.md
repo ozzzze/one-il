@@ -39,6 +39,25 @@ A production-ready admin dashboard template built with **SvelteKit 2**, **Svelte
 
 ---
 
+## Premium Dashboards from DashboardPack
+
+Loved SvelteForge? Supercharge your workflow with our premium templates on [DashboardPack](https://dashboardpack.com/?utm_source=github&utm_medium=readme&utm_campaign=svelteforge) -- 50+ pages, 5 dashboard variants, full CRUD, theme customizer, i18n, and dedicated support.
+
+| Template | Stack | Highlights |
+| --- | --- | --- |
+| **[Apex](https://dashboardpack.com/theme-details/apex-nextjs/?utm_source=github&utm_medium=readme&utm_campaign=svelteforge)** | Next.js 16 + React 19 + Tailwind CSS v4 | 50+ pages, full CRUD, live theme customizer, 5 dashboards |
+| **[Zenith](https://dashboardpack.com/theme-details/zenith-nextjs/?utm_source=github&utm_medium=readme&utm_campaign=svelteforge)** | Next.js 16 + React 19 + Tailwind CSS v4 | Achromatic design, drag-and-drop, i18n (EN/DE/FR), RTL |
+| **[Signal](https://dashboardpack.com/theme-details/signal-nextjs/?utm_source=github&utm_medium=readme&utm_campaign=svelteforge)** | Next.js 16 + React 19 + Tailwind CSS v4 | 10 chart types, Storybook, 3 layout options, RTL support |
+| **[Ember](https://dashboardpack.com/theme-details/ember-nextjs/?utm_source=github&utm_medium=readme&utm_campaign=svelteforge)** | Next.js 16 + React 19 + Tailwind CSS v4 | Clean minimal design, full CRUD, Kanban, Calendar, Chat |
+| **[Flux](https://dashboardpack.com/theme-details/flux-nextjs/?utm_source=github&utm_medium=readme&utm_campaign=svelteforge)** | Next.js 16 + React 19 + Tailwind CSS v4 | Gradient design, frosted glass UI, startup-native data |
+| **[Admindek](https://dashboardpack.com/theme-details/admindek-html/?utm_source=github&utm_medium=readme&utm_campaign=svelteforge)** | Bootstrap 5 + vanilla JS | 100+ components, theme customizer, RTL, 10 color palettes |
+
+<p align="center">
+  <a href="https://dashboardpack.com/?utm_source=github&utm_medium=readme&utm_campaign=svelteforge"><strong>Browse All Premium Templates on DashboardPack</strong></a>
+</p>
+
+---
+
 ## Tech Stack
 
 | Layer | Technology |
@@ -440,77 +459,6 @@ pnpm test:e2e
 ```
 
 Unit tests use an **in-memory SQLite database** created via `test-utils.ts`, so they don't touch your development database.
-
----
-
-## Premium Dashboards from DashboardPack
-
-Looking for more? Check out our premium admin templates on [DashboardPack](https://dashboardpack.com/?utm_source=github&utm_medium=readme&utm_campaign=svelteforge) -- production-ready, feature-packed, and backed by dedicated support.
-
-<table>
-  <tr>
-    <td align="center" width="33%">
-      <a href="https://dashboardpack.com/theme-details/apex-nextjs/?utm_source=github&utm_medium=readme&utm_campaign=svelteforge">
-        <img src="screenshots/apex-nextjs.png" alt="Apex -- premium Next.js admin dashboard with 50+ pages" width="100%">
-      </a>
-      <br>
-      <a href="https://dashboardpack.com/theme-details/apex-nextjs/?utm_source=github&utm_medium=readme&utm_campaign=svelteforge"><strong>Apex</strong></a>
-      <br>
-      <sub>Next.js 16 + React 19 + TypeScript + Tailwind CSS v4. 50+ pages, full CRUD, theme customizer.</sub>
-    </td>
-    <td align="center" width="33%">
-      <a href="https://dashboardpack.com/theme-details/zenith-nextjs/?utm_source=github&utm_medium=readme&utm_campaign=svelteforge">
-        <img src="screenshots/zenith.png" alt="Zenith -- achromatic Next.js admin dashboard with clean minimal design" width="100%">
-      </a>
-      <br>
-      <a href="https://dashboardpack.com/theme-details/zenith-nextjs/?utm_source=github&utm_medium=readme&utm_campaign=svelteforge"><strong>Zenith</strong></a>
-      <br>
-      <sub>Next.js 16 + React 19 + Tailwind CSS v4. Achromatic design, 50+ pages, drag-and-drop, i18n.</sub>
-    </td>
-    <td align="center" width="33%">
-      <a href="https://dashboardpack.com/theme-details/signal-nextjs/?utm_source=github&utm_medium=readme&utm_campaign=svelteforge">
-        <img src="screenshots/signal.png" alt="Signal -- modern Next.js admin dashboard with bold design" width="100%">
-      </a>
-      <br>
-      <a href="https://dashboardpack.com/theme-details/signal-nextjs/?utm_source=github&utm_medium=readme&utm_campaign=svelteforge"><strong>Signal</strong></a>
-      <br>
-      <sub>Next.js 16 + React 19 + Tailwind CSS v4. 50+ pages, 10 chart types, Storybook, RTL support.</sub>
-    </td>
-  </tr>
-  <tr>
-    <td align="center" width="33%">
-      <a href="https://dashboardpack.com/theme-details/ember-nextjs/?utm_source=github&utm_medium=readme&utm_campaign=svelteforge">
-        <img src="screenshots/ember.png" alt="Ember -- minimal Next.js admin dashboard with achromatic design" width="100%">
-      </a>
-      <br>
-      <a href="https://dashboardpack.com/theme-details/ember-nextjs/?utm_source=github&utm_medium=readme&utm_campaign=svelteforge"><strong>Ember</strong></a>
-      <br>
-      <sub>Next.js 16 + React 19 + Tailwind CSS v4. Clean minimal design, full CRUD, theme customizer.</sub>
-    </td>
-    <td align="center" width="33%">
-      <a href="https://dashboardpack.com/theme-details/flux-nextjs/?utm_source=github&utm_medium=readme&utm_campaign=svelteforge">
-        <img src="screenshots/flux.png" alt="Flux -- gradient-forward Next.js admin dashboard for startups" width="100%">
-      </a>
-      <br>
-      <a href="https://dashboardpack.com/theme-details/flux-nextjs/?utm_source=github&utm_medium=readme&utm_campaign=svelteforge"><strong>Flux</strong></a>
-      <br>
-      <sub>Next.js 16 + React 19 + Tailwind CSS v4. Gradient design, startup-native data, frosted glass UI.</sub>
-    </td>
-    <td align="center" width="33%">
-      <a href="https://dashboardpack.com/theme-details/admindek-html/?utm_source=github&utm_medium=readme&utm_campaign=svelteforge">
-        <img src="screenshots/admindek.png" alt="Admindek -- comprehensive Bootstrap 5 admin template" width="100%">
-      </a>
-      <br>
-      <a href="https://dashboardpack.com/theme-details/admindek-html/?utm_source=github&utm_medium=readme&utm_campaign=svelteforge"><strong>Admindek</strong></a>
-      <br>
-      <sub>Bootstrap 5 + vanilla JS. 100+ components, theme customizer, RTL, 10 color palettes.</sub>
-    </td>
-  </tr>
-</table>
-
-<p align="center">
-  <a href="https://dashboardpack.com/?utm_source=github&utm_medium=readme&utm_campaign=svelteforge"><strong>Browse All Premium Templates on DashboardPack</strong></a>
-</p>
 
 ---
 

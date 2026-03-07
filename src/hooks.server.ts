@@ -17,24 +17,32 @@ export const handle: Handle = async ({ event, resolve }) => {
 		return resolve(event);
 	}
 
-	const { session, user } = await validateSession(token);
+	try {
+		const { session, user } = await validateSession(token);
 
-	if (session) {
-		// Refresh cookie with current expiresAt (handles auto-extension)
-		setSessionCookie(event.cookies, token, session.expiresAt);
+		if (session) {
+			// Refresh cookie with current expiresAt (handles auto-extension)
+			setSessionCookie(event.cookies, token, session.expiresAt);
 
-		// Update session metadata
-		const ua = event.request.headers.get("user-agent");
-		const ip = event.getClientAddress();
-		await db
-			.update(sessions)
-			.set({ userAgent: ua, ipAddress: ip })
-			.where(eq(sessions.id, session.id));
-	} else {
+			// Update session metadata
+			const ua = event.request.headers.get("user-agent");
+			const ip = event.getClientAddress();
+			await db
+				.update(sessions)
+				.set({ userAgent: ua, ipAddress: ip })
+				.where(eq(sessions.id, session.id));
+		} else {
+			deleteSessionCookie(event.cookies);
+		}
+
+		event.locals.user = user;
+		event.locals.session = session;
+	} catch {
+		// DB error or corrupt session — clear the cookie and continue as unauthenticated
 		deleteSessionCookie(event.cookies);
+		event.locals.user = null;
+		event.locals.session = null;
 	}
 
-	event.locals.user = user;
-	event.locals.session = session;
 	return resolve(event);
 };
