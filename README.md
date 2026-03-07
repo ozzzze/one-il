@@ -1,6 +1,12 @@
 # SvelteForge Admin
 
-A production-ready admin dashboard template built with **SvelteKit 2**, **Svelte 5**, **Tailwind CSS 4**, and **Drizzle ORM**. Features custom session-based authentication, optional OAuth (Google & GitHub), role-based access control, and a full suite of admin tools — all with zero external auth dependencies.
+A production-ready admin dashboard template built with **SvelteKit 2**, **Svelte 5**, **Tailwind CSS 4**, and **Drizzle ORM**. Features custom session-based authentication, optional OAuth (Google & GitHub), role-based access control, and a full suite of admin tools -- all with zero external auth dependencies.
+
+![SvelteKit](https://img.shields.io/badge/SvelteKit-2-FF3E00?logo=svelte)
+![Svelte](https://img.shields.io/badge/Svelte-5-FF3E00?logo=svelte)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss)
+![License](https://img.shields.io/badge/License-MIT-green)
 
 ## Screenshots
 
@@ -41,7 +47,7 @@ A production-ready admin dashboard template built with **SvelteKit 2**, **Svelte
 | **Styling** | Tailwind CSS 4 + shadcn-svelte |
 | **Database** | SQLite via Drizzle ORM + better-sqlite3 (WAL mode) |
 | **Auth** | Custom sessions (@oslojs/crypto) + Argon2id password hashing |
-| **OAuth** | Arctic (Google + GitHub) — optional, environment-driven |
+| **OAuth** | Arctic (Google + GitHub) -- optional, environment-driven |
 | **Charts** | LayerChart v2 (D3-based) |
 | **Testing** | Vitest (unit) + Playwright (E2E) |
 | **Linting** | ESLint 9 + Prettier |
@@ -52,13 +58,13 @@ A production-ready admin dashboard template built with **SvelteKit 2**, **Svelte
 
 ### Authentication & Security
 
-- **Custom session management** — SHA-256 hashed tokens stored in the database. Raw token in HttpOnly cookie, hash in DB. If your database leaks, session tokens cannot be recovered.
-- **Argon2id password hashing** — Industry-standard password hashing with configurable memory/time cost parameters.
-- **Auto-extending sessions** — Sessions automatically refresh when less than 15 days remain (30-day lifetime).
-- **Session metadata** — User agent and IP address tracked per session for security auditing.
-- **OAuth login (optional)** — Google and GitHub social login via Arctic. Providers only activate when you set credentials in `.env`. No credentials = password-only login, no errors.
-- **Password reset flow** — Forgot password page with token-based reset (token hashed in DB).
-- **Screen lock** — Lock screen that requires re-entering your password.
+- **Custom session management** -- SHA-256 hashed tokens stored in the database. Raw token in HttpOnly cookie, hash in DB. If your database leaks, session tokens cannot be recovered.
+- **Argon2id password hashing** -- Industry-standard password hashing with configurable memory/time cost parameters.
+- **Auto-extending sessions** -- Sessions automatically refresh when less than 15 days remain (30-day lifetime).
+- **Session metadata** -- User agent and IP address tracked per session for security auditing.
+- **OAuth login (optional)** -- Google and GitHub social login via Arctic. Providers only activate when you set credentials in `.env`. No credentials = password-only login, no errors.
+- **Password reset flow** -- Forgot password page with token-based reset (token hashed in DB).
+- **Screen lock** -- Lock screen that requires re-entering your password.
 
 ### Role-Based Access Control (RBAC)
 
@@ -66,7 +72,7 @@ Three built-in roles with different permission levels:
 
 | Role | Capabilities |
 | --- | --- |
-| **Admin** | Full access — manage users, change roles, delete accounts, access all settings |
+| **Admin** | Full access -- manage users, change roles, delete accounts, access all settings |
 | **Editor** | Create and manage content, view analytics and notifications |
 | **Viewer** | Read-only access to dashboard and content |
 
@@ -76,79 +82,78 @@ Three built-in roles with different permission levels:
 
 ### Dashboard
 
-- **KPI cards** — Total users, active sessions, published pages, and unread notifications with change indicators.
-- **Interactive charts** — Area charts (user registrations over time), bar charts (content by status), pie/donut charts (users by role) powered by LayerChart v2.
-- **Recent activity feed** — Latest user registrations and content updates.
-- **Quick stats** — At-a-glance metrics for the current period.
+- **KPI cards** -- Total users, active sessions, published pages, and unread notifications with change indicators.
+- **Interactive charts** -- Area charts (user registrations over time), bar charts (content by status), pie/donut charts (users by role) powered by LayerChart v2.
+- **Recent activity feed** -- Latest user registrations and content updates.
+- **Animated counters** -- Dashboard numbers animate from zero on load with easeOutExpo easing.
 
 ### User Management
 
-- **Full CRUD operations** — Create, view, edit, and delete users.
-- **Server-side data table** — Sortable columns, search filtering, pagination with configurable page sizes.
-- **Bulk actions** — Delete confirmation dialogs with clear warnings.
-- **User creation dialog** — Admin-only form to create new users with role assignment.
-- **Export** — Download user data as CSV or JSON.
+- **Full CRUD operations** -- Create, view, edit, and delete users.
+- **Server-side data table** -- Sortable columns, search filtering, pagination with configurable page sizes.
+- **Bulk actions** -- Delete confirmation dialogs with clear warnings.
+- **User creation dialog** -- Admin-only form to create new users with role assignment.
+- **Export** -- Download user data as CSV or JSON.
 
 ### Content Management (CMS)
 
-- **Page editor** — Create and edit pages with title, slug, content, and template selection.
-- **Templates** — Default, Landing, and Blog page templates.
-- **Publishing workflow** — Draft → Published → Archived status transitions.
-- **Auto-generated slugs** — Slugs generated from titles, editable before save.
-- **Content table** — Filterable by status, sortable, with pagination.
-- **Export** — Download content data as CSV or JSON.
+- **Page editor** -- Create and edit pages with title, slug, content, and template selection.
+- **Templates** -- Default, Landing, and Blog page templates.
+- **Publishing workflow** -- Draft / Published / Archived status transitions.
+- **Auto-generated slugs** -- Slugs generated from titles, editable before save.
+- **Content table** -- Filterable by status, sortable, with pagination.
+- **Export** -- Download content data as CSV or JSON.
 
 ### Analytics
 
-- **User growth charts** — Line/area charts showing registration trends over time.
-- **Content breakdown** — Bar and pie charts showing content distribution by status and template.
-- **Session analytics** — Active session counts and trends.
-- **Notification metrics** — Read vs. unread notification ratios.
-- **Tabbed interface** — Separate tabs for Users, Content, Sessions, and Notifications analytics.
+- **User growth charts** -- Line/area charts showing registration trends over time.
+- **Content breakdown** -- Bar and pie charts showing content distribution by status and template.
+- **Session analytics** -- Active session counts and trends.
+- **Notification metrics** -- Read vs. unread notification ratios.
+- **Tabbed interface** -- Separate tabs for Users, Content, Sessions, and Notifications analytics.
 
 ### Notifications
 
-- **In-app notification system** — Info, warning, error, and success notification types.
-- **Notification bell** — Real-time unread count badge in the top navigation bar.
-- **Notification popover** — Quick preview of recent notifications without leaving the current page.
-- **Full notifications page** — View all notifications with mark-as-read and delete actions.
-- **Bulk operations** — Mark all as read, delete all read notifications.
+- **In-app notification system** -- Info, warning, error, and success notification types.
+- **Notification bell** -- Real-time unread count badge in the top navigation bar.
+- **Notification popover** -- Quick preview of recent notifications without leaving the current page.
+- **Full notifications page** -- View all notifications with mark-as-read and delete actions.
+- **Bulk operations** -- Mark all as read, delete all read notifications.
 
 ### Role Management
 
-- **Role overview** — View all roles with member counts and permission summaries.
-- **Role-change dialogs** — Confirmation dialogs when changing user roles.
-- **Permission matrix** — Visual display of what each role can do.
+- **Role overview** -- View all roles with member counts and permission summaries.
+- **Role-change dialogs** -- Confirmation dialogs when changing user roles.
+- **Permission matrix** -- Visual display of what each role can do.
 
 ### Database Management
 
-- **Table browser** — View all database tables with row counts.
-- **Schema viewer** — Inspect table schemas including column names, types, and constraints.
-- **Data export** — Export any table's data as CSV or JSON.
-- **Admin-only access** — Database management restricted to admin role.
+- **Table browser** -- View all database tables with row counts.
+- **Schema viewer** -- Inspect table schemas including column names, types, and constraints.
+- **Data export** -- Export any table's data as CSV or JSON.
+- **Admin-only access** -- Database management restricted to admin role.
 
 ### Settings
 
-- **Profile settings** — Update display name, email, and avatar URL.
-- **Password change** — Change password with current password verification.
-- **Session management** — View all active sessions with device info, IP addresses, and last activity. Revoke individual sessions or all other sessions.
-- **App settings** — Configurable application-level settings stored in the database.
-- **Appearance** — Dark/light mode toggle with system preference detection (persisted via mode-watcher).
+- **Profile settings** -- Update display name, email, and avatar URL.
+- **Password change** -- Change password with current password verification.
+- **Session management** -- View all active sessions with device info, IP addresses, and last activity. Revoke individual sessions or all other sessions.
+- **App settings** -- Configurable application-level settings stored in the database.
+- **Appearance** -- Dark/light mode toggle with system preference detection (persisted via mode-watcher).
 
 ### Additional Features
 
-- **Command palette (Cmd+K)** — Keyboard-driven command palette with navigation, live search, and quick actions (toggle theme, create page).
-- **Animated KPI counters** — Dashboard numbers animate from zero on load with easeOutExpo easing.
-- **Page view transitions** — Smooth cross-fade between pages via the View Transitions API.
-- **Responsive design** — Fully responsive layout with collapsible sidebar on mobile.
-- **Dark/light mode** — System-aware theme with manual toggle, persisted across sessions.
-- **Breadcrumb navigation** — Auto-generated breadcrumbs from URL pathname.
-- **Apps menu** — Quick-access grid menu for jumping between sections.
-- **Toast notifications** — Svelte Sonner for action feedback (success, error, info).
-- **SEO ready** — OpenGraph and Twitter meta tags via svelte-meta-tags.
-- **Sitemap** — Auto-generated XML sitemap endpoint.
-- **Error page** — Custom error page with navigation back to safety.
-- **Data table pagination** — Reusable pagination component with page size selector.
+- **Command palette (Cmd+K)** -- Keyboard-driven command palette with navigation, live search, and quick actions (toggle theme, create page).
+- **Page view transitions** -- Smooth cross-fade between pages via the View Transitions API.
+- **Responsive design** -- Fully responsive layout with collapsible sidebar on mobile.
+- **Dark/light mode** -- System-aware theme with manual toggle, persisted across sessions.
+- **Breadcrumb navigation** -- Auto-generated breadcrumbs from URL pathname.
+- **Apps menu** -- Quick-access grid menu for jumping between sections.
+- **Toast notifications** -- Svelte Sonner for action feedback (success, error, info).
+- **SEO ready** -- OpenGraph and Twitter meta tags via svelte-meta-tags.
+- **Sitemap** -- Auto-generated XML sitemap endpoint.
+- **Error page** -- Custom error page with navigation back to safety.
+- **Data table pagination** -- Reusable pagination component with page size selector.
 
 ---
 
@@ -163,7 +168,7 @@ Three built-in roles with different permission levels:
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/svelteforge-admin.git
+git clone https://github.com/colorlibhq/svelteforge-admin.git
 cd svelteforge-admin
 
 # Install dependencies
@@ -197,7 +202,7 @@ After seeding, you can log in with:
 
 ## OAuth Setup (Optional)
 
-Social login is entirely optional. When no OAuth credentials are configured, the login page shows only the username/password form — no errors, no broken buttons.
+Social login is entirely optional. When no OAuth credentials are configured, the login page shows only the username/password form -- no errors, no broken buttons.
 
 ### Google
 
@@ -335,7 +340,7 @@ src/
 | `pages` | CMS content (title, slug, content, template, status, author) |
 | `notifications` | In-app notifications (title, message, type, read status) |
 | `password_reset_tokens` | Time-limited password reset tokens (hashed) |
-| `oauth_accounts` | OAuth provider links (Google, GitHub → user mapping) |
+| `oauth_accounts` | OAuth provider links (Google, GitHub to user mapping) |
 | `app_settings` | Key-value application settings |
 
 ---
@@ -361,9 +366,9 @@ SvelteForge Admin uses **SQLite** with the `better-sqlite3` native module. Your 
 
 ### Not Compatible
 
-- **Cloudflare Pages/Workers** — V8 isolates cannot run native Node modules (better-sqlite3)
-- **Vercel Edge** — Same limitation as Cloudflare
-- **AWS Lambda** — No persistent filesystem for SQLite
+- **Cloudflare Pages/Workers** -- V8 isolates cannot run native Node modules (better-sqlite3)
+- **Vercel Edge** -- Same limitation as Cloudflare
+- **AWS Lambda** -- No persistent filesystem for SQLite
 
 ### Docker
 
@@ -383,7 +388,7 @@ DATABASE_URL=svelteforge.db        # SQLite database file path
 # Required for production
 ORIGIN=https://yourdomain.com      # Used for OAuth redirect URIs
 
-# Optional — OAuth providers (omit to disable)
+# Optional -- OAuth providers (omit to disable)
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
 GITHUB_CLIENT_ID=
@@ -400,7 +405,7 @@ GITHUB_CLIENT_SECRET=
 npx shadcn-svelte@latest add <component-name>
 ```
 
-Components are installed to `src/lib/components/ui/`. Do not edit them directly — re-run the add command to update.
+Components are installed to `src/lib/components/ui/`. Do not edit them directly -- re-run the add command to update.
 
 ### Theming
 
@@ -438,10 +443,81 @@ Unit tests use an **in-memory SQLite database** created via `test-utils.ts`, so 
 
 ---
 
+## Premium Dashboards from DashboardPack
+
+Looking for more? Check out our premium admin templates on [DashboardPack](https://dashboardpack.com/?utm_source=github&utm_medium=readme&utm_campaign=svelteforge) -- production-ready, feature-packed, and backed by dedicated support.
+
+<table>
+  <tr>
+    <td align="center" width="33%">
+      <a href="https://dashboardpack.com/theme-details/apex-nextjs/?utm_source=github&utm_medium=readme&utm_campaign=svelteforge">
+        <img src="screenshots/apex-nextjs.png" alt="Apex -- premium Next.js admin dashboard with 50+ pages" width="100%">
+      </a>
+      <br>
+      <a href="https://dashboardpack.com/theme-details/apex-nextjs/?utm_source=github&utm_medium=readme&utm_campaign=svelteforge"><strong>Apex</strong></a>
+      <br>
+      <sub>Next.js 16 + React 19 + TypeScript + Tailwind CSS v4. 50+ pages, full CRUD, theme customizer.</sub>
+    </td>
+    <td align="center" width="33%">
+      <a href="https://dashboardpack.com/theme-details/zenith-nextjs/?utm_source=github&utm_medium=readme&utm_campaign=svelteforge">
+        <img src="screenshots/zenith.png" alt="Zenith -- achromatic Next.js admin dashboard with clean minimal design" width="100%">
+      </a>
+      <br>
+      <a href="https://dashboardpack.com/theme-details/zenith-nextjs/?utm_source=github&utm_medium=readme&utm_campaign=svelteforge"><strong>Zenith</strong></a>
+      <br>
+      <sub>Next.js 16 + React 19 + Tailwind CSS v4. Achromatic design, 50+ pages, drag-and-drop, i18n.</sub>
+    </td>
+    <td align="center" width="33%">
+      <a href="https://dashboardpack.com/theme-details/signal-nextjs/?utm_source=github&utm_medium=readme&utm_campaign=svelteforge">
+        <img src="screenshots/signal.png" alt="Signal -- modern Next.js admin dashboard with bold design" width="100%">
+      </a>
+      <br>
+      <a href="https://dashboardpack.com/theme-details/signal-nextjs/?utm_source=github&utm_medium=readme&utm_campaign=svelteforge"><strong>Signal</strong></a>
+      <br>
+      <sub>Next.js 16 + React 19 + Tailwind CSS v4. 50+ pages, 10 chart types, Storybook, RTL support.</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="33%">
+      <a href="https://dashboardpack.com/theme-details/ember-nextjs/?utm_source=github&utm_medium=readme&utm_campaign=svelteforge">
+        <img src="screenshots/ember.png" alt="Ember -- minimal Next.js admin dashboard with achromatic design" width="100%">
+      </a>
+      <br>
+      <a href="https://dashboardpack.com/theme-details/ember-nextjs/?utm_source=github&utm_medium=readme&utm_campaign=svelteforge"><strong>Ember</strong></a>
+      <br>
+      <sub>Next.js 16 + React 19 + Tailwind CSS v4. Clean minimal design, full CRUD, theme customizer.</sub>
+    </td>
+    <td align="center" width="33%">
+      <a href="https://dashboardpack.com/theme-details/flux-nextjs/?utm_source=github&utm_medium=readme&utm_campaign=svelteforge">
+        <img src="screenshots/flux.png" alt="Flux -- gradient-forward Next.js admin dashboard for startups" width="100%">
+      </a>
+      <br>
+      <a href="https://dashboardpack.com/theme-details/flux-nextjs/?utm_source=github&utm_medium=readme&utm_campaign=svelteforge"><strong>Flux</strong></a>
+      <br>
+      <sub>Next.js 16 + React 19 + Tailwind CSS v4. Gradient design, startup-native data, frosted glass UI.</sub>
+    </td>
+    <td align="center" width="33%">
+      <a href="https://dashboardpack.com/theme-details/admindek-html/?utm_source=github&utm_medium=readme&utm_campaign=svelteforge">
+        <img src="screenshots/admindek.png" alt="Admindek -- comprehensive Bootstrap 5 admin template" width="100%">
+      </a>
+      <br>
+      <a href="https://dashboardpack.com/theme-details/admindek-html/?utm_source=github&utm_medium=readme&utm_campaign=svelteforge"><strong>Admindek</strong></a>
+      <br>
+      <sub>Bootstrap 5 + vanilla JS. 100+ components, theme customizer, RTL, 10 color palettes.</sub>
+    </td>
+  </tr>
+</table>
+
+<p align="center">
+  <a href="https://dashboardpack.com/?utm_source=github&utm_medium=readme&utm_campaign=svelteforge"><strong>Browse All Premium Templates on DashboardPack</strong></a>
+</p>
+
+---
+
 ## License
 
 MIT
 
 ---
 
-Built with SvelteKit, Svelte 5, Tailwind CSS 4, Drizzle ORM, and shadcn-svelte.
+Built with SvelteKit, Svelte 5, Tailwind CSS 4, Drizzle ORM, and shadcn-svelte by [Colorlib](https://colorlib.com/).

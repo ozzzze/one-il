@@ -30,6 +30,14 @@
 			<Card.Description>Enter your credentials to access the dashboard</Card.Description>
 		</Card.Header>
 		<Card.Content>
+			<div class="bg-muted mb-4 rounded-md p-3 text-sm">
+				<p class="font-medium">Demo Access</p>
+				<p class="text-muted-foreground mt-1">
+					Use <span class="font-mono font-semibold">demo</span> /
+					<span class="font-mono font-semibold">demo123</span> to explore the dashboard (read-only), or
+					<a href="/register" class="text-primary underline-offset-4 hover:underline">register</a> a new account.
+				</p>
+			</div>
 			{#if form?.message}
 				<div class="bg-destructive/10 text-destructive mb-4 rounded-md p-3 text-sm">
 					{form.message}
