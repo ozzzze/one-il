@@ -2,9 +2,17 @@
 
 All notable changes to SvelteForge Admin are documented here.
 
-## v1.0.0 -- February 2026
+## v1.0.0 -- March 2026
 
-Initial release. Full-featured admin dashboard with custom auth, RBAC, and a complete admin toolset.
+Initial release. Full-featured admin dashboard with custom auth, RBAC, built-in documentation site, and a complete admin toolset.
+
+### Documentation Site
+
+- 16-page built-in documentation at `/docs` with dedicated layout and sidebar navigation
+- Sections: Introduction, Getting Started, Project Structure, Authentication, Database, Routing, Components, Theming, User Management, Content Management, Analytics, Notifications, Settings, Testing, Deployment, API Reference
+- Responsive docs layout with mobile hamburger menu
+- DashboardPack premium promotion integrated throughout (header button, sidebar card, page callouts)
+- Tailwind Typography plugin (`@tailwindcss/typography`) for proper prose formatting
 
 ### Authentication & Security
 
@@ -84,6 +92,8 @@ Initial release. Full-featured admin dashboard with custom auth, RBAC, and a com
 ### UI & UX
 
 - Command palette (Cmd+K) with navigation, search, and quick actions
+- Go Pro sidebar CTA with crown icon and PRO badge linking to DashboardPack
+- Documentation link in sidebar navigation
 - Page view transitions via View Transitions API
 - Responsive layout with collapsible sidebar on mobile
 - Dark/light mode with localStorage persistence
@@ -100,20 +110,20 @@ Initial release. Full-featured admin dashboard with custom auth, RBAC, and a com
 
 ### Developer Experience
 
-- Svelte 5 runes API throughout ($props, $state, $derived, {@render})
-- Tailwind CSS 4 with OKLCH color system and @theme directive
+- Svelte 5 runes API throughout ($props, $state, $derived, $effect)
+- Tailwind CSS 4 with OKLCH color system, @theme directive, and Typography plugin
 - shadcn-svelte component library
 - Drizzle ORM with SQLite (WAL mode) and typed schema
 - Vitest unit tests with in-memory SQLite test database
 - Playwright E2E test setup
 - ESLint 9 + Prettier code quality tooling
-- Database seeder with sample data (admin, editor, viewer accounts)
+- Database seeder with sample data (50 users, 65 pages, 33 notifications)
 - pnpm as package manager
 
 ### Stack
 
 - SvelteKit 2.50 + Svelte 5 + TypeScript 5
-- Tailwind CSS 4 + shadcn-svelte + tw-animate-css
+- Tailwind CSS 4 + @tailwindcss/typography + shadcn-svelte + tw-animate-css
 - Drizzle ORM + better-sqlite3
 - @oslojs/crypto + @oslojs/encoding + @node-rs/argon2
 - Arctic (OAuth)
@@ -133,3 +143,11 @@ Initial release. Full-featured admin dashboard with custom auth, RBAC, and a com
 - `2026-02-09` -- Add login, register, and logout auth pages with Argon2 password hashing
 - `2026-02-09` -- Add protected routes with auth redirect and dynamic user data in sidebar
 - `2026-02-10` -- Implement Arctic OAuth (Google + GitHub)
+- `2026-02-10` -- Add README with screenshots and project documentation
+- `2026-03-07` -- Add 16-page built-in documentation site at /docs
+- `2026-03-07` -- Add @tailwindcss/typography for docs prose formatting
+- `2026-03-07` -- Add Go Pro sidebar CTA with DashboardPack UTM tracking
+- `2026-03-07` -- Add Documentation link in sidebar navigation
+- `2026-03-07` -- Add DashboardPack premium template screenshots to README
+- `2026-03-07` -- Add comprehensive CHANGELOG
+- `2026-03-07` -- Bump version to 1.0.0
