@@ -1,4 +1,4 @@
-# SvelteForge Admin
+# SvelteForge - SvelteKit Admin Dashboard Template
 
 A production-ready admin dashboard template built with **SvelteKit 2**, **Svelte 5**, **Tailwind CSS 4**, and **Drizzle ORM**. Features custom session-based authentication, optional OAuth (Google & GitHub), role-based access control, and a full suite of admin tools -- all with zero external auth dependencies.
 
