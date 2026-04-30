@@ -1,78 +1,55 @@
-import {
-	generateSessionToken,
-	createSession,
-	setSessionCookie,
-	generateId,
-} from "$lib/server/auth.js";
-import { db } from "$lib/server/db/index.js";
-import { users } from "$lib/server/db/schema.js";
 import { fail, redirect } from "@sveltejs/kit";
-import { hash } from "@node-rs/argon2";
 import type { Actions, PageServerLoad } from "./$types.js";
 
 export const load: PageServerLoad = async ({ locals }) => {
-	if (locals.user) redirect(302, "/");
+	const { session } = await locals.safeGetSession();
+	if (session) throw redirect(302, "/");
+	return {};
 };
 
 export const actions: Actions = {
-	default: async ({ request, cookies, getClientAddress }) => {
+	default: async ({ request, locals }) => {
 		const formData = await request.formData();
-		const name = formData.get("name");
-		const email = formData.get("email");
-		const username = formData.get("username");
-		const password = formData.get("password");
+		const name = formData.get("name") as string;
+		const email = formData.get("email") as string;
+		const username = formData.get("username") as string;
+		const password = formData.get("password") as string;
 
-		if (typeof name !== "string" || name.length < 1 || name.length > 100) {
+		if (!name || name.length < 1 || name.length > 100) {
 			return fail(400, { message: "Name is required (1-100 characters)" });
 		}
-		if (typeof email !== "string" || !email.includes("@") || email.length > 255) {
+		if (!email || !email.includes("@")) {
 			return fail(400, { message: "Valid email is required" });
 		}
-		if (
-			typeof username !== "string" ||
-			username.length < 3 ||
-			username.length > 31 ||
-			!/^[a-z0-9_-]+$/.test(username)
-		) {
-			return fail(400, {
-				message: "Username must be 3-31 characters, lowercase letters, numbers, hyphens, underscores",
-			});
+		if (!username || username.length < 3) {
+			return fail(400, { message: "Username must be at least 3 characters" });
 		}
-		if (typeof password !== "string" || password.length < 6 || password.length > 255) {
-			return fail(400, { message: "Password must be 6-255 characters" });
+		if (!password || password.length < 6) {
+			return fail(400, { message: "Password must be at least 6 characters" });
 		}
 
-		const passwordHash = await hash(password, {
-			memoryCost: 19456,
-			timeCost: 2,
-			outputLen: 32,
-			parallelism: 1,
+		const { data, error } = await locals.supabase.auth.signUp({
+			email: email.toLowerCase(),
+			password,
+			options: {
+				data: {
+					full_name: name,
+					username: username.toLowerCase(),
+					role: "admin", // Default role for local dev testing
+				},
+			},
 		});
 
-		const userId = generateId(10);
-
-		try {
-			await db.insert(users).values({
-				id: userId,
-				email: email.toLowerCase(),
-				username: username.toLowerCase(),
-				passwordHash,
-				name,
-				role: "admin", // First user gets admin role
-			});
-		} catch {
-			return fail(400, { message: "Username or email already taken" });
+		if (error) {
+			return fail(400, { message: error.message });
 		}
 
-		const token = generateSessionToken();
-		const ua = request.headers.get("user-agent");
-		const ip = getClientAddress();
-		const session = await createSession(token, userId, {
-			userAgent: ua,
-			ipAddress: ip,
-		});
-		setSessionCookie(cookies, token, session.expiresAt);
-
-		redirect(302, "/");
+		// If email confirmation is enabled, we might not have a session immediately.
+		// For local development, it usually logs in immediately.
+		if (data.session) {
+			throw redirect(303, "/");
+		} else {
+			return { success: true, message: "Please check your email to confirm your registration." };
+		}
 	},
 };

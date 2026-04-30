@@ -1,14 +1,13 @@
-import { invalidateSession, deleteSessionCookie } from "$lib/server/auth.js";
-import { fail, redirect } from "@sveltejs/kit";
+import { redirect } from "@sveltejs/kit";
 import type { Actions } from "./$types.js";
 
 export const actions: Actions = {
-	default: async ({ locals, cookies }) => {
-		if (!locals.session) {
-			return fail(401);
+	default: async ({ locals }) => {
+		const { session } = await locals.safeGetSession();
+		if (session) {
+			await locals.supabase.auth.signOut();
+			throw redirect(303, "/login");
 		}
-		await invalidateSession(locals.session.id);
-		deleteSessionCookie(cookies);
-		redirect(302, "/login");
+		throw redirect(303, "/login");
 	},
 };
