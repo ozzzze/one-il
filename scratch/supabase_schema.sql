@@ -1,5 +1,5 @@
 -- Supabase Migration Script
--- รันสคริปต์นี้ใน Supabase SQL Editor (https://supabase.com/dashboard/project/_/sql) หรือใช้ Studio URL: http://127.0.0.1:54323
+-- รันใน Supabase SQL Editor (cloud หรือ Studio เช่น http://10.21.1.103:54323/project/default)
 
 -- 1. Create Users Table (Linked to auth.users)
 CREATE TABLE public.users (

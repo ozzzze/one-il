@@ -1,58 +1,53 @@
 import { db } from "$lib/server/db/index.js";
 import { users, pages, notifications } from "$lib/server/db/schema.js";
-import { sql, eq } from "drizzle-orm";
+import { sql, eq, desc } from "drizzle-orm";
 import type { PageServerLoad } from "./$types.js";
 
 export const load: PageServerLoad = async () => {
-	// User signups per month
 	const signupsPerMonth = await db
 		.select({
-			month: sql<string>`strftime('%Y-%m-01', created_at, 'unixepoch')`,
-			count: sql<number>`count(*)`,
+			month: sql<string>`to_char(date_trunc('month', ${users.createdAt}), 'YYYY-MM') || '-01'`,
+			count: sql<number>`count(*)::int`,
 		})
 		.from(users)
-		.groupBy(sql`strftime('%Y-%m', created_at, 'unixepoch')`)
-		.orderBy(sql`strftime('%Y-%m', created_at, 'unixepoch')`);
+		.groupBy(sql`date_trunc('month', ${users.createdAt})`)
+		.orderBy(sql`date_trunc('month', ${users.createdAt})`);
 
-	// Content creation per month
 	const pagesPerMonth = await db
 		.select({
-			month: sql<string>`strftime('%Y-%m-01', created_at, 'unixepoch')`,
-			count: sql<number>`count(*)`,
+			month: sql<string>`to_char(date_trunc('month', ${pages.createdAt}), 'YYYY-MM') || '-01'`,
+			count: sql<number>`count(*)::int`,
 		})
 		.from(pages)
-		.groupBy(sql`strftime('%Y-%m', created_at, 'unixepoch')`)
-		.orderBy(sql`strftime('%Y-%m', created_at, 'unixepoch')`);
+		.groupBy(sql`date_trunc('month', ${pages.createdAt})`)
+		.orderBy(sql`date_trunc('month', ${pages.createdAt})`);
 
-	// Pages by status
 	const pagesByStatus = await db
 		.select({
 			status: pages.status,
-			count: sql<number>`count(*)`,
+			count: sql<number>`count(*)::int`,
 		})
 		.from(pages)
 		.groupBy(pages.status);
 
-	// Notifications by type
 	const notificationsByType = await db
 		.select({
 			type: notifications.type,
-			count: sql<number>`count(*)`,
+			count: sql<number>`count(*)::int`,
 		})
 		.from(notifications)
 		.groupBy(notifications.type);
 
-	// Top authors by page count
 	const topAuthors = await db
 		.select({
 			name: users.name,
-			pageCount: sql<number>`count(${pages.id})`,
+			pageCount: sql<number>`count(${pages.id})::int`,
 		})
 		.from(pages)
 		.innerJoin(users, eq(pages.authorId, users.id))
-		.groupBy(users.id)
-		.orderBy(sql`count(${pages.id}) desc`)
-		.limit(5);
+		.groupBy(users.id, users.name)
+		.orderBy(desc(sql`count(${pages.id})::int`))
+		.limit(10);
 
 	return {
 		signupsPerMonth,

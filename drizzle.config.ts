@@ -3,8 +3,8 @@ import { defineConfig } from "drizzle-kit";
 export default defineConfig({
 	schema: "./src/lib/server/db/schema.ts",
 	out: "./drizzle",
-	dialect: "sqlite",
+	dialect: "postgresql",
 	dbCredentials: {
-		url: "svelteforge.db",
+		url: process.env.DATABASE_URL ?? "postgresql://postgres:postgres@127.0.0.1:54322/postgres",
 	},
 });

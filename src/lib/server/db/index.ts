@@ -1,9 +1,12 @@
-import Database from "better-sqlite3";
-import { drizzle } from "drizzle-orm/better-sqlite3";
+import postgres from "postgres";
+import { drizzle } from "drizzle-orm/postgres-js";
 import * as schema from "./schema.js";
 
-const dbPath = process.env.DATABASE_URL || "svelteforge.db";
-const sqlite = new Database(dbPath);
-sqlite.pragma("journal_mode = WAL");
+/** Fallback ตอนไม่มี `.env` (เช่น build) — runtime ใช้ค่าจาก `.env` เช่น intranet `10.21.1.103:54322` */
+const connectionString =
+	process.env.DATABASE_URL ??
+	"postgresql://postgres:postgres@127.0.0.1:54322/postgres";
 
-export const db = drizzle(sqlite, { schema });
+const client = postgres(connectionString, { prepare: false });
+
+export const db = drizzle(client, { schema });

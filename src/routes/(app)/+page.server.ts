@@ -1,76 +1,66 @@
 import { db } from "$lib/server/db/index.js";
-import { users, sessions, pages, notifications, appSettings } from "$lib/server/db/schema.js";
-import { sql, eq, gt, desc, or, isNull } from "drizzle-orm";
+import { users, pages, notifications, appSettings } from "$lib/server/db/schema.js";
+import { sql, eq, desc, or, isNull, gt } from "drizzle-orm";
 import type { PageServerLoad } from "./$types.js";
 
 export const load: PageServerLoad = async ({ locals }) => {
-	const now = Date.now();
 	const thisMonthStart = new Date();
 	thisMonthStart.setDate(1);
 	thisMonthStart.setHours(0, 0, 0, 0);
 	const lastMonthStart = new Date(thisMonthStart);
 	lastMonthStart.setMonth(lastMonthStart.getMonth() - 1);
 
-	const thisMonthSec = Math.floor(thisMonthStart.getTime() / 1000);
-	const lastMonthSec = Math.floor(lastMonthStart.getTime() / 1000);
+	const [userCount] = await db.select({ count: sql<number>`count(*)::int` }).from(users);
 
-	// Current stats
-	const [userCount] = await db.select({ count: sql<number>`count(*)` }).from(users);
-	const [activeSessionCount] = await db
-		.select({ count: sql<number>`count(*)` })
-		.from(sessions)
-		.where(gt(sessions.expiresAt, now));
-	const [pageCount] = await db.select({ count: sql<number>`count(*)` }).from(pages);
+	const [pageCount] = await db.select({ count: sql<number>`count(*)::int` }).from(pages);
+
 	const [unreadCount] = await db
-		.select({ count: sql<number>`count(*)` })
+		.select({ count: sql<number>`count(*)::int` })
 		.from(notifications)
 		.where(eq(notifications.read, false));
 
-	// Trend: users this month vs last month
 	const [usersThisMonth] = await db
-		.select({ count: sql<number>`count(*)` })
+		.select({ count: sql<number>`count(*)::int` })
 		.from(users)
-		.where(sql`created_at >= ${thisMonthSec}`);
-	const [usersLastMonth] = await db
-		.select({ count: sql<number>`count(*)` })
-		.from(users)
-		.where(sql`created_at >= ${lastMonthSec} AND created_at < ${thisMonthSec}`);
+		.where(sql`${users.createdAt} >= ${thisMonthStart}`);
 
-	// Trend: pages this month vs last month
+	const [usersLastMonth] = await db
+		.select({ count: sql<number>`count(*)::int` })
+		.from(users)
+		.where(sql`${users.createdAt} >= ${lastMonthStart} AND ${users.createdAt} < ${thisMonthStart}`);
+
 	const [pagesThisMonth] = await db
-		.select({ count: sql<number>`count(*)` })
+		.select({ count: sql<number>`count(*)::int` })
 		.from(pages)
-		.where(sql`created_at >= ${thisMonthSec}`);
+		.where(sql`${pages.createdAt} >= ${thisMonthStart}`);
+
 	const [pagesLastMonth] = await db
-		.select({ count: sql<number>`count(*)` })
+		.select({ count: sql<number>`count(*)::int` })
 		.from(pages)
-		.where(sql`created_at >= ${lastMonthSec} AND created_at < ${thisMonthSec}`);
+		.where(sql`${pages.createdAt} >= ${lastMonthStart} AND ${pages.createdAt} < ${thisMonthStart}`);
 
 	function calcTrend(current: number, previous: number) {
 		if (previous === 0) return current > 0 ? 100 : 0;
 		return Math.round(((current - previous) / previous) * 100);
 	}
 
-	// Role distribution
 	const roleDistribution = await db
 		.select({
 			role: users.role,
-			count: sql<number>`count(*)`,
+			count: sql<number>`count(*)::int`,
 		})
 		.from(users)
 		.groupBy(users.role);
 
-	// Monthly user signups for chart
 	const monthlySignups = await db
 		.select({
-			month: sql<string>`strftime('%Y-%m-01', created_at, 'unixepoch')`,
-			count: sql<number>`count(*)`,
+			month: sql<string>`to_char(date_trunc('month', ${users.createdAt}), 'YYYY-MM') || '-01'`,
+			count: sql<number>`count(*)::int`,
 		})
 		.from(users)
-		.groupBy(sql`strftime('%Y-%m', created_at, 'unixepoch')`)
-		.orderBy(sql`strftime('%Y-%m', created_at, 'unixepoch')`);
+		.groupBy(sql`date_trunc('month', ${users.createdAt})`)
+		.orderBy(sql`date_trunc('month', ${users.createdAt})`);
 
-	// Recent activity: newest users and pages
 	const recentUsers = await db
 		.select({ name: users.name, createdAt: users.createdAt })
 		.from(users)
@@ -105,7 +95,6 @@ export const load: PageServerLoad = async ({ locals }) => {
 		.sort((a, b) => b.time.getTime() - a.time.getTime())
 		.slice(0, 5);
 
-	// Recent notifications for dashboard feed
 	const userNotifFilter = or(
 		eq(notifications.userId, locals.user!.id),
 		isNull(notifications.userId)
@@ -124,55 +113,50 @@ export const load: PageServerLoad = async ({ locals }) => {
 		.orderBy(desc(notifications.createdAt))
 		.limit(5);
 
-	// Quick stats
 	const [publishedCount] = await db
-		.select({ count: sql<number>`count(*)` })
+		.select({ count: sql<number>`count(*)::int` })
 		.from(pages)
 		.where(eq(pages.status, "published"));
 	const [editorCount] = await db
-		.select({ count: sql<number>`count(*)` })
+		.select({ count: sql<number>`count(*)::int` })
 		.from(users)
 		.where(eq(users.role, "editor"));
 
-	// Pages by status distribution
 	const pagesByStatus = await db
 		.select({
 			status: pages.status,
-			count: sql<number>`count(*)`,
+			count: sql<number>`count(*)::int`,
 		})
 		.from(pages)
 		.groupBy(pages.status);
 
-	// Content creation trend (last 6 months, by status)
-	const sixMonthsAgoSec = Math.floor(
-		new Date(Date.now() - 180 * 86400000).getTime() / 1000
-	);
+	const sixMonthsAgo = new Date(Date.now() - 180 * 86400000);
+
 	const contentTrend = await db
 		.select({
-			month: sql<string>`strftime('%Y-%m-01', created_at, 'unixepoch')`,
+			month: sql<string>`to_char(date_trunc('month', ${pages.createdAt}), 'YYYY-MM') || '-01'`,
 			status: pages.status,
-			count: sql<number>`count(*)`,
+			count: sql<number>`count(*)::int`,
 		})
 		.from(pages)
-		.where(sql`created_at >= ${sixMonthsAgoSec}`)
-		.groupBy(sql`strftime('%Y-%m', created_at, 'unixepoch')`, pages.status)
-		.orderBy(sql`strftime('%Y-%m', created_at, 'unixepoch')`);
+		.where(gt(pages.createdAt, sixMonthsAgo))
+		.groupBy(sql`date_trunc('month', ${pages.createdAt})`, pages.status)
+		.orderBy(sql`date_trunc('month', ${pages.createdAt})`);
 
-	// System status
 	const maintenanceSetting = await db.query.appSettings.findFirst({
 		where: eq(appSettings.key, "maintenanceMode"),
 	});
 
 	return {
 		stats: {
-			totalUsers: userCount.count,
-			activeSessions: activeSessionCount.count,
-			totalPages: pageCount.count,
-			unreadNotifications: unreadCount.count,
+			totalUsers: Number(userCount.count),
+			activeSessions: 0,
+			totalPages: Number(pageCount.count),
+			unreadNotifications: Number(unreadCount.count),
 		},
 		trends: {
-			users: calcTrend(usersThisMonth.count, usersLastMonth.count),
-			pages: calcTrend(pagesThisMonth.count, pagesLastMonth.count),
+			users: calcTrend(Number(usersThisMonth.count), Number(usersLastMonth.count)),
+			pages: calcTrend(Number(pagesThisMonth.count), Number(pagesLastMonth.count)),
 		},
 		roleDistribution,
 		monthlySignups,
@@ -182,8 +166,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 		})),
 		recentNotifications,
 		quickStats: {
-			publishedPages: publishedCount.count,
-			activeEditors: editorCount.count,
+			publishedPages: Number(publishedCount.count),
+			activeEditors: Number(editorCount.count),
 		},
 		pagesByStatus,
 		contentTrend,

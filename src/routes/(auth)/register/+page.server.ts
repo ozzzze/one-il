@@ -1,41 +1,53 @@
+import { db } from "$lib/server/db/index.js";
+import { users } from "$lib/server/db/schema.js";
 import { fail, redirect } from "@sveltejs/kit";
+import { sql } from "drizzle-orm";
 import type { Actions, PageServerLoad } from "./$types.js";
 
 export const load: PageServerLoad = async ({ locals }) => {
-	const { session } = await locals.safeGetSession();
-	if (session) throw redirect(302, "/");
-	return {};
+	if (locals.user) redirect(302, "/");
 };
 
 export const actions: Actions = {
 	default: async ({ request, locals }) => {
 		const formData = await request.formData();
-		const name = formData.get("name") as string;
-		const email = formData.get("email") as string;
-		const username = formData.get("username") as string;
-		const password = formData.get("password") as string;
+		const name = formData.get("name");
+		const email = formData.get("email");
+		const username = formData.get("username");
+		const password = formData.get("password");
 
-		if (!name || name.length < 1 || name.length > 100) {
+		if (typeof name !== "string" || name.length < 1 || name.length > 100) {
 			return fail(400, { message: "Name is required (1-100 characters)" });
 		}
-		if (!email || !email.includes("@")) {
+		if (typeof email !== "string" || !email.includes("@") || email.length > 255) {
 			return fail(400, { message: "Valid email is required" });
 		}
-		if (!username || username.length < 3) {
-			return fail(400, { message: "Username must be at least 3 characters" });
+		if (
+			typeof username !== "string" ||
+			username.length < 3 ||
+			username.length > 31 ||
+			!/^[a-z0-9_-]+$/.test(username)
+		) {
+			return fail(400, {
+				message: "Username must be 3-31 characters, lowercase letters, numbers, hyphens, underscores",
+			});
 		}
-		if (!password || password.length < 6) {
-			return fail(400, { message: "Password must be at least 6 characters" });
+		if (typeof password !== "string" || password.length < 6 || password.length > 255) {
+			return fail(400, { message: "Password must be 6-255 characters" });
 		}
+
+		const [{ c }] = await db.select({ c: sql<number>`count(*)::int` }).from(users);
+		const userCount = Number(c) || 0;
+		const role = userCount === 0 ? "admin" : "viewer";
 
 		const { data, error } = await locals.supabase.auth.signUp({
 			email: email.toLowerCase(),
 			password,
 			options: {
 				data: {
-					full_name: name,
 					username: username.toLowerCase(),
-					role: "admin", // Default role for local dev testing
+					full_name: name,
+					role,
 				},
 			},
 		});
@@ -44,12 +56,37 @@ export const actions: Actions = {
 			return fail(400, { message: error.message });
 		}
 
-		// If email confirmation is enabled, we might not have a session immediately.
-		// For local development, it usually logs in immediately.
-		if (data.session) {
-			throw redirect(303, "/");
-		} else {
-			return { success: true, message: "Please check your email to confirm your registration." };
+		const uid = data.user?.id;
+		if (!uid) {
+			return fail(400, {
+				message:
+					"Account created but session missing — confirm email if required, or try signing in.",
+			});
 		}
+
+		try {
+			await db
+				.insert(users)
+				.values({
+					id: uid,
+					email: email.toLowerCase(),
+					username: username.toLowerCase(),
+					passwordHash: null,
+					name,
+					role,
+				})
+				.onConflictDoNothing();
+		} catch {
+			return fail(400, { message: "Username or email already taken" });
+		}
+
+		if (data.session) {
+			redirect(302, "/");
+		}
+
+		return {
+			success: true,
+			message: "Check your email to confirm your account, then sign in.",
+		};
 	},
 };

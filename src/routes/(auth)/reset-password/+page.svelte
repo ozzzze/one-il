@@ -30,14 +30,15 @@
 					{form.message}
 				</div>
 			{/if}
-			{#if !data.valid}
+			{#if !data.canReset}
 				<div class="text-center">
-					<p class="text-muted-foreground mb-4 text-sm">This reset link is invalid or missing a token.</p>
+					<p class="text-muted-foreground mb-4 text-sm">
+						Open the link from your reset email (it signs you in briefly), or request a new reset link.
+					</p>
 					<Button href="/forgot-password" variant="outline">Request a new link</Button>
 				</div>
 			{:else}
 				<form method="POST" use:enhance class="space-y-4">
-					<input type="hidden" name="token" value={data.token} />
 					<div class="space-y-2">
 						<Label for="password">New Password</Label>
 						<Input

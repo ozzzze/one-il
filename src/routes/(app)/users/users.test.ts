@@ -7,8 +7,23 @@ import {
 	createMockRequest,
 } from "$lib/server/db/test-utils.js";
 
-let testDb: ReturnType<typeof createTestDb>;
+let testDb: Awaited<ReturnType<typeof createTestDb>>;
 let adminId: string;
+
+vi.mock("$lib/server/supabase-admin.js", () => ({
+	getServiceRoleClient: vi.fn(() => ({
+		auth: {
+			admin: {
+				createUser: vi.fn(async () => {
+					const { randomUUID } = await import("node:crypto");
+					return { data: { user: { id: randomUUID() } }, error: null };
+				}),
+				deleteUser: vi.fn(async () => ({ error: null })),
+				updateUserById: vi.fn(async () => ({ error: null })),
+			},
+		},
+	})),
+}));
 
 vi.mock("$lib/server/db/index.js", () => ({
 	get db() {
@@ -20,7 +35,7 @@ const { load, actions } = await import("./+page.server.js");
 
 describe("Users page", () => {
 	beforeEach(async () => {
-		testDb = createTestDb();
+		testDb = await createTestDb();
 		adminId = await createTestUser(testDb, {
 			name: "Admin",
 			email: "admin@test.com",

@@ -5,7 +5,7 @@ import {
 	createMockLocals,
 } from "$lib/server/db/test-utils.js";
 
-let testDb: ReturnType<typeof createTestDb>;
+let testDb: Awaited<ReturnType<typeof createTestDb>>;
 let adminId: string;
 
 vi.mock("$lib/server/db/index.js", () => ({
@@ -18,7 +18,7 @@ const { load } = await import("./+page.server.js");
 
 describe("Dashboard page", () => {
 	beforeEach(async () => {
-		testDb = createTestDb();
+		testDb = await createTestDb();
 		adminId = await createTestUser(testDb, {
 			name: "Admin",
 			email: "admin@test.com",

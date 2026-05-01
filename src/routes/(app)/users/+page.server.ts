@@ -1,8 +1,7 @@
 import { db } from "$lib/server/db/index.js";
 import { users } from "$lib/server/db/schema.js";
+import { getServiceRoleClient } from "$lib/server/supabase-admin.js";
 import { fail } from "@sveltejs/kit";
-import { hash } from "@node-rs/argon2";
-import { generateId } from "$lib/server/auth.js";
 import { eq, sql, inArray } from "drizzle-orm";
 import type { Actions, PageServerLoad } from "./$types.js";
 
@@ -24,6 +23,13 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 export const actions: Actions = {
 	create: async ({ request }) => {
+		let admin;
+		try {
+			admin = getServiceRoleClient();
+		} catch {
+			return fail(500, { message: "Server missing SUPABASE_SERVICE_ROLE_KEY" });
+		}
+
 		const formData = await request.formData();
 		const name = formData.get("name");
 		const email = formData.get("email");
@@ -54,32 +60,66 @@ export const actions: Actions = {
 			return fail(400, { message: "Invalid role" });
 		}
 
-		const passwordHash = await hash(password, {
-			memoryCost: 19456,
-			timeCost: 2,
-			outputLen: 32,
-			parallelism: 1,
+		const lowerEmail = email.toLowerCase();
+		const lowerUser = username.toLowerCase();
+
+		const usernameTaken = await db.query.users.findFirst({
+			where: eq(users.username, lowerUser),
+		});
+		if (usernameTaken) {
+			return fail(400, { message: "Username or email already taken" });
+		}
+		const emailTaken = await db.query.users.findFirst({
+			where: eq(users.email, lowerEmail),
+		});
+		if (emailTaken) {
+			return fail(400, { message: "Username or email already taken" });
+		}
+
+		const { data: created, error } = await admin.auth.admin.createUser({
+			email: lowerEmail,
+			password,
+			email_confirm: true,
+			user_metadata: {
+				username: lowerUser,
+				full_name: name,
+				role,
+			},
 		});
 
-		const userId = generateId(10);
+		if (error || !created.user) {
+			return fail(400, { message: error?.message ?? "Could not create auth user" });
+		}
+
+		const uid = created.user.id;
 
 		try {
-			await db.insert(users).values({
-				id: userId,
-				email: email.toLowerCase(),
-				username: username.toLowerCase(),
-				passwordHash,
-				name,
-				role: role as "admin" | "editor" | "viewer",
-			});
+			await db
+				.insert(users)
+				.values({
+					id: uid,
+					email: lowerEmail,
+					username: lowerUser,
+					passwordHash: null,
+					name,
+					role: role as "admin" | "editor" | "viewer",
+				})
+				.onConflictDoNothing();
 		} catch {
-			return fail(400, { message: "Username or email already taken" });
+			return fail(400, { message: "Username or email already taken in profile table" });
 		}
 
 		return { success: true };
 	},
 
 	update: async ({ request }) => {
+		let admin;
+		try {
+			admin = getServiceRoleClient();
+		} catch {
+			return fail(500, { message: "Server missing SUPABASE_SERVICE_ROLE_KEY" });
+		}
+
 		const formData = await request.formData();
 		const id = formData.get("id");
 		const name = formData.get("name");
@@ -99,16 +139,30 @@ export const actions: Actions = {
 			return fail(400, { message: "Invalid role" });
 		}
 
-		// Prevent demotion of last admin
-		const [existing] = await db.select({ role: users.role }).from(users).where(eq(users.id, id));
+		const [existing] = await db.select({ role: users.role, email: users.email }).from(users).where(eq(users.id, id));
 		if (existing?.role === "admin" && role !== "admin") {
 			const [adminCount] = await db
-				.select({ count: sql<number>`count(*)` })
+				.select({ count: sql<number>`count(*)::int` })
 				.from(users)
 				.where(eq(users.role, "admin"));
-			if (adminCount.count <= 1) {
+			if (Number(adminCount.count) <= 1) {
 				return fail(400, { message: "Cannot demote the last admin" });
 			}
+		}
+
+		const lower = email.toLowerCase();
+		if (existing && existing.email !== lower) {
+			const { error: authErr } = await admin.auth.admin.updateUserById(id, { email: lower });
+			if (authErr) {
+				return fail(400, { message: authErr.message });
+			}
+		}
+
+		const { error: metaErr } = await admin.auth.admin.updateUserById(id, {
+			user_metadata: { full_name: name },
+		});
+		if (metaErr) {
+			return fail(400, { message: metaErr.message });
 		}
 
 		try {
@@ -116,7 +170,7 @@ export const actions: Actions = {
 				.update(users)
 				.set({
 					name,
-					email: email.toLowerCase(),
+					email: lower,
 					role: role as "admin" | "editor" | "viewer",
 					updatedAt: new Date(),
 				})
@@ -129,6 +183,13 @@ export const actions: Actions = {
 	},
 
 	delete: async ({ request, locals }) => {
+		let admin;
+		try {
+			admin = getServiceRoleClient();
+		} catch {
+			return fail(500, { message: "Server missing SUPABASE_SERVICE_ROLE_KEY" });
+		}
+
 		const formData = await request.formData();
 		const id = formData.get("id");
 
@@ -136,33 +197,39 @@ export const actions: Actions = {
 			return fail(400, { message: "User ID is required" });
 		}
 
-		// Prevent self-deletion
 		if (id === locals.user!.id) {
 			return fail(400, { message: "You cannot delete your own account" });
 		}
 
-		// Prevent deletion of last admin
 		const [target] = await db.select({ role: users.role }).from(users).where(eq(users.id, id));
 		if (target?.role === "admin") {
 			const [adminCount] = await db
-				.select({ count: sql<number>`count(*)` })
+				.select({ count: sql<number>`count(*)::int` })
 				.from(users)
 				.where(eq(users.role, "admin"));
-			if (adminCount.count <= 1) {
+			if (Number(adminCount.count) <= 1) {
 				return fail(400, { message: "Cannot delete the last admin" });
 			}
 		}
 
-		try {
-			await db.delete(users).where(eq(users.id, id));
-		} catch {
-			return fail(400, { message: "Cannot delete user — they may have related content" });
+		const { error } = await admin.auth.admin.deleteUser(id);
+		if (error) {
+			return fail(400, { message: error.message });
 		}
+
+		await db.delete(users).where(eq(users.id, id));
 
 		return { success: true };
 	},
 
 	bulkDelete: async ({ request, locals }) => {
+		let admin;
+		try {
+			admin = getServiceRoleClient();
+		} catch {
+			return fail(500, { message: "Server missing SUPABASE_SERVICE_ROLE_KEY" });
+		}
+
 		const formData = await request.formData();
 		const idsRaw = formData.get("ids");
 
@@ -173,13 +240,11 @@ export const actions: Actions = {
 		const ids = idsRaw.split(",").filter(Boolean);
 		const currentUserId = locals.user!.id;
 
-		// Filter out self
 		const toDelete = ids.filter((id) => id !== currentUserId);
 		if (toDelete.length === 0) {
 			return fail(400, { message: "You cannot delete your own account" });
 		}
 
-		// Check if any targets are the last admin
 		const admins = await db
 			.select({ id: users.id })
 			.from(users)
@@ -189,10 +254,12 @@ export const actions: Actions = {
 			return fail(400, { message: "Cannot delete all admin users" });
 		}
 
-		try {
-			await db.delete(users).where(inArray(users.id, toDelete));
-		} catch {
-			return fail(400, { message: "Cannot delete some users — they may have related content" });
+		for (const id of toDelete) {
+			const { error } = await admin.auth.admin.deleteUser(id);
+			if (error) {
+				return fail(400, { message: error.message });
+			}
+			await db.delete(users).where(eq(users.id, id));
 		}
 
 		return { success: true };

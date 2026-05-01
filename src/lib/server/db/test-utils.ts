@@ -1,94 +1,80 @@
-import Database from "better-sqlite3";
-import { drizzle } from "drizzle-orm/better-sqlite3";
+import { PGlite } from "@electric-sql/pglite";
+import { drizzle } from "drizzle-orm/pglite";
 import * as schema from "./schema.js";
-import { hash } from "@node-rs/argon2";
-import { generateId } from "../id.js";
+import { randomUUID } from "node:crypto";
+import { vi } from "vitest";
+import type { Session, SupabaseClient } from "@supabase/supabase-js";
 
-const SCHEMA_SQL = `
-CREATE TABLE IF NOT EXISTS users (
-	id text PRIMARY KEY NOT NULL,
-	email text NOT NULL,
-	username text NOT NULL,
-	password_hash text NOT NULL,
-	name text NOT NULL,
-	avatar_url text,
-	role text DEFAULT 'viewer' NOT NULL,
-	created_at integer NOT NULL,
-	updated_at integer NOT NULL
+const BOOTSTRAP_SQL = `
+CREATE TABLE users (
+	id UUID PRIMARY KEY NOT NULL,
+	email TEXT NOT NULL UNIQUE,
+	username TEXT NOT NULL UNIQUE,
+	password_hash TEXT,
+	name TEXT NOT NULL,
+	avatar_url TEXT,
+	role TEXT NOT NULL DEFAULT 'viewer',
+	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+	updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-CREATE UNIQUE INDEX IF NOT EXISTS users_email_unique ON users (email);
-CREATE UNIQUE INDEX IF NOT EXISTS users_username_unique ON users (username);
-
-CREATE TABLE IF NOT EXISTS sessions (
-	id text PRIMARY KEY NOT NULL,
-	user_id text NOT NULL,
-	expires_at integer NOT NULL,
-	user_agent text,
-	ip_address text,
-	created_at integer,
-	FOREIGN KEY (user_id) REFERENCES users(id) ON UPDATE no action ON DELETE no action
+CREATE TABLE sessions (
+	id TEXT PRIMARY KEY NOT NULL,
+	user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+	expires_at BIGINT NOT NULL,
+	user_agent TEXT,
+	ip_address TEXT,
+	created_at TIMESTAMPTZ DEFAULT NOW()
 );
-
-CREATE TABLE IF NOT EXISTS password_reset_tokens (
-	id text PRIMARY KEY NOT NULL,
-	user_id text NOT NULL,
-	token_hash text NOT NULL,
-	expires_at integer NOT NULL,
-	FOREIGN KEY (user_id) REFERENCES users(id) ON UPDATE no action ON DELETE no action
+CREATE TABLE pages (
+	id TEXT PRIMARY KEY NOT NULL,
+	title TEXT NOT NULL,
+	slug TEXT NOT NULL UNIQUE,
+	content TEXT NOT NULL DEFAULT '',
+	template TEXT NOT NULL DEFAULT 'default',
+	status TEXT NOT NULL DEFAULT 'draft',
+	author_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+	updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+	published_at TIMESTAMPTZ
 );
-
-CREATE TABLE IF NOT EXISTS pages (
-	id text PRIMARY KEY NOT NULL,
-	title text NOT NULL,
-	slug text NOT NULL,
-	content text DEFAULT '' NOT NULL,
-	template text DEFAULT 'default' NOT NULL,
-	status text DEFAULT 'draft' NOT NULL,
-	author_id text NOT NULL,
-	created_at integer NOT NULL,
-	updated_at integer NOT NULL,
-	published_at integer,
-	FOREIGN KEY (author_id) REFERENCES users(id) ON UPDATE no action ON DELETE no action
+CREATE TABLE notifications (
+	id TEXT PRIMARY KEY NOT NULL,
+	user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+	title TEXT NOT NULL,
+	message TEXT NOT NULL,
+	type TEXT NOT NULL DEFAULT 'info',
+	"read" BOOLEAN NOT NULL DEFAULT FALSE,
+	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-CREATE UNIQUE INDEX IF NOT EXISTS pages_slug_unique ON pages (slug);
-
-CREATE TABLE IF NOT EXISTS notifications (
-	id text PRIMARY KEY NOT NULL,
-	user_id text,
-	title text NOT NULL,
-	message text NOT NULL,
-	type text DEFAULT 'info' NOT NULL,
-	read integer DEFAULT false NOT NULL,
-	created_at integer NOT NULL,
-	FOREIGN KEY (user_id) REFERENCES users(id) ON UPDATE no action ON DELETE no action
+CREATE TABLE password_reset_tokens (
+	id TEXT PRIMARY KEY NOT NULL,
+	user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+	token_hash TEXT NOT NULL,
+	expires_at TIMESTAMPTZ NOT NULL
 );
-
-CREATE TABLE IF NOT EXISTS oauth_accounts (
-	id text PRIMARY KEY NOT NULL,
-	user_id text NOT NULL,
-	provider text NOT NULL,
-	provider_user_id text NOT NULL,
-	created_at integer NOT NULL,
-	FOREIGN KEY (user_id) REFERENCES users(id) ON UPDATE no action ON DELETE no action
+CREATE TABLE oauth_accounts (
+	id TEXT PRIMARY KEY NOT NULL,
+	user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+	provider TEXT NOT NULL,
+	provider_user_id TEXT NOT NULL,
+	created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+	UNIQUE(provider, provider_user_id)
 );
-CREATE UNIQUE INDEX IF NOT EXISTS oauth_provider_user_idx ON oauth_accounts (provider, provider_user_id);
-
-CREATE TABLE IF NOT EXISTS app_settings (
-	key text PRIMARY KEY NOT NULL,
-	value text NOT NULL,
-	updated_at integer NOT NULL
+CREATE TABLE app_settings (
+	key TEXT PRIMARY KEY NOT NULL,
+	value TEXT NOT NULL,
+	updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 `;
 
-export function createTestDb() {
-	const sqlite = new Database(":memory:");
-	sqlite.pragma("journal_mode = WAL");
-	sqlite.exec(SCHEMA_SQL);
-	return drizzle(sqlite, { schema });
+export async function createTestDb() {
+	const client = new PGlite();
+	await client.exec(BOOTSTRAP_SQL);
+	return drizzle(client, { schema });
 }
 
 export async function createTestUser(
-	db: ReturnType<typeof createTestDb>,
+	db: Awaited<ReturnType<typeof createTestDb>>,
 	overrides: Partial<{
 		id: string;
 		name: string;
@@ -97,38 +83,51 @@ export async function createTestUser(
 		role: "admin" | "editor" | "viewer";
 	}> = {}
 ) {
-	const id = overrides.id ?? generateId(10);
-	const passwordHash = await hash("password123", {
-		memoryCost: 19456,
-		timeCost: 2,
-		outputLen: 32,
-		parallelism: 1,
-	});
+	const id = overrides.id ?? randomUUID();
 
 	await db.insert(schema.users).values({
 		id,
 		name: overrides.name ?? "Test User",
-		email: overrides.email ?? `${id}@test.com`,
+		email: overrides.email ?? `${id.slice(0, 8)}@test.com`,
 		username: overrides.username ?? `user_${id.slice(0, 8)}`,
-		passwordHash,
+		passwordHash: null,
 		role: overrides.role ?? "viewer",
-		createdAt: new Date(),
-		updatedAt: new Date(),
 	});
 
 	return id;
 }
 
 export function createMockLocals(userId: string, role: string = "admin") {
+	const session = {
+		access_token: "test-access-token",
+		refresh_token: "",
+		expires_in: 3600,
+		expires_at: Math.floor(Date.now() / 1000) + 3600,
+		token_type: "bearer",
+		user: { id: userId },
+	} as Session;
+
 	return {
+		supabase: {
+			auth: {
+				getSession: vi.fn(async () => ({ data: { session }, error: null })),
+				getUser: vi.fn(async () => ({
+					data: { user: { id: userId, email: "test@test.com" } },
+					error: null,
+				})),
+				signInWithPassword: vi.fn(async () => ({ error: null })),
+				updateUser: vi.fn(async () => ({ data: { user: { id: userId } }, error: null })),
+			},
+		} as unknown as SupabaseClient,
 		user: {
 			id: userId,
 			name: "Test User",
 			email: "test@test.com",
 			username: "testuser",
 			role,
+			avatarUrl: null as string | null,
 		},
-		session: { id: "test-session", userId, expiresAt: Date.now() + 86400000 },
+		session,
 	};
 }
 

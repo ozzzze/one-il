@@ -1,9 +1,7 @@
-import { invalidateSession } from "$lib/server/auth.js";
 import { db } from "$lib/server/db/index.js";
-import { users, sessions, appSettings } from "$lib/server/db/schema.js";
+import { users, appSettings } from "$lib/server/db/schema.js";
 import { fail } from "@sveltejs/kit";
-import { hash, verify } from "@node-rs/argon2";
-import { eq, and, ne } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import type { Actions, PageServerLoad } from "./$types.js";
 
 const defaultSettings: Record<string, string> = {
@@ -25,7 +23,6 @@ const notificationPrefKeys = [
 export const load: PageServerLoad = async ({ locals }) => {
 	const user = locals.user!;
 
-	// Load profile data (without password)
 	const [profile] = await db
 		.select({
 			id: users.id,
@@ -37,7 +34,6 @@ export const load: PageServerLoad = async ({ locals }) => {
 		.from(users)
 		.where(eq(users.id, user.id));
 
-	// Load app settings (admin only)
 	const settings = { ...defaultSettings };
 	if (user.role === "admin") {
 		const rows = await db.select().from(appSettings);
@@ -46,22 +42,9 @@ export const load: PageServerLoad = async ({ locals }) => {
 		}
 	}
 
-	// Load active sessions for this user
-	const userSessions = await db
-		.select({
-			id: sessions.id,
-			userAgent: sessions.userAgent,
-			ipAddress: sessions.ipAddress,
-			createdAt: sessions.createdAt,
-			expiresAt: sessions.expiresAt,
-		})
-		.from(sessions)
-		.where(eq(sessions.userId, user.id));
-
-	// Load notification preferences (user-scoped keys)
 	const notifPrefs: Record<string, boolean> = {};
 	for (const key of notificationPrefKeys) {
-		notifPrefs[key] = true; // default all on
+		notifPrefs[key] = true;
 	}
 	const prefRows = await db.select().from(appSettings);
 	for (const row of prefRows) {
@@ -78,8 +61,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 		profile,
 		settings,
 		isAdmin: user.role === "admin",
-		sessions: userSessions,
-		currentSessionId: locals.session!.id,
+		sessions: [] as { id: string; userAgent: string | null; ipAddress: string | null; createdAt: Date | null; expiresAt: number }[],
+		currentSessionId: "",
 		notificationPrefs: notifPrefs,
 	};
 };
@@ -97,10 +80,16 @@ export const actions: Actions = {
 			return fail(400, { message: "Valid email is required" });
 		}
 
+		const lower = email.toLowerCase();
+		const { error: authErr } = await locals.supabase.auth.updateUser({ email: lower });
+		if (authErr) {
+			return fail(400, { message: authErr.message });
+		}
+
 		try {
 			await db
 				.update(users)
-				.set({ name, email: email.toLowerCase(), updatedAt: new Date() })
+				.set({ name, email: lower, updatedAt: new Date() })
 				.where(eq(users.id, locals.user!.id));
 		} catch {
 			return fail(400, { message: "Email already taken" });
@@ -125,34 +114,19 @@ export const actions: Actions = {
 			return fail(400, { message: "Passwords do not match" });
 		}
 
-		// Verify current password
-		const [user] = await db
-			.select({ passwordHash: users.passwordHash })
-			.from(users)
-			.where(eq(users.id, locals.user!.id));
-
-		const valid = await verify(user.passwordHash, currentPassword, {
-			memoryCost: 19456,
-			timeCost: 2,
-			outputLen: 32,
-			parallelism: 1,
+		const profile = locals.user!;
+		const { error: verifyErr } = await locals.supabase.auth.signInWithPassword({
+			email: profile.email,
+			password: currentPassword,
 		});
-
-		if (!valid) {
+		if (verifyErr) {
 			return fail(400, { message: "Current password is incorrect" });
 		}
 
-		const passwordHash = await hash(newPassword, {
-			memoryCost: 19456,
-			timeCost: 2,
-			outputLen: 32,
-			parallelism: 1,
-		});
-
-		await db
-			.update(users)
-			.set({ passwordHash, updatedAt: new Date() })
-			.where(eq(users.id, locals.user!.id));
+		const { error: updErr } = await locals.supabase.auth.updateUser({ password: newPassword });
+		if (updErr) {
+			return fail(400, { message: updErr.message });
+		}
 
 		return { success: true, action: "password" };
 	},
@@ -188,48 +162,16 @@ export const actions: Actions = {
 		return { success: true, action: "settings" };
 	},
 
-	revokeSession: async ({ request, locals }) => {
-		const formData = await request.formData();
-		const sessionId = formData.get("sessionId");
-
-		if (typeof sessionId !== "string" || !sessionId) {
-			return fail(400, { message: "Session ID is required" });
-		}
-
-		// Don't allow revoking current session via this action
-		if (sessionId === locals.session!.id) {
-			return fail(400, { message: "Cannot revoke your current session. Use logout instead." });
-		}
-
-		// Verify session belongs to user
-		const [target] = await db
-			.select({ userId: sessions.userId })
-			.from(sessions)
-			.where(eq(sessions.id, sessionId));
-
-		if (!target || target.userId !== locals.user!.id) {
-			return fail(404, { message: "Session not found" });
-		}
-
-		await invalidateSession(sessionId);
-		return { success: true, action: "session" };
+	revokeSession: async () => {
+		return fail(400, {
+			message: "Per-session revoke is handled by Supabase Auth; sign out everywhere from the Supabase dashboard if needed.",
+		});
 	},
 
-	revokeAllOtherSessions: async ({ locals }) => {
-		const userId = locals.user!.id;
-		const currentSessionId = locals.session!.id;
-
-		// Get all sessions for this user except current
-		const otherSessions = await db
-			.select({ id: sessions.id })
-			.from(sessions)
-			.where(and(eq(sessions.userId, userId), ne(sessions.id, currentSessionId)));
-
-		for (const s of otherSessions) {
-			await invalidateSession(s.id);
-		}
-
-		return { success: true, action: "sessions" };
+	revokeAllOtherSessions: async () => {
+		return fail(400, {
+			message: "Revoking other sessions is handled by Supabase Auth.",
+		});
 	},
 
 	updateNotificationPrefs: async ({ request, locals }) => {
