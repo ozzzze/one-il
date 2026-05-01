@@ -19,10 +19,11 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - name: Build native modules
-        run: cd node_modules/.pnpm/better-sqlite3@*/node_modules/better-sqlite3 && npx node-gyp rebuild --release
-
       - run: pnpm build
+        env:
+          # ถ้าไม่ตั้งใน repo/org Variables จะว่าง — ควรตั้ง PUBLIC_* ให้ตรง production
+          PUBLIC_SUPABASE_URL: ${{ vars.PUBLIC_SUPABASE_URL }}
+          PUBLIC_SUPABASE_ANON_KEY: ${{ vars.PUBLIC_SUPABASE_ANON_KEY }}
 
       - name: Rsync build to server
         run: |

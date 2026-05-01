@@ -1,4 +1,4 @@
-import { ORIGIN } from "$env/static/private";
+import { env } from "$env/dynamic/private";
 import { fail } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types.js";
 
@@ -18,7 +18,7 @@ export const actions: Actions = {
 			return fail(400, { message: "Please enter a valid email address" });
 		}
 
-		const origin = ORIGIN ?? "http://localhost:5173";
+		const origin = env.ORIGIN ?? "http://localhost:5173";
 		const { error } = await locals.supabase.auth.resetPasswordForEmail(email.toLowerCase(), {
 			redirectTo: `${origin}/auth/callback?next=/reset-password`,
 		});

@@ -11,8 +11,13 @@
 
 	let { data, form } = $props();
 
-	let title = $state(data.page.title);
-	let slug = $state(data.page.slug);
+	let title = $state("");
+	let slug = $state("");
+
+	$effect.pre(() => {
+		title = data.page.title;
+		slug = data.page.slug;
+	});
 
 	$effect(() => {
 		if (form?.message) toast.error(form.message);
