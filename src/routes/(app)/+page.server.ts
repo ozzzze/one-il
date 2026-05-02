@@ -1,6 +1,6 @@
 import { db } from "$lib/server/db/index.js";
 import { users, pages, notifications, appSettings } from "$lib/server/db/schema.js";
-import { sql, eq, desc, or, isNull, gt } from "drizzle-orm";
+import { sql, eq, desc, or, isNull } from "drizzle-orm";
 import type { PageServerLoad } from "./$types.js";
 
 export const load: PageServerLoad = async ({ locals }) => {
@@ -9,6 +9,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 	thisMonthStart.setHours(0, 0, 0, 0);
 	const lastMonthStart = new Date(thisMonthStart);
 	lastMonthStart.setMonth(lastMonthStart.getMonth() - 1);
+	const thisMonthStartIso = thisMonthStart.toISOString();
+	const lastMonthStartIso = lastMonthStart.toISOString();
 
 	const [userCount] = await db.select({ count: sql<number>`count(*)::int` }).from(users);
 
@@ -22,22 +24,26 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const [usersThisMonth] = await db
 		.select({ count: sql<number>`count(*)::int` })
 		.from(users)
-		.where(sql`${users.createdAt} >= ${thisMonthStart}`);
+		.where(sql`${users.createdAt} >= ${thisMonthStartIso}`);
 
 	const [usersLastMonth] = await db
 		.select({ count: sql<number>`count(*)::int` })
 		.from(users)
-		.where(sql`${users.createdAt} >= ${lastMonthStart} AND ${users.createdAt} < ${thisMonthStart}`);
+		.where(
+			sql`${users.createdAt} >= ${lastMonthStartIso} AND ${users.createdAt} < ${thisMonthStartIso}`
+		);
 
 	const [pagesThisMonth] = await db
 		.select({ count: sql<number>`count(*)::int` })
 		.from(pages)
-		.where(sql`${pages.createdAt} >= ${thisMonthStart}`);
+		.where(sql`${pages.createdAt} >= ${thisMonthStartIso}`);
 
 	const [pagesLastMonth] = await db
 		.select({ count: sql<number>`count(*)::int` })
 		.from(pages)
-		.where(sql`${pages.createdAt} >= ${lastMonthStart} AND ${pages.createdAt} < ${thisMonthStart}`);
+		.where(
+			sql`${pages.createdAt} >= ${lastMonthStartIso} AND ${pages.createdAt} < ${thisMonthStartIso}`
+		);
 
 	function calcTrend(current: number, previous: number) {
 		if (previous === 0) return current > 0 ? 100 : 0;
@@ -131,6 +137,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		.groupBy(pages.status);
 
 	const sixMonthsAgo = new Date(Date.now() - 180 * 86400000);
+	const sixMonthsAgoIso = sixMonthsAgo.toISOString();
 
 	const contentTrend = await db
 		.select({
@@ -139,7 +146,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 			count: sql<number>`count(*)::int`,
 		})
 		.from(pages)
-		.where(gt(pages.createdAt, sixMonthsAgo))
+		.where(sql`${pages.createdAt} > ${sixMonthsAgoIso}`)
 		.groupBy(sql`date_trunc('month', ${pages.createdAt})`, pages.status)
 		.orderBy(sql`date_trunc('month', ${pages.createdAt})`);
 
