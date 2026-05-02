@@ -1,11 +1,22 @@
 import { createServerClient } from "@supabase/ssr";
-import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } from "$env/static/public";
+import { PUBLIC_SUPABASE_URL } from "$env/static/public";
+import { env } from "$env/dynamic/public";
 import { redirect, type Handle } from "@sveltejs/kit";
 import { sequence } from "@sveltejs/kit/hooks";
 import { loadSessionUser } from "$lib/server/auth.js";
 
+function getPublicSupabaseApiKey(): string {
+	const key =
+		env.PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim() ||
+		env.PUBLIC_SUPABASE_ANON_KEY?.trim();
+	if (!key) {
+		throw new Error("Set PUBLIC_SUPABASE_PUBLISHABLE_KEY or PUBLIC_SUPABASE_ANON_KEY in .env");
+	}
+	return key;
+}
+
 const supabaseHandle: Handle = async ({ event, resolve }) => {
-	event.locals.supabase = createServerClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY, {
+	event.locals.supabase = createServerClient(PUBLIC_SUPABASE_URL.replace(/\/$/, ""), getPublicSupabaseApiKey(), {
 		cookies: {
 			getAll: () => event.cookies.getAll(),
 			setAll: (cookiesToSet) => {
@@ -39,7 +50,13 @@ const authGuard: Handle = async ({ event, resolve }) => {
 			data: { session },
 		} = await supabase.auth.getSession();
 		event.locals.session = session;
-		event.locals.user = await loadSessionUser(authUser.id);
+		try {
+			event.locals.user = await loadSessionUser(authUser.id);
+		} catch (err) {
+			console.error("[auth] failed to load local user profile:", err);
+			event.locals.user = null;
+			event.locals.session = null;
+		}
 		if (!event.locals.user) {
 			event.locals.session = null;
 		}
