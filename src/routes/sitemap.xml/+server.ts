@@ -1,6 +1,4 @@
-import { db } from "$lib/server/db/index.js";
-import { pages } from "$lib/server/db/schema.js";
-import { eq } from "drizzle-orm";
+import { getServiceRoleClient } from "$lib/server/supabase-admin.js";
 import type { RequestHandler } from "./$types.js";
 
 const SITE_URL = "https://svelteforge-admin.dev";
@@ -8,20 +6,21 @@ const SITE_URL = "https://svelteforge-admin.dev";
 const staticRoutes = ["/login", "/register", "/pricing"];
 
 export const GET: RequestHandler = async () => {
-	const publishedPages = await db
-		.select({ slug: pages.slug, updatedAt: pages.updatedAt })
-		.from(pages)
-		.where(eq(pages.status, "published"));
+	const admin = getServiceRoleClient();
+	const { data: publishedPages } = await admin
+		.from("pages")
+		.select("slug,updated_at")
+		.eq("status", "published");
 
 	const urls = [
 		...staticRoutes.map((path) => ({
 			loc: `${SITE_URL}${path}`,
 			lastmod: new Date().toISOString().split("T")[0],
 		})),
-		...publishedPages.map((page) => ({
+		...(publishedPages ?? []).map((page) => ({
 			loc: `${SITE_URL}/content/${page.slug}`,
-			lastmod: page.updatedAt
-				? new Date(page.updatedAt).toISOString().split("T")[0]
+			lastmod: page.updated_at
+				? new Date(page.updated_at).toISOString().split("T")[0]
 				: new Date().toISOString().split("T")[0],
 		})),
 	];

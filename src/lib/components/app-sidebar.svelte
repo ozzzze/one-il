@@ -238,7 +238,8 @@
 						<DropdownMenu.Separator />
 						<DropdownMenu.Item
 							variant="destructive"
-							onclick={() => document.getElementById('logout-form')?.requestSubmit()}
+							onclick={() =>
+								(document.getElementById("logout-form") as HTMLFormElement | null)?.requestSubmit()}
 						>
 							<LogOutIcon class="mr-2 size-4" />
 							Log out

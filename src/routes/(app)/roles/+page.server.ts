@@ -1,7 +1,5 @@
-import { db } from "$lib/server/db/index.js";
-import { users } from "$lib/server/db/schema.js";
+import { getServiceRoleClient } from "$lib/server/supabase-admin.js";
 import { fail } from "@sveltejs/kit";
-import { eq, sql } from "drizzle-orm";
 import type { Actions, PageServerLoad } from "./$types.js";
 
 const roleDefinitions = [
@@ -23,20 +21,15 @@ const roleDefinitions = [
 ];
 
 export const load: PageServerLoad = async () => {
-	const allUsers = await db
-		.select({
-			id: users.id,
-			name: users.name,
-			email: users.email,
-			role: users.role,
-		})
-		.from(users)
-		.orderBy(users.name);
+	const admin = getServiceRoleClient();
+	const { data: allUsers } = await admin.from("users").select("id,name,email,role").order("name", {
+		ascending: true,
+	});
 
 	const roles = roleDefinitions.map((role) => ({
 		...role,
-		users: allUsers.filter((u) => u.role === role.name),
-		count: allUsers.filter((u) => u.role === role.name).length,
+		users: (allUsers ?? []).filter((u) => u.role === role.name),
+		count: (allUsers ?? []).filter((u) => u.role === role.name).length,
 	}));
 
 	return { roles };
@@ -44,6 +37,7 @@ export const load: PageServerLoad = async () => {
 
 export const actions: Actions = {
 	changeRole: async ({ request }) => {
+		const admin = getServiceRoleClient();
 		const formData = await request.formData();
 		const userId = formData.get("userId");
 		const newRole = formData.get("newRole");
@@ -56,21 +50,24 @@ export const actions: Actions = {
 		}
 
 		// Prevent demotion of last admin
-		const [target] = await db.select({ role: users.role }).from(users).where(eq(users.id, userId));
+		const { data: target } = await admin.from("users").select("role").eq("id", userId).maybeSingle();
 		if (target?.role === "admin" && newRole !== "admin") {
-			const [adminCount] = await db
-				.select({ count: sql<number>`count(*)` })
-				.from(users)
-				.where(eq(users.role, "admin"));
-			if (adminCount.count <= 1) {
+			const { count: adminCount } = await admin
+				.from("users")
+				.select("id", { count: "exact", head: true })
+				.eq("role", "admin");
+			if ((adminCount ?? 0) <= 1) {
 				return fail(400, { message: "Cannot demote the last admin" });
 			}
 		}
 
-		await db
-			.update(users)
-			.set({ role: newRole as "admin" | "editor" | "viewer", updatedAt: new Date() })
-			.where(eq(users.id, userId));
+		await admin
+			.from("users")
+			.update({
+				role: newRole as "admin" | "editor" | "viewer",
+				updated_at: new Date().toISOString(),
+			})
+			.eq("id", userId);
 
 		return { success: true };
 	},

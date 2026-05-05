@@ -1,7 +1,5 @@
-import { db } from "$lib/server/db/index.js";
-import { users } from "$lib/server/db/schema.js";
+import { getServiceRoleClient } from "$lib/server/supabase-admin.js";
 import { fail, redirect } from "@sveltejs/kit";
-import { sql } from "drizzle-orm";
 import type { Actions, PageServerLoad } from "./$types.js";
 
 export const load: PageServerLoad = async ({ locals }) => {
@@ -36,8 +34,14 @@ export const actions: Actions = {
 			return fail(400, { message: "Password must be 6-255 characters" });
 		}
 
-		const [{ c }] = await db.select({ c: sql<number>`count(*)::int` }).from(users);
-		const userCount = Number(c) || 0;
+		const admin = getServiceRoleClient();
+		const { count, error: userCountError } = await admin
+			.from("users")
+			.select("id", { count: "exact", head: true });
+		if (userCountError) {
+			return fail(500, { message: "Cannot reach user database right now. Please try again." });
+		}
+		const userCount = count ?? 0;
 		const role = userCount === 0 ? "admin" : "viewer";
 
 		const { data, error } = await locals.supabase.auth.signUp({
@@ -64,20 +68,20 @@ export const actions: Actions = {
 			});
 		}
 
-		try {
-			await db
-				.insert(users)
-				.values({
-					id: uid,
-					email: email.toLowerCase(),
-					username: username.toLowerCase(),
-					passwordHash: null,
-					name,
-					role,
-				})
-				.onConflictDoNothing();
-		} catch {
-			return fail(400, { message: "Username or email already taken" });
+		const { error: profileInsertError } = await admin.from("users").insert({
+			id: uid,
+			email: email.toLowerCase(),
+			username: username.toLowerCase(),
+			password_hash: null,
+			name,
+			role,
+		});
+		if (profileInsertError) {
+			const msg =
+				profileInsertError.code === "23505"
+					? "Username or email already taken"
+					: "Cannot create user profile right now. Please try again.";
+			return fail(profileInsertError.code === "23505" ? 400 : 500, { message: msg });
 		}
 
 		if (data.session) {

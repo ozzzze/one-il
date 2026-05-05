@@ -1,7 +1,5 @@
-import { db } from "$lib/server/db/index.js";
-import { users, appSettings } from "$lib/server/db/schema.js";
+import { getServiceRoleClient } from "$lib/server/supabase-admin.js";
 import { fail } from "@sveltejs/kit";
-import { eq } from "drizzle-orm";
 import type { Actions, PageServerLoad } from "./$types.js";
 
 const defaultSettings: Record<string, string> = {
@@ -22,22 +20,25 @@ const notificationPrefKeys = [
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const user = locals.user!;
+	const admin = getServiceRoleClient();
 
-	const [profile] = await db
-		.select({
-			id: users.id,
-			name: users.name,
-			email: users.email,
-			username: users.username,
-			role: users.role,
-		})
-		.from(users)
-		.where(eq(users.id, user.id));
+	const { data: profileRow } = await admin
+		.from("users")
+		.select("id,name,email,username,role")
+		.eq("id", user.id)
+		.maybeSingle();
+	const profile = profileRow ?? {
+		id: user.id,
+		name: user.name,
+		email: user.email,
+		username: user.username,
+		role: user.role,
+	};
 
 	const settings = { ...defaultSettings };
 	if (user.role === "admin") {
-		const rows = await db.select().from(appSettings);
-		for (const row of rows) {
+		const { data: rows } = await admin.from("app_settings").select("key,value");
+		for (const row of rows ?? []) {
 			settings[row.key] = row.value;
 		}
 	}
@@ -46,8 +47,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 	for (const key of notificationPrefKeys) {
 		notifPrefs[key] = true;
 	}
-	const prefRows = await db.select().from(appSettings);
-	for (const row of prefRows) {
+	const { data: prefRows } = await admin.from("app_settings").select("key,value");
+	for (const row of prefRows ?? []) {
 		const userPrefKey = `${user.id}:`;
 		if (row.key.startsWith(userPrefKey)) {
 			const prefName = row.key.slice(userPrefKey.length);
@@ -69,6 +70,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 export const actions: Actions = {
 	updateProfile: async ({ request, locals }) => {
+		const admin = getServiceRoleClient();
 		const formData = await request.formData();
 		const name = formData.get("name");
 		const email = formData.get("email");
@@ -86,14 +88,11 @@ export const actions: Actions = {
 			return fail(400, { message: authErr.message });
 		}
 
-		try {
-			await db
-				.update(users)
-				.set({ name, email: lower, updatedAt: new Date() })
-				.where(eq(users.id, locals.user!.id));
-		} catch {
-			return fail(400, { message: "Email already taken" });
-		}
+		const { error: updateError } = await admin
+			.from("users")
+			.update({ name, email: lower, updated_at: new Date().toISOString() })
+			.eq("id", locals.user!.id);
+		if (updateError) return fail(400, { message: "Email already taken" });
 
 		return { success: true, action: "profile" };
 	},
@@ -132,6 +131,7 @@ export const actions: Actions = {
 	},
 
 	updateSettings: async ({ request, locals }) => {
+		const admin = getServiceRoleClient();
 		if (locals.user!.role !== "admin") {
 			return fail(403, { message: "Admin access required" });
 		}
@@ -150,13 +150,10 @@ export const actions: Actions = {
 		];
 
 		for (const [key, value] of entries) {
-			await db
-				.insert(appSettings)
-				.values({ key, value, updatedAt: new Date() })
-				.onConflictDoUpdate({
-					target: appSettings.key,
-					set: { value, updatedAt: new Date() },
-				});
+			await admin.from("app_settings").upsert(
+				{ key, value, updated_at: new Date().toISOString() },
+				{ onConflict: "key" }
+			);
 		}
 
 		return { success: true, action: "settings" };
@@ -175,6 +172,7 @@ export const actions: Actions = {
 	},
 
 	updateNotificationPrefs: async ({ request, locals }) => {
+		const admin = getServiceRoleClient();
 		const formData = await request.formData();
 		const userId = locals.user!.id;
 
@@ -182,13 +180,10 @@ export const actions: Actions = {
 			const value = formData.get(key) === "on" ? "true" : "false";
 			const settingKey = `${userId}:${key}`;
 
-			await db
-				.insert(appSettings)
-				.values({ key: settingKey, value, updatedAt: new Date() })
-				.onConflictDoUpdate({
-					target: appSettings.key,
-					set: { value, updatedAt: new Date() },
-				});
+			await admin.from("app_settings").upsert(
+				{ key: settingKey, value, updated_at: new Date().toISOString() },
+				{ onConflict: "key" }
+			);
 		}
 
 		return { success: true, action: "notifications" };

@@ -1,5 +1,4 @@
-import { db } from "$lib/server/db/index.js";
-import { pages } from "$lib/server/db/schema.js";
+import { getServiceRoleClient } from "$lib/server/supabase-admin.js";
 import { fail, redirect } from "@sveltejs/kit";
 import { generateId } from "$lib/server/auth.js";
 import type { Actions, PageServerLoad } from "./$types.js";
@@ -46,19 +45,19 @@ export const actions: Actions = {
 		}
 
 		const id = generateId(10);
+		const admin = getServiceRoleClient();
 
-		try {
-			await db.insert(pages).values({
-				id,
-				title,
-				slug: finalSlug,
-				content,
-				template: template as "default" | "landing" | "blog",
-				status: status as "draft" | "published" | "archived",
-				authorId: locals.user!.id,
-				publishedAt: status === "published" ? new Date() : null,
-			});
-		} catch {
+		const { error } = await admin.from("pages").insert({
+			id,
+			title,
+			slug: finalSlug,
+			content,
+			template: template as "default" | "landing" | "blog",
+			status: status as "draft" | "published" | "archived",
+			author_id: locals.user!.id,
+			published_at: status === "published" ? new Date().toISOString() : null,
+		});
+		if (error) {
 			return fail(400, { message: "A page with this slug already exists" });
 		}
 

@@ -1,24 +1,29 @@
-import { db } from "$lib/server/db/index.js";
-import { users } from "$lib/server/db/schema.js";
 import { getServiceRoleClient } from "$lib/server/supabase-admin.js";
 import { fail } from "@sveltejs/kit";
-import { eq, sql, inArray } from "drizzle-orm";
 import type { Actions, PageServerLoad } from "./$types.js";
 
 export const load: PageServerLoad = async ({ locals }) => {
-	const allUsers = await db
-		.select({
-			id: users.id,
-			name: users.name,
-			email: users.email,
-			username: users.username,
-			role: users.role,
-			createdAt: users.createdAt,
-		})
-		.from(users)
-		.orderBy(users.createdAt);
+	const admin = getServiceRoleClient();
+	const { data: allUsers, error } = await admin
+		.from("users")
+		.select("id,name,email,username,role,created_at")
+		.order("created_at", { ascending: true });
+	if (error) {
+		return { users: [], currentUserId: locals.user!.id };
+	}
 
-	return { users: allUsers, currentUserId: locals.user!.id };
+	return {
+		users:
+			allUsers?.map((user) => ({
+				id: user.id,
+				name: user.name,
+				email: user.email,
+				username: user.username,
+				role: user.role,
+				createdAt: user.created_at,
+			})) ?? [],
+		currentUserId: locals.user!.id,
+	};
 };
 
 export const actions: Actions = {
@@ -63,16 +68,15 @@ export const actions: Actions = {
 		const lowerEmail = email.toLowerCase();
 		const lowerUser = username.toLowerCase();
 
-		const usernameTaken = await db.query.users.findFirst({
-			where: eq(users.username, lowerUser),
-		});
-		if (usernameTaken) {
-			return fail(400, { message: "Username or email already taken" });
+		const { data: duplicate, error: duplicateError } = await admin
+			.from("users")
+			.select("id")
+			.or(`username.eq.${lowerUser},email.eq.${lowerEmail}`)
+			.limit(1);
+		if (duplicateError) {
+			return fail(500, { message: "Cannot validate user uniqueness right now" });
 		}
-		const emailTaken = await db.query.users.findFirst({
-			where: eq(users.email, lowerEmail),
-		});
-		if (emailTaken) {
+		if ((duplicate?.length ?? 0) > 0) {
 			return fail(400, { message: "Username or email already taken" });
 		}
 
@@ -93,19 +97,15 @@ export const actions: Actions = {
 
 		const uid = created.user.id;
 
-		try {
-			await db
-				.insert(users)
-				.values({
-					id: uid,
-					email: lowerEmail,
-					username: lowerUser,
-					passwordHash: null,
-					name,
-					role: role as "admin" | "editor" | "viewer",
-				})
-				.onConflictDoNothing();
-		} catch {
+		const { error: profileError } = await admin.from("users").insert({
+			id: uid,
+			email: lowerEmail,
+			username: lowerUser,
+			password_hash: null,
+			name,
+			role: role as "admin" | "editor" | "viewer",
+		});
+		if (profileError) {
 			return fail(400, { message: "Username or email already taken in profile table" });
 		}
 
@@ -139,13 +139,23 @@ export const actions: Actions = {
 			return fail(400, { message: "Invalid role" });
 		}
 
-		const [existing] = await db.select({ role: users.role, email: users.email }).from(users).where(eq(users.id, id));
+		const { data: existing, error: existingError } = await admin
+			.from("users")
+			.select("role,email")
+			.eq("id", id)
+			.maybeSingle();
+		if (existingError) {
+			return fail(500, { message: "Cannot load target user" });
+		}
 		if (existing?.role === "admin" && role !== "admin") {
-			const [adminCount] = await db
-				.select({ count: sql<number>`count(*)::int` })
-				.from(users)
-				.where(eq(users.role, "admin"));
-			if (Number(adminCount.count) <= 1) {
+			const { count: adminCount, error: adminCountError } = await admin
+				.from("users")
+				.select("id", { count: "exact", head: true })
+				.eq("role", "admin");
+			if (adminCountError) {
+				return fail(500, { message: "Cannot validate admin count" });
+			}
+			if (Number(adminCount ?? 0) <= 1) {
 				return fail(400, { message: "Cannot demote the last admin" });
 			}
 		}
@@ -165,17 +175,16 @@ export const actions: Actions = {
 			return fail(400, { message: metaErr.message });
 		}
 
-		try {
-			await db
-				.update(users)
-				.set({
-					name,
-					email: lower,
-					role: role as "admin" | "editor" | "viewer",
-					updatedAt: new Date(),
-				})
-				.where(eq(users.id, id));
-		} catch {
+		const { error: updateProfileError } = await admin
+			.from("users")
+			.update({
+				name,
+				email: lower,
+				role: role as "admin" | "editor" | "viewer",
+				updated_at: new Date().toISOString(),
+			})
+			.eq("id", id);
+		if (updateProfileError) {
 			return fail(400, { message: "Email already taken" });
 		}
 
@@ -201,13 +210,23 @@ export const actions: Actions = {
 			return fail(400, { message: "You cannot delete your own account" });
 		}
 
-		const [target] = await db.select({ role: users.role }).from(users).where(eq(users.id, id));
+		const { data: target, error: targetError } = await admin
+			.from("users")
+			.select("role")
+			.eq("id", id)
+			.maybeSingle();
+		if (targetError) {
+			return fail(500, { message: "Cannot load target user" });
+		}
 		if (target?.role === "admin") {
-			const [adminCount] = await db
-				.select({ count: sql<number>`count(*)::int` })
-				.from(users)
-				.where(eq(users.role, "admin"));
-			if (Number(adminCount.count) <= 1) {
+			const { count: adminCount, error: adminCountError } = await admin
+				.from("users")
+				.select("id", { count: "exact", head: true })
+				.eq("role", "admin");
+			if (adminCountError) {
+				return fail(500, { message: "Cannot validate admin count" });
+			}
+			if (Number(adminCount ?? 0) <= 1) {
 				return fail(400, { message: "Cannot delete the last admin" });
 			}
 		}
@@ -217,7 +236,7 @@ export const actions: Actions = {
 			return fail(400, { message: error.message });
 		}
 
-		await db.delete(users).where(eq(users.id, id));
+		await admin.from("users").delete().eq("id", id);
 
 		return { success: true };
 	},
@@ -245,11 +264,14 @@ export const actions: Actions = {
 			return fail(400, { message: "You cannot delete your own account" });
 		}
 
-		const admins = await db
-			.select({ id: users.id })
-			.from(users)
-			.where(eq(users.role, "admin"));
-		const remainingAdmins = admins.filter((a) => !toDelete.includes(a.id));
+		const { data: admins, error: adminsError } = await admin
+			.from("users")
+			.select("id")
+			.eq("role", "admin");
+		if (adminsError) {
+			return fail(500, { message: "Cannot validate admin users" });
+		}
+		const remainingAdmins = (admins ?? []).filter((a) => !toDelete.includes(a.id));
 		if (remainingAdmins.length === 0) {
 			return fail(400, { message: "Cannot delete all admin users" });
 		}
@@ -259,7 +281,7 @@ export const actions: Actions = {
 			if (error) {
 				return fail(400, { message: error.message });
 			}
-			await db.delete(users).where(eq(users.id, id));
+			await admin.from("users").delete().eq("id", id);
 		}
 
 		return { success: true };

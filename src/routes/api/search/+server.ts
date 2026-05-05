@@ -1,7 +1,5 @@
 import { json, error } from "@sveltejs/kit";
-import { db } from "$lib/server/db/index.js";
-import { users, pages, notifications } from "$lib/server/db/schema.js";
-import { sql, or, and, eq, isNull } from "drizzle-orm";
+import { getServiceRoleClient } from "$lib/server/supabase-admin.js";
 import type { RequestHandler } from "./$types.js";
 
 export const GET: RequestHandler = async ({ url, locals }) => {
@@ -14,30 +12,20 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 		return json([]);
 	}
 
-	const pattern = `%${q}%`;
-
-	const [userResults, pageResults, notificationResults] = await Promise.all([
-		db
-			.select({ id: users.id, name: users.name, email: users.email })
-			.from(users)
-			.where(or(sql`${users.name} LIKE ${pattern}`, sql`${users.email} LIKE ${pattern}`))
-			.limit(5),
-		db
-			.select({ id: pages.id, title: pages.title, slug: pages.slug })
-			.from(pages)
-			.where(sql`${pages.title} LIKE ${pattern}`)
-			.limit(5),
-		db
-			.select({ id: notifications.id, title: notifications.title, message: notifications.message })
-			.from(notifications)
-			.where(
-				and(
-					sql`${notifications.title} LIKE ${pattern}`,
-					or(eq(notifications.userId, locals.user.id), isNull(notifications.userId))
-				)
-			)
+	const admin = getServiceRoleClient();
+	const [userResultsRes, pageResultsRes, notificationResultsRes] = await Promise.all([
+		admin.from("users").select("id,name,email").or(`name.ilike.%${q}%,email.ilike.%${q}%`).limit(5),
+		admin.from("pages").select("id,title,slug").ilike("title", `%${q}%`).limit(5),
+		admin
+			.from("notifications")
+			.select("id,title,message")
+			.ilike("title", `%${q}%`)
+			.or(`user_id.eq.${locals.user.id},user_id.is.null`)
 			.limit(5),
 	]);
+	const userResults = userResultsRes.data ?? [];
+	const pageResults = pageResultsRes.data ?? [];
+	const notificationResults = notificationResultsRes.data ?? [];
 
 	const results = [
 		...userResults.map((u) => ({

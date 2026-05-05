@@ -1,14 +1,10 @@
-import { db } from "$lib/server/db/index.js";
-import { pages } from "$lib/server/db/schema.js";
+import { getServiceRoleClient } from "$lib/server/supabase-admin.js";
 import { fail, redirect, error } from "@sveltejs/kit";
-import { eq } from "drizzle-orm";
 import type { Actions, PageServerLoad } from "./$types.js";
 
 export const load: PageServerLoad = async ({ params }) => {
-	const [page] = await db
-		.select()
-		.from(pages)
-		.where(eq(pages.id, params.id));
+	const admin = getServiceRoleClient();
+	const { data: page } = await admin.from("pages").select("*").eq("id", params.id).maybeSingle();
 
 	if (!page) {
 		error(404, "Page not found");
@@ -28,6 +24,7 @@ function slugify(text: string): string {
 
 export const actions: Actions = {
 	default: async ({ request, params }) => {
+		const admin = getServiceRoleClient();
 		const formData = await request.formData();
 		const title = formData.get("title");
 		const slug = formData.get("slug");
@@ -55,29 +52,30 @@ export const actions: Actions = {
 		}
 
 		// Get existing page to check published status
-		const [existing] = await db.select({ status: pages.status, publishedAt: pages.publishedAt })
-			.from(pages)
-			.where(eq(pages.id, params.id));
+		const { data: existing } = await admin
+			.from("pages")
+			.select("status,published_at")
+			.eq("id", params.id)
+			.maybeSingle();
 
 		const publishedAt =
 			status === "published" && existing?.status !== "published"
-				? new Date()
-				: existing?.publishedAt ?? null;
+				? new Date().toISOString()
+				: existing?.published_at ?? null;
 
-		try {
-			await db
-				.update(pages)
-				.set({
-					title,
-					slug: finalSlug,
-					content,
-					template: template as "default" | "landing" | "blog",
-					status: status as "draft" | "published" | "archived",
-					updatedAt: new Date(),
-					publishedAt,
-				})
-				.where(eq(pages.id, params.id));
-		} catch {
+		const { error: updateError } = await admin
+			.from("pages")
+			.update({
+				title,
+				slug: finalSlug,
+				content,
+				template: template as "default" | "landing" | "blog",
+				status: status as "draft" | "published" | "archived",
+				updated_at: new Date().toISOString(),
+				published_at: publishedAt,
+			})
+			.eq("id", params.id);
+		if (updateError) {
 			return fail(400, { message: "A page with this slug already exists" });
 		}
 

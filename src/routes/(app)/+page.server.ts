@@ -1,162 +1,172 @@
-import { db } from "$lib/server/db/index.js";
-import { users, pages, notifications, appSettings } from "$lib/server/db/schema.js";
-import { sql, eq, desc, or, isNull, gt } from "drizzle-orm";
+import { getServiceRoleClient } from "$lib/server/supabase-admin.js";
 import type { PageServerLoad } from "./$types.js";
 
 export const load: PageServerLoad = async ({ locals }) => {
+	const admin = getServiceRoleClient();
 	const thisMonthStart = new Date();
 	thisMonthStart.setDate(1);
 	thisMonthStart.setHours(0, 0, 0, 0);
 	const lastMonthStart = new Date(thisMonthStart);
 	lastMonthStart.setMonth(lastMonthStart.getMonth() - 1);
+	const sixMonthsAgo = new Date(Date.now() - 180 * 86400000);
 
-	const [userCount] = await db.select({ count: sql<number>`count(*)::int` }).from(users);
+	const [
+		{ count: userCount, error: userCountError },
+		{ count: pageCount, error: pageCountError },
+		{ count: unreadCount, error: unreadCountError },
+		{ count: usersThisMonth, error: usersThisMonthError },
+		{ count: usersLastMonth, error: usersLastMonthError },
+		{ count: pagesThisMonth, error: pagesThisMonthError },
+		{ count: pagesLastMonth, error: pagesLastMonthError },
+	] = await Promise.all([
+		admin.from("users").select("id", { count: "exact", head: true }),
+		admin.from("pages").select("id", { count: "exact", head: true }),
+		admin.from("notifications").select("id", { count: "exact", head: true }).eq("read", false),
+		admin.from("users").select("id", { count: "exact", head: true }).gte("created_at", thisMonthStart.toISOString()),
+		admin
+			.from("users")
+			.select("id", { count: "exact", head: true })
+			.gte("created_at", lastMonthStart.toISOString())
+			.lt("created_at", thisMonthStart.toISOString()),
+		admin.from("pages").select("id", { count: "exact", head: true }).gte("created_at", thisMonthStart.toISOString()),
+		admin
+			.from("pages")
+			.select("id", { count: "exact", head: true })
+			.gte("created_at", lastMonthStart.toISOString())
+			.lt("created_at", thisMonthStart.toISOString()),
+	]);
 
-	const [pageCount] = await db.select({ count: sql<number>`count(*)::int` }).from(pages);
-
-	const [unreadCount] = await db
-		.select({ count: sql<number>`count(*)::int` })
-		.from(notifications)
-		.where(eq(notifications.read, false));
-
-	const [usersThisMonth] = await db
-		.select({ count: sql<number>`count(*)::int` })
-		.from(users)
-		.where(sql`${users.createdAt} >= ${thisMonthStart}`);
-
-	const [usersLastMonth] = await db
-		.select({ count: sql<number>`count(*)::int` })
-		.from(users)
-		.where(sql`${users.createdAt} >= ${lastMonthStart} AND ${users.createdAt} < ${thisMonthStart}`);
-
-	const [pagesThisMonth] = await db
-		.select({ count: sql<number>`count(*)::int` })
-		.from(pages)
-		.where(sql`${pages.createdAt} >= ${thisMonthStart}`);
-
-	const [pagesLastMonth] = await db
-		.select({ count: sql<number>`count(*)::int` })
-		.from(pages)
-		.where(sql`${pages.createdAt} >= ${lastMonthStart} AND ${pages.createdAt} < ${thisMonthStart}`);
+	if (
+		userCountError ||
+		pageCountError ||
+		unreadCountError ||
+		usersThisMonthError ||
+		usersLastMonthError ||
+		pagesThisMonthError ||
+		pagesLastMonthError
+	) {
+		throw new Error("Failed to load dashboard stats");
+	}
 
 	function calcTrend(current: number, previous: number) {
 		if (previous === 0) return current > 0 ? 100 : 0;
 		return Math.round(((current - previous) / previous) * 100);
 	}
 
-	const roleDistribution = await db
-		.select({
-			role: users.role,
-			count: sql<number>`count(*)::int`,
-		})
-		.from(users)
-		.groupBy(users.role);
+	const { data: roleRows, error: roleRowsError } = await admin.from("users").select("role");
+	if (roleRowsError) throw new Error("Failed to load role distribution");
+	const roleCounts = new Map<string, number>();
+	for (const row of roleRows ?? []) {
+		if (!row.role) continue;
+		roleCounts.set(row.role, (roleCounts.get(row.role) ?? 0) + 1);
+	}
+	const roleDistribution = [...roleCounts.entries()].map(([role, count]) => ({ role, count }));
 
-	const monthlySignups = await db
-		.select({
-			month: sql<string>`to_char(date_trunc('month', ${users.createdAt}), 'YYYY-MM') || '-01'`,
-			count: sql<number>`count(*)::int`,
-		})
-		.from(users)
-		.groupBy(sql`date_trunc('month', ${users.createdAt})`)
-		.orderBy(sql`date_trunc('month', ${users.createdAt})`);
+	const { data: signupRows, error: signupRowsError } = await admin.from("users").select("created_at");
+	if (signupRowsError) throw new Error("Failed to load monthly signups");
+	const signupByMonth = new Map<string, number>();
+	for (const row of signupRows ?? []) {
+		if (!row.created_at) continue;
+		const month = new Date(row.created_at).toISOString().slice(0, 7) + "-01";
+		signupByMonth.set(month, (signupByMonth.get(month) ?? 0) + 1);
+	}
+	const monthlySignups = [...signupByMonth.entries()]
+		.map(([month, count]) => ({ month, count }))
+		.sort((a, b) => a.month.localeCompare(b.month));
 
-	const recentUsers = await db
-		.select({ name: users.name, createdAt: users.createdAt })
-		.from(users)
-		.orderBy(desc(users.createdAt))
+	const { data: recentUsers, error: recentUsersError } = await admin
+		.from("users")
+		.select("name,created_at")
+		.order("created_at", { ascending: false })
 		.limit(5);
+	if (recentUsersError) throw new Error("Failed to load recent users");
 
-	const recentPages = await db
-		.select({
-			title: pages.title,
-			authorName: users.name,
-			createdAt: pages.createdAt,
-		})
-		.from(pages)
-		.leftJoin(users, eq(pages.authorId, users.id))
-		.orderBy(desc(pages.createdAt))
+	const { data: recentPages, error: recentPagesError } = await admin
+		.from("pages")
+		.select("title,created_at,users:author_id(name)")
+		.order("created_at", { ascending: false })
 		.limit(5);
+	if (recentPagesError) throw new Error("Failed to load recent pages");
 
 	type ActivityItem = { label: string; description: string; time: Date };
 
 	const activity: ActivityItem[] = [
-		...recentUsers.map((u) => ({
+		...(recentUsers ?? []).map((u) => ({
 			label: u.name,
 			description: "Joined the platform",
-			time: u.createdAt,
+			time: new Date(u.created_at),
 		})),
-		...recentPages.map((p) => ({
-			label: p.authorName ?? "Unknown",
+		...(recentPages ?? []).map((p) => ({
+			label: Array.isArray(p.users) ? (p.users[0]?.name ?? "Unknown") : "Unknown",
 			description: `Created "${p.title}"`,
-			time: p.createdAt,
+			time: new Date(p.created_at),
 		})),
 	]
 		.sort((a, b) => b.time.getTime() - a.time.getTime())
 		.slice(0, 5);
 
-	const userNotifFilter = or(
-		eq(notifications.userId, locals.user!.id),
-		isNull(notifications.userId)
-	);
-	const recentNotifications = await db
-		.select({
-			id: notifications.id,
-			title: notifications.title,
-			message: notifications.message,
-			type: notifications.type,
-			read: notifications.read,
-			createdAt: notifications.createdAt,
-		})
-		.from(notifications)
-		.where(userNotifFilter)
-		.orderBy(desc(notifications.createdAt))
+	const { data: recentNotifications, error: recentNotificationsError } = await admin
+		.from("notifications")
+		.select("id,title,message,type,read,created_at")
+		.or(`user_id.eq.${locals.user!.id},user_id.is.null`)
+		.order("created_at", { ascending: false })
 		.limit(5);
+	if (recentNotificationsError) throw new Error("Failed to load recent notifications");
 
-	const [publishedCount] = await db
-		.select({ count: sql<number>`count(*)::int` })
-		.from(pages)
-		.where(eq(pages.status, "published"));
-	const [editorCount] = await db
-		.select({ count: sql<number>`count(*)::int` })
-		.from(users)
-		.where(eq(users.role, "editor"));
+	const [
+		{ count: publishedCount, error: publishedCountError },
+		{ count: editorCount, error: editorCountError },
+		{ data: pagesByStatusRows, error: pagesByStatusError },
+		{ data: contentRows, error: contentRowsError },
+		{ data: maintenanceSetting, error: maintenanceError },
+	] = await Promise.all([
+		admin.from("pages").select("id", { count: "exact", head: true }).eq("status", "published"),
+		admin.from("users").select("id", { count: "exact", head: true }).eq("role", "editor"),
+		admin.from("pages").select("status"),
+		admin.from("pages").select("status,created_at").gt("created_at", sixMonthsAgo.toISOString()),
+		admin.from("app_settings").select("value").eq("key", "maintenanceMode").maybeSingle(),
+	]);
+	if (
+		publishedCountError ||
+		editorCountError ||
+		pagesByStatusError ||
+		contentRowsError ||
+		maintenanceError
+	) {
+		throw new Error("Failed to load dashboard details");
+	}
 
-	const pagesByStatus = await db
-		.select({
-			status: pages.status,
-			count: sql<number>`count(*)::int`,
+	const pageStatusCounts = new Map<string, number>();
+	for (const row of pagesByStatusRows ?? []) {
+		if (!row.status) continue;
+		pageStatusCounts.set(row.status, (pageStatusCounts.get(row.status) ?? 0) + 1);
+	}
+	const pagesByStatus = [...pageStatusCounts.entries()].map(([status, count]) => ({ status, count }));
+
+	const contentTrendCounts = new Map<string, number>();
+	for (const row of contentRows ?? []) {
+		if (!row.created_at || !row.status) continue;
+		const month = new Date(row.created_at).toISOString().slice(0, 7) + "-01";
+		const key = `${month}|${row.status}`;
+		contentTrendCounts.set(key, (contentTrendCounts.get(key) ?? 0) + 1);
+	}
+	const contentTrend = [...contentTrendCounts.entries()]
+		.map(([key, count]) => {
+			const [month, status] = key.split("|");
+			return { month, status, count };
 		})
-		.from(pages)
-		.groupBy(pages.status);
-
-	const sixMonthsAgo = new Date(Date.now() - 180 * 86400000);
-
-	const contentTrend = await db
-		.select({
-			month: sql<string>`to_char(date_trunc('month', ${pages.createdAt}), 'YYYY-MM') || '-01'`,
-			status: pages.status,
-			count: sql<number>`count(*)::int`,
-		})
-		.from(pages)
-		.where(gt(pages.createdAt, sixMonthsAgo))
-		.groupBy(sql`date_trunc('month', ${pages.createdAt})`, pages.status)
-		.orderBy(sql`date_trunc('month', ${pages.createdAt})`);
-
-	const maintenanceSetting = await db.query.appSettings.findFirst({
-		where: eq(appSettings.key, "maintenanceMode"),
-	});
+		.sort((a, b) => a.month.localeCompare(b.month));
 
 	return {
 		stats: {
-			totalUsers: Number(userCount.count),
+			totalUsers: Number(userCount ?? 0),
 			activeSessions: 0,
-			totalPages: Number(pageCount.count),
-			unreadNotifications: Number(unreadCount.count),
+			totalPages: Number(pageCount ?? 0),
+			unreadNotifications: Number(unreadCount ?? 0),
 		},
 		trends: {
-			users: calcTrend(Number(usersThisMonth.count), Number(usersLastMonth.count)),
-			pages: calcTrend(Number(pagesThisMonth.count), Number(pagesLastMonth.count)),
+			users: calcTrend(Number(usersThisMonth ?? 0), Number(usersLastMonth ?? 0)),
+			pages: calcTrend(Number(pagesThisMonth ?? 0), Number(pagesLastMonth ?? 0)),
 		},
 		roleDistribution,
 		monthlySignups,
@@ -164,10 +174,18 @@ export const load: PageServerLoad = async ({ locals }) => {
 			...a,
 			time: a.time.toISOString(),
 		})),
-		recentNotifications,
+		recentNotifications:
+			recentNotifications?.map((n) => ({
+				id: n.id,
+				title: n.title,
+				message: n.message,
+				type: n.type,
+				read: n.read,
+				createdAt: n.created_at,
+			})) ?? [],
 		quickStats: {
-			publishedPages: Number(publishedCount.count),
-			activeEditors: Number(editorCount.count),
+			publishedPages: Number(publishedCount ?? 0),
+			activeEditors: Number(editorCount ?? 0),
 		},
 		pagesByStatus,
 		contentTrend,

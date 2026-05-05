@@ -1,48 +1,56 @@
 import { redirect, error } from "@sveltejs/kit";
-import { db } from "$lib/server/db/index.js";
-import { notifications, appSettings } from "$lib/server/db/schema.js";
-import { eq, and, or, isNull, sql, desc } from "drizzle-orm";
+import { getServiceRoleClient } from "$lib/server/supabase-admin.js";
 import type { LayoutServerLoad } from "./$types.js";
 
 export const load: LayoutServerLoad = async ({ locals }) => {
 	if (!locals.user) {
 		redirect(302, "/login");
 	}
+	const admin = getServiceRoleClient();
 
 	// Check maintenance mode
-	const maintenanceSetting = await db.query.appSettings.findFirst({
-		where: eq(appSettings.key, "maintenanceMode"),
-	});
+	const { data: maintenanceSetting, error: maintenanceError } = await admin
+		.from("app_settings")
+		.select("value")
+		.eq("key", "maintenanceMode")
+		.maybeSingle();
+	if (maintenanceError) {
+		error(500, "Failed to load application settings");
+	}
 	if (maintenanceSetting?.value === "true" && locals.user.role !== "admin") {
 		error(503, "The application is currently under maintenance. Please check back later.");
 	}
 
-	const userNotificationFilter = or(
-		eq(notifications.userId, locals.user.id),
-		isNull(notifications.userId)
-	);
+	const { count, error: unreadCountError } = await admin
+		.from("notifications")
+		.select("id", { count: "exact", head: true })
+		.eq("read", false)
+		.or(`user_id.eq.${locals.user.id},user_id.is.null`);
+	if (unreadCountError) {
+		error(500, "Failed to load notifications");
+	}
 
-	const [countResult] = await db
-		.select({ count: sql<number>`count(*)` })
-		.from(notifications)
-		.where(and(eq(notifications.read, false), userNotificationFilter));
-
-	const recentNotifications = await db
-		.select({
-			id: notifications.id,
-			title: notifications.title,
-			message: notifications.message,
-			type: notifications.type,
-			createdAt: notifications.createdAt,
-		})
-		.from(notifications)
-		.where(and(eq(notifications.read, false), userNotificationFilter))
-		.orderBy(desc(notifications.createdAt))
+	const { data: recentNotifications, error: recentNotificationsError } = await admin
+		.from("notifications")
+		.select("id,title,message,type,created_at")
+		.eq("read", false)
+		.or(`user_id.eq.${locals.user.id},user_id.is.null`)
+		.order("created_at", { ascending: false })
 		.limit(5);
+	if (recentNotificationsError) {
+		error(500, "Failed to load notifications");
+	}
 
 	return {
 		user: locals.user,
-		unreadNotificationCount: countResult?.count ?? 0,
-		recentNotifications,
+		unreadNotificationCount: count ?? 0,
+		recentNotifications:
+			recentNotifications?.map((item) => ({
+				id: item.id,
+				title: item.title,
+				message: item.message,
+				type: item.type,
+				createdAt: item.created_at,
+			})) ?? [],
 	};
 };

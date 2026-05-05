@@ -1,8 +1,6 @@
 import { getEnabledProviders } from "$lib/server/oauth.js";
-import { db } from "$lib/server/db/index.js";
-import { users } from "$lib/server/db/schema.js";
+import { getServiceRoleClient } from "$lib/server/supabase-admin.js";
 import { fail, redirect } from "@sveltejs/kit";
-import { eq } from "drizzle-orm";
 import type { Actions, PageServerLoad } from "./$types.js";
 
 export const load: PageServerLoad = async ({ locals }) => {
@@ -25,9 +23,17 @@ export const actions: Actions = {
 			return fail(400, { message: "Invalid password (6-255 characters required)" });
 		}
 
-		const existingUser = await db.query.users.findFirst({
-			where: eq(users.username, username.toLowerCase()),
-		});
+		const normalizedUsername = username.toLowerCase();
+		const admin = getServiceRoleClient();
+		const { data, error: userLookupError } = await admin
+			.from("users")
+			.select("email")
+			.eq("username", normalizedUsername)
+			.maybeSingle();
+		if (userLookupError) {
+			return fail(500, { message: "Cannot reach user database right now. Please try again." });
+		}
+		const existingUser = data ? { email: data.email as string } : null;
 
 		if (!existingUser) {
 			return fail(400, { message: "Incorrect username or password" });

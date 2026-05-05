@@ -1,6 +1,4 @@
-import { db } from "$lib/server/db/index.js";
-import { users, sessions, pages, notifications, appSettings } from "$lib/server/db/schema.js";
-import { sql } from "drizzle-orm";
+import { getServiceRoleClient } from "$lib/server/supabase-admin.js";
 import { error } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types.js";
 
@@ -8,19 +6,31 @@ export const load: PageServerLoad = async ({ locals }) => {
 	if (locals.user!.role !== "admin") {
 		error(403, "Admin access required");
 	}
-
-	const [usersCount] = await db.select({ count: sql<number>`count(*)::int` }).from(users);
-	const [sessionsCount] = await db.select({ count: sql<number>`count(*)::int` }).from(sessions);
-	const [pagesCount] = await db.select({ count: sql<number>`count(*)::int` }).from(pages);
-	const [notificationsCount] = await db.select({ count: sql<number>`count(*)::int` }).from(notifications);
-	const [settingsCount] = await db.select({ count: sql<number>`count(*)::int` }).from(appSettings);
+	const admin = getServiceRoleClient();
+	const [usersCountRes, sessionsCountRes, pagesCountRes, notificationsCountRes, settingsCountRes] =
+		await Promise.all([
+			admin.from("users").select("id", { count: "exact", head: true }),
+			admin.from("sessions").select("id", { count: "exact", head: true }),
+			admin.from("pages").select("id", { count: "exact", head: true }),
+			admin.from("notifications").select("id", { count: "exact", head: true }),
+			admin.from("app_settings").select("key", { count: "exact", head: true }),
+		]);
+	if (
+		usersCountRes.error ||
+		sessionsCountRes.error ||
+		pagesCountRes.error ||
+		notificationsCountRes.error ||
+		settingsCountRes.error
+	) {
+		error(500, "Cannot load database information");
+	}
 
 	const tables = [
-		{ name: "users", rows: Number(usersCount.count) },
-		{ name: "sessions", rows: Number(sessionsCount.count) },
-		{ name: "pages", rows: Number(pagesCount.count) },
-		{ name: "notifications", rows: Number(notificationsCount.count) },
-		{ name: "app_settings", rows: Number(settingsCount.count) },
+		{ name: "users", rows: Number(usersCountRes.count ?? 0) },
+		{ name: "sessions", rows: Number(sessionsCountRes.count ?? 0) },
+		{ name: "pages", rows: Number(pagesCountRes.count ?? 0) },
+		{ name: "notifications", rows: Number(notificationsCountRes.count ?? 0) },
+		{ name: "app_settings", rows: Number(settingsCountRes.count ?? 0) },
 	];
 
 	return {

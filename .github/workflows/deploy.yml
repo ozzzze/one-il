@@ -23,7 +23,7 @@ jobs:
         env:
           # ถ้าไม่ตั้งใน repo/org Variables จะว่าง — ควรตั้ง PUBLIC_* ให้ตรง production
           PUBLIC_SUPABASE_URL: ${{ vars.PUBLIC_SUPABASE_URL }}
-          PUBLIC_SUPABASE_ANON_KEY: ${{ vars.PUBLIC_SUPABASE_ANON_KEY }}
+          PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ vars.PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
 
       - name: Rsync build to server
         run: |
