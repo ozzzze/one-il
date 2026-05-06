@@ -5,11 +5,41 @@
 	import { Input } from "$lib/components/ui/input/index.js";
 	import { Label } from "$lib/components/ui/label/index.js";
 	import { Separator } from "$lib/components/ui/separator/index.js";
+	import Loader2Icon from "@lucide/svelte/icons/loader-2";
 	import ZapIcon from "@lucide/svelte/icons/zap";
 
 	let { form, data } = $props();
 
 	const providers = $derived(data.enabledProviders ?? []);
+
+	let authenticating = $state(false);
+	let redirecting = $state(false);
+
+	const authEnhance = () => {
+		authenticating = true;
+		redirecting = false;
+
+		return async ({
+			result,
+			update
+		}: {
+			result: { type: "success" | "failure" | "redirect" | "error" };
+			update: () => Promise<void>;
+		}) => {
+			if (result.type === "redirect") {
+				redirecting = true;
+				await update();
+				return;
+			}
+
+			try {
+				await update();
+			} finally {
+				authenticating = false;
+				redirecting = false;
+			}
+		};
+	};
 </script>
 
 <svelte:head>
@@ -43,7 +73,7 @@
 					{form.message}
 				</div>
 			{/if}
-			<form method="POST" use:enhance class="space-y-4">
+			<form method="POST" use:enhance={authEnhance} class="space-y-4">
 				<div class="space-y-2">
 					<Label for="username">Username</Label>
 					<Input
@@ -68,7 +98,17 @@
 						value="SvelteDemo2026!"
 					/>
 				</div>
-				<Button type="submit" class="w-full">Sign in</Button>
+				<Button type="submit" class="w-full" disabled={authenticating || redirecting}>
+					{#if redirecting}
+						<Loader2Icon class="mr-2 size-4 animate-spin" />
+						Redirecting…
+					{:else if authenticating}
+						<Loader2Icon class="mr-2 size-4 animate-spin" />
+						Authenticating…
+					{:else}
+						Sign in
+					{/if}
+				</Button>
 			</form>
 			{#if providers.length > 0}
 				<div class="relative my-4">
