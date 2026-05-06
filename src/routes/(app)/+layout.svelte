@@ -31,7 +31,7 @@
 			class="bg-background sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 border-b px-4"
 		>
 			<Sidebar.Trigger class="-ml-1" />
-			<Separator orientation="vertical" class="mr-2 !h-4" />
+			<Separator orientation="vertical" class="mr-2 h-4! size-4" />
 			<Breadcrumb.Root>
 				<Breadcrumb.List>
 					{#each getBreadcrumbs() as crumb, i (crumb.href)}

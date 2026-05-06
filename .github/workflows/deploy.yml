@@ -1,43 +1,70 @@
 name: Deploy to Hetzner
 
 on:
-  push:
-    branches: [main]
+  workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v4
-
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: 22
           cache: pnpm
 
-      - run: pnpm install --frozen-lockfile
-
-      - run: pnpm build
-        env:
-          # ถ้าไม่ตั้งใน repo/org Variables จะว่าง — ควรตั้ง PUBLIC_* ให้ตรง production
-          PUBLIC_SUPABASE_URL: ${{ vars.PUBLIC_SUPABASE_URL }}
-          PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ vars.PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
-
-      - name: Rsync build to server
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H ${{ secrets.REMOTE_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
-          rsync -azP --delete -e "ssh -i ~/.ssh/deploy_key" build/ deploy@${{ secrets.REMOTE_HOST }}:/var/www/svelteforge/build/
-          rm ~/.ssh/deploy_key
-
-      - name: Restart PM2
-        uses: appleboy/ssh-action@v1
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
         with:
-          host: ${{ secrets.REMOTE_HOST }}
-          username: deploy
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: pm2 restart svelteforge
+          version: 10
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      - name: Deploy build via rsync
+        shell: bash
+        env:
+          HETZNER_HOST: ${{ secrets.HETZNER_HOST }}
+          HETZNER_USER: ${{ secrets.HETZNER_USER }}
+          HETZNER_PATH: ${{ secrets.HETZNER_PATH }}
+          SSH_PRIVATE_KEY: ${{ secrets.HETZNER_SSH_KEY }}
+        run: |
+          set -euo pipefail
+
+          # Fail fast with a clear message when required secrets are missing.
+          test -n "${HETZNER_HOST:-}" || { echo "Missing secret: HETZNER_HOST"; exit 1; }
+          test -n "${HETZNER_USER:-}" || { echo "Missing secret: HETZNER_USER"; exit 1; }
+          test -n "${HETZNER_PATH:-}" || { echo "Missing secret: HETZNER_PATH"; exit 1; }
+          test -n "${SSH_PRIVATE_KEY:-}" || { echo "Missing secret: HETZNER_SSH_KEY"; exit 1; }
+
+          mkdir -p "$HOME/.ssh"
+          chmod 700 "$HOME/.ssh"
+
+          printf '%s\n' "$SSH_PRIVATE_KEY" > "$HOME/.ssh/deploy_key"
+          chmod 600 "$HOME/.ssh/deploy_key"
+
+          ssh-keyscan -H "$HETZNER_HOST" >> "$HOME/.ssh/known_hosts" 2>/dev/null
+
+          rsync -az --delete -e "ssh -i $HOME/.ssh/deploy_key" build/ \
+            "$HETZNER_USER@$HETZNER_HOST:$HETZNER_PATH"
+
+          rm -f "$HOME/.ssh/deploy_key"
+
+      - name: Restart PM2 app
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          PM2_APP_NAME: ${{ vars.PM2_APP_NAME || 'svelteforge' }}
+        with:
+          host: ${{ secrets.HETZNER_HOST }}
+          username: ${{ secrets.HETZNER_USER }}
+          key: ${{ secrets.HETZNER_SSH_KEY }}
+          script: |
+            pm2 restart "$PM2_APP_NAME"
