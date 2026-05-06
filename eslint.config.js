@@ -47,7 +47,6 @@ export default ts.config(
 			"node_modules/",
 			".env",
 			".env.*",
-			"drizzle/",
 		],
 	}
 );

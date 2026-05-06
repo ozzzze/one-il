@@ -18,7 +18,6 @@ COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile --prod
 
 COPY --from=builder /app/build ./build
-COPY drizzle ./drizzle
 
 ENV NODE_ENV=production
 ENV PORT=3000

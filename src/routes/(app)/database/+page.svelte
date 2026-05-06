@@ -36,7 +36,7 @@
 			</Card.Header>
 			<Card.Content>
 				<div class="text-2xl font-bold">{formatBytes(data.dbSize)}</div>
-				<p class="text-muted-foreground text-xs">SQLite file size</p>
+				<p class="text-muted-foreground text-xs">Not available via API</p>
 			</Card.Content>
 		</Card.Root>
 
@@ -47,7 +47,7 @@
 			</Card.Header>
 			<Card.Content>
 				<div class="text-2xl font-bold uppercase">{data.journalMode}</div>
-				<p class="text-muted-foreground text-xs">Write-ahead logging</p>
+				<p class="text-muted-foreground text-xs">Managed by Postgres</p>
 			</Card.Content>
 		</Card.Root>
 

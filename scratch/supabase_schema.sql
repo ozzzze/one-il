@@ -7,7 +7,7 @@ CREATE TABLE public.users (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   email TEXT NOT NULL UNIQUE,
   username TEXT NOT NULL UNIQUE,
-  -- เก็บไว้กัน Drizzle error แม้จะไม่ได้ใช้แล้ว
+  -- Legacy column (optional); Supabase Auth holds credentials in auth.users
   password_hash TEXT, 
   name TEXT NOT NULL,
   avatar_url TEXT,
@@ -59,7 +59,7 @@ CREATE TABLE public.app_settings (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
 );
 
--- 6. Create dummy tables for deprecated custom auth (to prevent Drizzle query errors)
+-- 6. Supporting tables (password reset links, OAuth account mapping)
 CREATE TABLE public.password_reset_tokens (
   id TEXT PRIMARY KEY,
   user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,

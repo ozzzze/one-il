@@ -1,6 +1,6 @@
 # SvelteForge - SvelteKit Admin Dashboard Template
 
-A production-ready admin dashboard template built with **SvelteKit 2**, **Svelte 5**, **Tailwind CSS 4**, and **Drizzle ORM**. Features custom session-based authentication, optional OAuth (Google & GitHub), role-based access control, and a full suite of admin tools -- all with zero external auth dependencies.
+A production-ready admin dashboard template built with **SvelteKit 2**, **Svelte 5**, **Tailwind CSS 4**, and **Supabase** (Postgres + Auth). Features Supabase-backed authentication, optional OAuth (Google & GitHub), role-based access control, and a full suite of admin tools.
 
 ![SvelteKit](https://img.shields.io/badge/SvelteKit-2-FF3E00?logo=svelte)
 ![Svelte](https://img.shields.io/badge/Svelte-5-FF3E00?logo=svelte)
@@ -116,7 +116,7 @@ Loved SvelteForge? Supercharge your workflow with our premium templates on [Dash
 | --- | --- |
 | **Framework** | SvelteKit 2.50 + Svelte 5 (runes API) |
 | **Styling** | Tailwind CSS 4 + shadcn-svelte |
-| **Database** | SQLite via Drizzle ORM + better-sqlite3 (WAL mode) |
+| **Database** | Supabase Postgres (`@supabase/ssr` + service role on the server) |
 | **Auth** | Custom sessions (@oslojs/crypto) + Argon2id password hashing |
 | **OAuth** | Arctic (Google + GitHub) -- optional, environment-driven |
 | **Charts** | LayerChart v2 (D3-based) |
@@ -129,13 +129,11 @@ Loved SvelteForge? Supercharge your workflow with our premium templates on [Dash
 
 ### Authentication & Security
 
-- **Custom session management** -- SHA-256 hashed tokens stored in the database. Raw token in HttpOnly cookie, hash in DB. If your database leaks, session tokens cannot be recovered.
-- **Argon2id password hashing** -- Industry-standard password hashing with configurable memory/time cost parameters.
-- **Auto-extending sessions** -- Sessions automatically refresh when less than 15 days remain (30-day lifetime).
-- **Session metadata** -- User agent and IP address tracked per session for security auditing.
-- **OAuth login (optional)** -- Google and GitHub social login via Arctic. Providers only activate when you set credentials in `.env`. No credentials = password-only login, no errors.
-- **Password reset flow** -- Forgot password page with token-based reset (token hashed in DB).
-- **Screen lock** -- Lock screen that requires re-entering your password.
+- **Supabase Auth** -- Email/password sign-up and sign-in with SSR session handling via `@supabase/ssr`.
+- **App profiles** -- Rows in `public.users` linked to `auth.users`; roles stored for RBAC inside the admin app.
+- **OAuth login (optional)** -- Google and GitHub via Arctic when credentials are present in `.env`.
+- **Password reset** -- Uses Supabase Auth recovery flows where configured.
+- **Screen lock** -- Lock screen that requires signing in again when unlocked.
 
 ### Role-Based Access Control (RBAC)
 
@@ -245,11 +243,9 @@ cd svelteforge-admin
 # Install dependencies
 pnpm install
 
-# Push database schema (creates SQLite database)
-pnpm db:push
+# Configure environment (copy .env.example → .env; set Supabase URL, keys, and DATABASE_URL as documented there)
 
-# Seed the database with sample data (optional)
-pnpm db:seed
+# Apply the SQL schema once in the Supabase SQL Editor (see scratch/supabase_schema.sql)
 
 # Start the development server
 pnpm dev
@@ -257,17 +253,9 @@ pnpm dev
 
 The app will be running at `http://localhost:5173`.
 
-### Default Login
+### First account
 
-After seeding, you can log in with:
-
-| Username | Password | Role |
-| --- | --- | --- |
-| `admin` | `password123` | Admin |
-| `editor` | `password123` | Editor |
-| `viewer` | `password123` | Viewer |
-
-> **Note:** If you skip seeding, the first user to register will automatically be assigned the `admin` role.
+Register at `/register` after the database schema exists in Supabase. The **first** user created in `public.users` is assigned the **`admin`** role; later registrations default to **`viewer`** until you change roles in the app.
 
 ---
 
@@ -323,12 +311,6 @@ pnpm preview          # Preview production build
 pnpm check            # Type-check with svelte-check
 pnpm check:watch      # Type-check in watch mode
 
-# Database
-pnpm db:push          # Push schema changes to database
-pnpm db:generate      # Generate Drizzle migrations
-pnpm db:studio        # Open Drizzle Studio GUI
-pnpm db:seed          # Seed database with sample data
-
 # Testing
 pnpm test             # Run unit tests (Vitest)
 pnpm test:watch       # Run tests in watch mode
@@ -365,12 +347,8 @@ src/
 │   │   └── user-form-dialog.svelte  # Create/edit user form
 │   ├── hooks/                       # Svelte 5 reactive utilities
 │   ├── server/
-│   │   ├── auth.ts                  # Session management (token gen, validation)
-│   │   ├── db/
-│   │   │   ├── index.ts             # Database connection (WAL mode)
-│   │   │   ├── schema.ts            # Drizzle schema (users, sessions, pages, etc.)
-│   │   │   ├── seed.ts              # Database seeder
-│   │   │   └── test-utils.ts        # Test database utilities
+│   │   ├── auth.ts                  # Load app user profile from Supabase
+│   │   ├── supabase-admin.ts       # Service-role Supabase client (server-only)
 │   │   ├── id.ts                    # Crypto ID generator
 │   │   └── oauth.ts                 # Arctic OAuth providers (Google, GitHub)
 │   └── utils/
@@ -420,26 +398,9 @@ src/
 
 ### Requirements
 
-SvelteForge Admin uses **SQLite** with the `better-sqlite3` native module. Your hosting environment must support:
-
-- **Node.js runtime** (not edge/serverless)
-- **Native module compilation** (better-sqlite3)
-- **Persistent filesystem** (for the SQLite database file)
-
-### Recommended Hosting
-
-| Provider | Tier | Notes |
-| --- | --- | --- |
-| **Railway** | Free tier available | One-click deploy, persistent volumes |
-| **Fly.io** | Free tier available | Global edge, persistent volumes |
-| **Render** | Free tier available | Auto-deploy from GitHub |
-| **VPS** (DigitalOcean, Hetzner) | From ~$4/mo | Full control, Docker-friendly |
-
-### Not Compatible
-
-- **Cloudflare Pages/Workers** -- V8 isolates cannot run native Node modules (better-sqlite3)
-- **Vercel Edge** -- Same limitation as Cloudflare
-- **AWS Lambda** -- No persistent filesystem for SQLite
+- **Node.js** runtime suitable for `@sveltejs/adapter-node` (see `Dockerfile`)
+- A **Supabase project** with the app tables created (see `scratch/supabase_schema.sql`) and RLS policies as you define them
+- Environment variables from `.env.example` set on the host (`PUBLIC_SUPABASE_*`, `SUPABASE_SERVICE_ROLE_KEY`, `DATABASE_URL`, `ORIGIN`, optional OAuth keys)
 
 ### Docker
 
@@ -447,24 +408,14 @@ A `Dockerfile` is included for containerized deployments:
 
 ```bash
 docker build -t svelteforge-admin .
-docker run -p 3000:3000 -v ./data:/app/data svelteforge-admin
+docker run -p 3000:3000 --env-file .env svelteforge-admin
 ```
+
+Pass Supabase and app secrets via `--env-file` or your orchestrator’s secret store (do not bake secrets into the image).
 
 ### Environment Variables
 
-```env
-# Required
-DATABASE_URL=svelteforge.db        # SQLite database file path
-
-# Required for production
-ORIGIN=https://yourdomain.com      # Used for OAuth redirect URIs
-
-# Optional -- OAuth providers (omit to disable)
-GOOGLE_CLIENT_ID=
-GOOGLE_CLIENT_SECRET=
-GITHUB_CLIENT_ID=
-GITHUB_CLIENT_SECRET=
-```
+See `.env.example` for the authoritative list. At minimum you need Supabase URL + anon/publishable key for SSR, the service role key for privileged server operations, `DATABASE_URL` if used by your deployment tooling, and `ORIGIN` for correct redirects.
 
 ---
 
@@ -489,11 +440,9 @@ Edit `src/app.css` to customize the color palette. SvelteForge Admin uses Tailwi
 3. The auth guard in `(app)/+layout.server.ts` automatically protects new routes
 4. Add a sidebar link in `src/lib/components/app-sidebar.svelte`
 
-### Database Changes
+### Database changes
 
-1. Edit `src/lib/server/db/schema.ts`
-2. Run `pnpm db:push` to apply changes
-3. Update `src/lib/server/db/test-utils.ts` SCHEMA_SQL if you have tests
+Manage schema migrations in **Supabase** (SQL migrations, CLI, or Dashboard). Keep `scratch/supabase_schema.sql` or your migration source of truth in sync with what the app queries in `+page.server.ts` files.
 
 ---
 
@@ -510,8 +459,6 @@ pnpm test:watch
 pnpm test:e2e
 ```
 
-Unit tests use an **in-memory SQLite database** created via `test-utils.ts`, so they don't touch your development database.
-
 ---
 
 ## License
@@ -520,4 +467,4 @@ MIT
 
 ---
 
-Built with SvelteKit, Svelte 5, Tailwind CSS 4, Drizzle ORM, and shadcn-svelte by [Colorlib](https://colorlib.com/).
+Built with SvelteKit, Svelte 5, Tailwind CSS 4, Supabase, and shadcn-svelte by [Colorlib](https://colorlib.com/).

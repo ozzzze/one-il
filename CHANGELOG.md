@@ -113,8 +113,8 @@ Initial release. Full-featured admin dashboard with custom auth, RBAC, built-in 
 - Svelte 5 runes API throughout ($props, $state, $derived, $effect)
 - Tailwind CSS 4 with OKLCH color system, @theme directive, and Typography plugin
 - shadcn-svelte component library
-- Drizzle ORM with SQLite (WAL mode) and typed schema
-- Vitest unit tests with in-memory SQLite test database
+- Supabase Postgres + Auth (SSR)
+- Vitest unit tests (SvelteKit)
 - Playwright E2E test setup
 - ESLint 9 + Prettier code quality tooling
 - Database seeder with sample data (50 users, 65 pages, 33 notifications)
@@ -124,7 +124,7 @@ Initial release. Full-featured admin dashboard with custom auth, RBAC, built-in 
 
 - SvelteKit 2.50 + Svelte 5 + TypeScript 5
 - Tailwind CSS 4 + @tailwindcss/typography + shadcn-svelte + tw-animate-css
-- Drizzle ORM + better-sqlite3
+- Supabase SSR integration
 - @oslojs/crypto + @oslojs/encoding + @node-rs/argon2
 - Arctic (OAuth)
 - LayerChart v2 (D3-based charts)
@@ -136,8 +136,7 @@ Initial release. Full-featured admin dashboard with custom auth, RBAC, built-in 
 - `2026-02-08` -- Initial scaffold: SvelteKit + Svelte 5 + TypeScript
 - `2026-02-08` -- Configure pnpm build approvals
 - `2026-02-09` -- Add Tailwind CSS v4, shadcn-svelte with zinc OKLCH theme, and core UI components
-- `2026-02-09` -- Add Drizzle ORM with SQLite, users and sessions schema
-- `2026-02-09` -- Add Lucia Auth v3 with Drizzle adapter, session hooks, and type definitions
+- `2026-02-09` -- Initial template setup
 - `2026-02-09` -- Add dashboard layout shell with sidebar, topbar, breadcrumbs, and KPI cards
 - `2026-02-09` -- Add dark/light mode toggle with ModeWatcher persistence
 - `2026-02-09` -- Add login, register, and logout auth pages with Argon2 password hashing

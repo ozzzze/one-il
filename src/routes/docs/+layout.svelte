@@ -4,7 +4,6 @@
 	import RocketIcon from "@lucide/svelte/icons/rocket";
 	import FolderTreeIcon from "@lucide/svelte/icons/folder-tree";
 	import ShieldIcon from "@lucide/svelte/icons/shield";
-	import DatabaseIcon from "@lucide/svelte/icons/database";
 	import RouteIcon from "@lucide/svelte/icons/signpost";
 	import ComponentIcon from "@lucide/svelte/icons/blocks";
 	import PaletteIcon from "@lucide/svelte/icons/palette";
@@ -13,7 +12,6 @@
 	import BarChart3Icon from "@lucide/svelte/icons/bar-chart-3";
 	import BellIcon from "@lucide/svelte/icons/bell";
 	import SettingsIcon from "@lucide/svelte/icons/settings";
-	import TestTubeIcon from "@lucide/svelte/icons/test-tube";
 	import CloudIcon from "@lucide/svelte/icons/cloud";
 	import CodeIcon from "@lucide/svelte/icons/code";
 	import ZapIcon from "@lucide/svelte/icons/zap";
@@ -39,7 +37,6 @@
 			label: "Core Concepts",
 			items: [
 				{ title: "Authentication", href: "/docs/authentication", icon: ShieldIcon },
-				{ title: "Database", href: "/docs/database", icon: DatabaseIcon },
 				{ title: "Routing", href: "/docs/routing", icon: RouteIcon },
 				{ title: "Components", href: "/docs/components", icon: ComponentIcon },
 				{ title: "Theming & Styling", href: "/docs/theming", icon: PaletteIcon },
@@ -58,7 +55,6 @@
 		{
 			label: "Advanced",
 			items: [
-				{ title: "Testing", href: "/docs/testing", icon: TestTubeIcon },
 				{ title: "Deployment", href: "/docs/deployment", icon: CloudIcon },
 				{ title: "API Reference", href: "/docs/api-reference", icon: CodeIcon },
 			],

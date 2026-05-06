@@ -3,7 +3,7 @@ import type { RequestHandler } from "./$types.js";
 
 /**
  * GET /api/supabase/health — ตรวจว่า client ต่อ Supabase API ได้และลองอ่านตัวอย่างจาก `public.users`
- * เปิดแบบไม่บังคับล็อกอิน SQLite เพื่อให้ทดสอบระหว่างตั้งค่าได้
+ * เปิดแบบไม่บังคับล็อกอิน เพื่อให้ทดสอบระหว่างตั้งค่าได้
  */
 export const GET: RequestHandler = async ({ locals }) => {
 	const supabase = locals.supabase;

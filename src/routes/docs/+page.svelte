@@ -187,12 +187,12 @@
 			<td>Accessible, composable UI components</td>
 		</tr>
 		<tr>
-			<td><strong>Drizzle ORM + SQLite</strong></td>
-			<td>Type-safe database access with better-sqlite3 in WAL mode</td>
+			<td><strong>Supabase Postgres</strong></td>
+			<td>Server-side data access via Supabase client and service role where needed</td>
 		</tr>
 		<tr>
-			<td><strong>Custom Auth (@oslojs/crypto + Argon2)</strong></td>
-			<td>Session-based authentication with secure password hashing</td>
+			<td><strong>Supabase Auth</strong></td>
+			<td>SSR session handling with <code>@supabase/ssr</code>; app profile in <code>public.users</code></td>
 		</tr>
 		<tr>
 			<td><strong>Arctic OAuth</strong></td>
