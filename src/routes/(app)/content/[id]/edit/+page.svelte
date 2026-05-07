@@ -33,7 +33,7 @@
 </script>
 
 <svelte:head>
-	<title>Edit: {data.page.title} - SvelteForge Admin</title>
+	<title>Edit: {data.page.title} - ONE-IL</title>
 </svelte:head>
 
 <div class="mx-auto max-w-3xl space-y-6">

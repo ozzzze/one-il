@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to SvelteForge Admin are documented here.
+All notable changes to ONE-IL are documented here.
 
 ## v1.0.0 -- March 2026
 

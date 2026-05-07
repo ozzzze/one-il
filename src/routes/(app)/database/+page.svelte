@@ -19,7 +19,7 @@
 </script>
 
 <svelte:head>
-	<title>Database - SvelteForge Admin</title>
+	<title>Database - ONE-IL</title>
 </svelte:head>
 
 <div class="space-y-6">

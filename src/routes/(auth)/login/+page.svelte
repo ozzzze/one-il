@@ -6,7 +6,7 @@
 	import { Label } from "$lib/components/ui/label/index.js";
 	import { Separator } from "$lib/components/ui/separator/index.js";
 	import Loader2Icon from "@lucide/svelte/icons/loader-2";
-	import ZapIcon from "@lucide/svelte/icons/zap";
+	import ilLogo from "$lib/assets/layout/il-logo.png";
 
 	let { form, data } = $props();
 
@@ -43,7 +43,7 @@
 </script>
 
 <svelte:head>
-	<title>Login - SvelteForge Admin</title>
+	<title>Login - ONE-IL</title>
 </svelte:head>
 
 <div class="bg-background flex min-h-screen items-center justify-center p-4">
@@ -53,7 +53,7 @@
 				<div
 					class="bg-primary text-primary-foreground flex size-12 items-center justify-center rounded-xl"
 				>
-					<ZapIcon class="size-6" />
+					<img src={ilLogo} alt="Innovative Learning logo" class="size-6 object-contain" />
 				</div>
 			</div>
 			<Card.Title class="text-2xl font-bold">Welcome back</Card.Title>

@@ -25,7 +25,11 @@
 </script>
 
 <Sidebar.Provider>
-	<AppSidebar user={data.user} notificationCount={data.unreadNotificationCount} />
+	<AppSidebar
+		user={data.user}
+		allowedMenuIds={data.allowedMenuIds}
+		notificationCount={data.unreadNotificationCount}
+	/>
 	<Sidebar.Inset>
 		<header
 			class="bg-background sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 border-b px-4"
@@ -50,12 +54,12 @@
 			</Breadcrumb.Root>
 
 			<div class="ml-auto flex items-center gap-1">
-				<CommandPalette />
+				<CommandPalette allowedMenuIds={data.allowedMenuIds} permissions={data.permissions} />
 				<NotificationBell
 					count={data.unreadNotificationCount}
 					notifications={data.recentNotifications}
 				/>
-				<AppsMenu />
+				<AppsMenu allowedMenuIds={data.allowedMenuIds} />
 				<ThemeToggle />
 			</div>
 		</header>

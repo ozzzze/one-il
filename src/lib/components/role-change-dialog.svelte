@@ -4,15 +4,21 @@
 	import { Button } from "$lib/components/ui/button/index.js";
 	import { Label } from "$lib/components/ui/label/index.js";
 	import { enhance } from "$app/forms";
+	import type { Role } from "$lib/auth/roles.js";
+	import { roleOptions } from "$lib/auth/roles.js";
 
 	type Props = {
 		open: boolean;
 		userId: string;
 		userName: string;
-		currentRole: string;
+		currentRole: Role;
 	};
 
 	let { open = $bindable(false), userId, userName, currentRole }: Props = $props();
+
+	let newRole: Role = $derived(currentRole);
+
+	const newRoleText = $derived(roleOptions.find((option) => option.value === newRole)?.label ?? "");
 </script>
 
 <Dialog.Root bind:open>
@@ -35,14 +41,14 @@
 			<div class="grid gap-4 py-4">
 				<div class="grid gap-2">
 					<Label for="newRole">New Role</Label>
-					<Select.Root name="newRole" type="single" value={currentRole}>
+					<Select.Root name="newRole" type="single" bind:value={newRole}>
 						<Select.Trigger>
-							<span>{currentRole}</span>
+							<span>{newRoleText}</span>
 						</Select.Trigger>
 						<Select.Content>
-							<Select.Item value="admin">Admin</Select.Item>
-							<Select.Item value="editor">Editor</Select.Item>
-							<Select.Item value="viewer">Viewer</Select.Item>
+							{#each roleOptions as option, i (option.value)}
+								<Select.Item value={option.value}>{option.label}</Select.Item>
+							{/each}
 						</Select.Content>
 					</Select.Root>
 				</div>

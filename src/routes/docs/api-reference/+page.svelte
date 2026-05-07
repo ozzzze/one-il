@@ -1,5 +1,5 @@
 <svelte:head>
-	<title>API Reference - SvelteForge Admin Documentation</title>
+	<title>API Reference - ONE-IL Documentation</title>
 	<meta name="description" content="Server-side API reference (Supabase helpers)." />
 </svelte:head>
 

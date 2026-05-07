@@ -1,22 +1,22 @@
 <svelte:head>
-	<title>Introduction - SvelteForge Admin Documentation</title>
+	<title>Introduction - ONE-IL Documentation</title>
 	<meta
 		name="description"
-		content="SvelteForge Admin is a production-ready admin dashboard built with SvelteKit 2 and Svelte 5's runes API. Explore the docs to get started."
+		content="ONE-IL is a production-ready admin dashboard built with SvelteKit 2 and Svelte 5's runes API. Explore the docs to get started."
 	/>
 </svelte:head>
 
-<h1>Welcome to SvelteForge Admin</h1>
+<h1>Welcome to ONE-IL</h1>
 
 <p>
-	SvelteForge Admin is a <strong>production-ready admin dashboard</strong> built entirely with
+	ONE-IL is a <strong>production-ready admin dashboard</strong> built entirely with
 	<strong>SvelteKit 2</strong> and <strong>Svelte 5's runes API</strong>. It provides everything you
 	need to build internal tools, back-office applications, and content management systems — with
 	authentication, role-based access control, a CMS, analytics dashboards, and more out of the box.
 </p>
 
 <p>
-	Unlike admin templates built on React or Vue, SvelteForge leverages the
+	Unlike admin templates built on React or Vue, ONE-IL leverages the
 	<strong>Svelte compiler</strong> to ship dramatically less JavaScript to the browser. No virtual DOM,
 	no runtime overhead — just efficient, compiled code that updates the DOM surgically.
 </p>
@@ -25,7 +25,7 @@
 
 <p>
 	Svelte 5 introduces <strong>runes</strong> — a new reactivity system that replaces Svelte 4's
-	implicit <code>$:</code> syntax with explicit, composable primitives. SvelteForge Admin is built entirely
+	implicit <code>$:</code> syntax with explicit, composable primitives. ONE-IL is built entirely
 	on runes from the ground up:
 </p>
 
@@ -77,7 +77,7 @@
 
 <p>
 	<strong>SvelteKit</strong> is the official application framework for Svelte, and it powers every
-	aspect of SvelteForge Admin:
+	aspect of ONE-IL:
 </p>
 
 <ul>
@@ -86,7 +86,7 @@
 		loads, then hydrate on the client for interactivity.
 	</li>
 	<li>
-		<strong>File-based routing</strong> — Routes are defined by the filesystem. SvelteForge uses
+		<strong>File-based routing</strong> — Routes are defined by the filesystem. ONE-IL uses
 		SvelteKit's route groups (<code>(app)</code>, <code>(auth)</code>, <code>(public)</code>) to
 		separate protected, authentication, and public pages with different layouts.
 	</li>
@@ -108,7 +108,7 @@
 
 <h2>Key Features</h2>
 
-<p>SvelteForge Admin ships with a comprehensive feature set built on SvelteKit:</p>
+<p>ONE-IL ships with a comprehensive feature set built on SvelteKit:</p>
 
 <table>
 	<thead>
@@ -224,7 +224,7 @@
 				Go Premium with DashboardPack
 			</h3>
 			<p class="text-muted-foreground mt-2 text-sm leading-relaxed">
-				SvelteForge Admin gives you a solid foundation. When you need more — 50+ pages,
+				ONE-IL gives you a solid foundation. When you need more — 50+ pages,
 				multiple dashboard layouts, advanced CRUD interfaces, theme customizers, and
 				production-grade components — check out the premium templates at DashboardPack.
 			</p>

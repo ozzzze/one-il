@@ -1,5 +1,5 @@
 <svelte:head>
-	<title>Notifications - SvelteForge Admin Documentation</title>
+	<title>Notifications - ONE-IL Documentation</title>
 	<meta name="description" content="Notifications backed by Supabase." />
 </svelte:head>
 

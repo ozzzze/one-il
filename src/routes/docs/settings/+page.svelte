@@ -1,5 +1,5 @@
 <svelte:head>
-	<title>Settings - SvelteForge Admin Documentation</title>
+	<title>Settings - ONE-IL Documentation</title>
 	<meta name="description" content="Settings patterns backed by Supabase." />
 </svelte:head>
 

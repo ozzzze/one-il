@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-SvelteForge Admin is a SvelteKit admin dashboard using Svelte 5, Tailwind CSS v4, Supabase (Postgres + Auth via `@supabase/ssr`), and optional Arctic OAuth (Google, GitHub).
+ONE-IL is a SvelteKit admin dashboard using Svelte 5, Tailwind CSS v4, Supabase (Postgres + Auth via `@supabase/ssr`), and optional Arctic OAuth (Google, GitHub).
 
 ## Commands
 

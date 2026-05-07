@@ -1,6 +1,6 @@
 <svelte:head>
-	<title>Project Structure - SvelteForge Admin Documentation</title>
-	<meta name="description" content="Project structure for SvelteForge Admin (SvelteKit + Supabase)." />
+	<title>Project Structure - ONE-IL Documentation</title>
+	<meta name="description" content="Project structure for ONE-IL (SvelteKit + Supabase)." />
 </svelte:head>
 
 <div class="prose dark:prose-invert max-w-none">

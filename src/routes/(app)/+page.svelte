@@ -9,6 +9,8 @@
 	import { AreaChart, PieChart, BarChart } from "layerchart";
 	import { scaleUtc, scaleBand } from "d3-scale";
 	import { mode } from "mode-watcher";
+	import { resolve } from "$app/paths";
+	import { SvelteMap } from "svelte/reactivity";
 	import UsersIcon from "@lucide/svelte/icons/users";
 	import ActivityIcon from "@lucide/svelte/icons/activity";
 	import FileTextIcon from "@lucide/svelte/icons/file-text";
@@ -22,6 +24,7 @@
 	import AlertTriangleIcon from "@lucide/svelte/icons/alert-triangle";
 	import CircleAlertIcon from "@lucide/svelte/icons/circle-alert";
 	import CheckCircleIcon from "@lucide/svelte/icons/check-circle";
+	import { dashboardPageCopy } from "$lib/content/page-copy.js";
 
 	let { data } = $props();
 
@@ -75,8 +78,8 @@
 		})
 	);
 
-	const contentTrendData = $derived(() => {
-		const months = new Map<string, { month: string; published: number; draft: number }>();
+	const contentTrendData = $derived.by(() => {
+		const months = new SvelteMap<string, { month: string; published: number; draft: number }>();
 		for (const row of data.contentTrend) {
 			const existing = months.get(row.month) ?? { month: row.month, published: 0, draft: 0 };
 			if (row.status === "published") existing.published = row.count;
@@ -173,15 +176,15 @@
 </script>
 
 <svelte:head>
-	<title>Dashboard - SvelteForge Admin</title>
+	<title>{dashboardPageCopy.title}</title>
 </svelte:head>
 
 <div class="space-y-6">
 	<!-- Header with date -->
 	<div class="flex items-end justify-between">
 		<div>
-			<h1 class="text-3xl font-bold tracking-tight">Dashboard</h1>
-			<p class="text-muted-foreground">Welcome back. Here's what's happening today.</p>
+			<h1 class="text-3xl font-bold tracking-tight">{dashboardPageCopy.heading}</h1>
+			<p class="text-muted-foreground">{dashboardPageCopy.description}</p>
 		</div>
 		<p class="text-muted-foreground hidden text-sm sm:block">
 			{new Date().toLocaleDateString("en-US", {
@@ -268,7 +271,7 @@
 					{:else}
 						<div class="flex h-[300px] flex-col justify-end gap-2 px-4 pb-8">
 							<div class="flex items-end gap-3">
-								{#each [40, 55, 35, 70, 50, 80, 65, 90, 75, 60, 85, 95] as h}
+								{#each [40, 55, 35, 70, 50, 80, 65, 90, 75, 60, 85, 95] as h, i (i)}
 									<Skeleton class="flex-1" style="height: {h}%" />
 								{/each}
 							</div>
@@ -324,7 +327,7 @@
 					{:else}
 						<div class="flex h-[300px] flex-col justify-end gap-2 px-4 pb-8">
 							<div class="flex items-end gap-3">
-								{#each [60, 80, 45, 70, 55, 90] as h}
+								{#each [60, 80, 45, 70, 55, 90] as h, i (i)}
 									<Skeleton class="flex-1" style="height: {h}%" />
 								{/each}
 							</div>
@@ -483,7 +486,7 @@
 					<Card.Title>Notifications</Card.Title>
 					<Card.Description>Recent alerts and updates</Card.Description>
 				</div>
-				<a href="/notifications" class="text-primary text-xs font-medium hover:underline">View all</a>
+				<a href={resolve("/notifications")} class="text-primary text-xs font-medium hover:underline">View all</a>
 			</Card.Header>
 			<Card.Content>
 				{#if data.recentNotifications.length > 0}

@@ -137,7 +137,7 @@
 </script>
 
 <svelte:head>
-	<title>Content - SvelteForge Admin</title>
+	<title>Content - ONE-IL</title>
 </svelte:head>
 
 <div class="space-y-6">
@@ -146,10 +146,12 @@
 			<h1 class="text-3xl font-bold tracking-tight">Content</h1>
 			<p class="text-muted-foreground">Create and manage your platform content.</p>
 		</div>
-		<Button href="/content/new">
-			<PlusIcon class="mr-2 size-4" />
-			New Page
-		</Button>
+		{#if data.canManageContent}
+			<Button href="/content/new">
+				<PlusIcon class="mr-2 size-4" />
+				New Page
+			</Button>
+		{/if}
 	</div>
 
 	<!-- Toolbar -->
@@ -160,7 +162,7 @@
 		</div>
 		<p class="text-muted-foreground text-sm">{filtered.length} page{filtered.length !== 1 ? "s" : ""}</p>
 		<div class="ml-auto flex items-center gap-2">
-			{#if selectedIds.size > 0}
+			{#if data.canManageContent && selectedIds.size > 0}
 				<form method="POST" action="?/bulkDelete" use:enhance>
 					<input type="hidden" name="ids" value={[...selectedIds].join(",")} />
 					<Button variant="destructive" size="sm" type="submit">
@@ -191,14 +193,16 @@
 		<Table.Root>
 			<Table.Header>
 				<Table.Row>
-					<Table.Head class="w-[40px]">
-						<input
-							type="checkbox"
-							checked={paginated.length > 0 && selectedIds.size === paginated.length}
-							onchange={toggleSelectAll}
-							class="accent-primary size-4"
-						/>
-					</Table.Head>
+					{#if data.canManageContent}
+						<Table.Head class="w-[40px]">
+							<input
+								type="checkbox"
+								checked={paginated.length > 0 && selectedIds.size === paginated.length}
+								onchange={toggleSelectAll}
+								class="accent-primary size-4"
+							/>
+						</Table.Head>
+					{/if}
 					{#each columns as col (col.key)}
 						{@const SortIcon = sortIcon(col.key)}
 						<Table.Head>
@@ -208,20 +212,24 @@
 							</button>
 						</Table.Head>
 					{/each}
-					<Table.Head class="w-[100px]">Actions</Table.Head>
+					{#if data.canManageContent}
+						<Table.Head class="w-[100px]">Actions</Table.Head>
+					{/if}
 				</Table.Row>
 			</Table.Header>
 			<Table.Body>
 				{#each paginated as p (p.id)}
 					<Table.Row class={selectedIds.has(p.id) ? "bg-muted/50" : ""}>
-						<Table.Cell>
-							<input
-								type="checkbox"
-								checked={selectedIds.has(p.id)}
-								onchange={() => toggleSelect(p.id)}
-								class="accent-primary size-4"
-							/>
-						</Table.Cell>
+						{#if data.canManageContent}
+							<Table.Cell>
+								<input
+									type="checkbox"
+									checked={selectedIds.has(p.id)}
+									onchange={() => toggleSelect(p.id)}
+									class="accent-primary size-4"
+								/>
+							</Table.Cell>
+						{/if}
 						<Table.Cell class="font-medium">{p.title}</Table.Cell>
 						<Table.Cell class="text-muted-foreground font-mono text-xs">/{p.slug}</Table.Cell>
 						<Table.Cell>
@@ -230,21 +238,23 @@
 						<Table.Cell class="text-muted-foreground capitalize">{p.template}</Table.Cell>
 						<Table.Cell class="text-muted-foreground">{p.authorName ?? "Unknown"}</Table.Cell>
 						<Table.Cell class="text-muted-foreground">{formatDate(p.updatedAt)}</Table.Cell>
-						<Table.Cell>
-							<div class="flex items-center gap-1">
-								<Button variant="ghost" size="icon" class="size-8" href="/content/{p.id}/edit">
-									<PencilIcon class="size-4" />
-								</Button>
-								<Button variant="ghost" size="icon" class="size-8 text-destructive" onclick={() => openDelete(p.id)}>
-									<TrashIcon class="size-4" />
-								</Button>
-							</div>
-						</Table.Cell>
+						{#if data.canManageContent}
+							<Table.Cell>
+								<div class="flex items-center gap-1">
+									<Button variant="ghost" size="icon" class="size-8" href="/content/{p.id}/edit">
+										<PencilIcon class="size-4" />
+									</Button>
+									<Button variant="ghost" size="icon" class="size-8 text-destructive" onclick={() => openDelete(p.id)}>
+										<TrashIcon class="size-4" />
+									</Button>
+								</div>
+							</Table.Cell>
+						{/if}
 					</Table.Row>
 				{:else}
 					<Table.Row>
-						<Table.Cell colspan={8} class="h-24 text-center">
-							{search ? "No pages match your search." : "No pages yet. Create your first page."}
+						<Table.Cell colspan={data.canManageContent ? 8 : 6} class="h-24 text-center">
+							{search ? "No pages match your search." : "No pages yet."}
 						</Table.Cell>
 					</Table.Row>
 				{/each}

@@ -1,13 +1,13 @@
 <svelte:head>
-	<title>Getting Started - SvelteForge Admin Documentation</title>
-	<meta name="description" content="Quick start for SvelteForge Admin with Supabase." />
+	<title>Getting Started - ONE-IL Documentation</title>
+	<meta name="description" content="Quick start for ONE-IL with Supabase." />
 </svelte:head>
 
 <div class="prose dark:prose-invert max-w-none">
 	<h1>Getting Started</h1>
 
 	<p class="lead">
-		เริ่มต้นใช้งาน SvelteForge Admin ด้วย <strong>Supabase</strong> เป็นฐานข้อมูลและระบบ Auth.
+		เริ่มต้นใช้งาน ONE-IL ด้วย <strong>Supabase</strong> เป็นฐานข้อมูลและระบบ Auth.
 	</p>
 
 	<h2>Prerequisites</h2>

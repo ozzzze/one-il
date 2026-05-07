@@ -18,7 +18,7 @@
 - Framework: SvelteKit (Svelte 5 Rune)
 - Language: TypeScript
 - Tool: Vercel, vite, pnpm
-- UI: SvelteForge Admin (https://github.com/ColorlibHQ/svelteforge-admin)
+- UI: ONE-IL (https://github.com/ColorlibHQ/svelteforge-admin)
 - Font: Google Sans (https://fonts.google.com/specimen/Google+Sans)
 - Validate: zod
 - Database: Supabase (local)
@@ -57,6 +57,6 @@
 - My Account
 
 ## 7. Milestone
-    - Create SvelteForge Admin
+    - Create ONE-IL
     - Create User management & permisssion
 ## 8. Plan before code

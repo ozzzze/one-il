@@ -1,4 +1,4 @@
-# SvelteForge - SvelteKit Admin Dashboard Template
+# ONE-IL - SvelteKit Admin Dashboard Template
 
 A production-ready admin dashboard template built with **SvelteKit 2**, **Svelte 5**, **Tailwind CSS 4**, and **Supabase** (Postgres + Auth). Features Supabase-backed authentication, optional OAuth (Google & GitHub), role-based access control, and a full suite of admin tools.
 
@@ -41,7 +41,7 @@ A production-ready admin dashboard template built with **SvelteKit 2**, **Svelte
 
 ## Premium Dashboards from DashboardPack
 
-Loved SvelteForge? Supercharge your workflow with our premium templates on [DashboardPack](https://dashboardpack.com/?utm_source=github&utm_medium=readme&utm_campaign=svelteforge) -- built for production, backed by dedicated support.
+Loved ONE-IL? Supercharge your workflow with our premium templates on [DashboardPack](https://dashboardpack.com/?utm_source=github&utm_medium=readme&utm_campaign=svelteforge) -- built for production, backed by dedicated support.
 
 <table>
   <tr>
@@ -237,8 +237,8 @@ Three built-in roles with different permission levels:
 
 ```bash
 # Clone the repository
-git clone https://github.com/colorlibhq/svelteforge-admin.git
-cd svelteforge-admin
+git clone https://github.com/colorlibhq/one-il.git
+cd one-il
 
 # Install dependencies
 pnpm install
@@ -407,8 +407,8 @@ src/
 A `Dockerfile` is included for containerized deployments:
 
 ```bash
-docker build -t svelteforge-admin .
-docker run -p 3000:3000 --env-file .env svelteforge-admin
+docker build -t one-il .
+docker run -p 3000:3000 --env-file .env one-il
 ```
 
 Pass Supabase and app secrets via `--env-file` or your orchestrator’s secret store (do not bake secrets into the image).
@@ -431,7 +431,7 @@ Components are installed to `src/lib/components/ui/`. Do not edit them directly 
 
 ### Theming
 
-Edit `src/app.css` to customize the color palette. SvelteForge Admin uses Tailwind CSS 4's native CSS theming with OKLCH colors and CSS custom properties for light/dark mode.
+Edit `src/app.css` to customize the color palette. ONE-IL uses Tailwind CSS 4's native CSS theming with OKLCH colors and CSS custom properties for light/dark mode.
 
 ### Adding New Routes
 

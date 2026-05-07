@@ -4,13 +4,13 @@
 	import { Button } from "$lib/components/ui/button/index.js";
 	import { Input } from "$lib/components/ui/input/index.js";
 	import { Label } from "$lib/components/ui/label/index.js";
-	import ZapIcon from "@lucide/svelte/icons/zap";
+	import ilLogo from "$lib/assets/layout/il-logo.png";
 
 	let { form } = $props();
 </script>
 
 <svelte:head>
-	<title>Register - SvelteForge Admin</title>
+	<title>Register - ONE-IL</title>
 </svelte:head>
 
 <div class="bg-background flex min-h-screen items-center justify-center p-4">
@@ -20,11 +20,11 @@
 				<div
 					class="bg-primary text-primary-foreground flex size-12 items-center justify-center rounded-xl"
 				>
-					<ZapIcon class="size-6" />
+					<img src={ilLogo} alt="Innovative Learning logo" class="size-6 object-contain" />
 				</div>
 			</div>
 			<Card.Title class="text-2xl font-bold">Create an account</Card.Title>
-			<Card.Description>Get started with SvelteForge Admin</Card.Description>
+			<Card.Description>Get started with ONE-IL</Card.Description>
 		</Card.Header>
 		<Card.Content>
 			{#if form?.message}

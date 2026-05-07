@@ -2,21 +2,19 @@
 	import { Command } from "bits-ui";
 	import * as Dialog from "$lib/components/ui/dialog/index.js";
 	import { goto } from "$app/navigation";
+	import { base, resolve } from "$app/paths";
 	import { toggleMode } from "mode-watcher";
 	import SearchIcon from "@lucide/svelte/icons/search";
-	import LayoutDashboardIcon from "@lucide/svelte/icons/layout-dashboard";
-	import BarChart3Icon from "@lucide/svelte/icons/bar-chart-3";
-	import UsersIcon from "@lucide/svelte/icons/users";
 	import FileTextIcon from "@lucide/svelte/icons/file-text";
-	import ShieldIcon from "@lucide/svelte/icons/shield";
 	import BellIcon from "@lucide/svelte/icons/bell";
-	import DatabaseIcon from "@lucide/svelte/icons/database";
-	import SettingsIcon from "@lucide/svelte/icons/settings";
+	import TicketCheckIcon from "@lucide/svelte/icons/ticket-check";
 	import PlusIcon from "@lucide/svelte/icons/plus";
 	import SunMoonIcon from "@lucide/svelte/icons/sun-moon";
 	import UserIcon from "@lucide/svelte/icons/user";
 	import LoaderIcon from "@lucide/svelte/icons/loader";
-	import type { Component } from "svelte";
+	import type { PermissionKey } from "$lib/auth/roles.js";
+	import { getVisibleCommandItems } from "$lib/navigation/menu.js";
+	import { menuIcons } from "$lib/navigation/icons.js";
 
 	type SearchResult = {
 		type: "user" | "page" | "notification";
@@ -26,12 +24,12 @@
 		href: string;
 	};
 
-	type NavItem = {
-		label: string;
-		href: string;
-		icon: Component;
-		keywords: string[];
+	type Props = {
+		allowedMenuIds: string[];
+		permissions: PermissionKey[];
 	};
+
+	let { allowedMenuIds, permissions }: Props = $props();
 
 	let open = $state(false);
 	let query = $state("");
@@ -39,16 +37,7 @@
 	let loading = $state(false);
 	let debounceTimer: ReturnType<typeof setTimeout>;
 
-	const navItems: NavItem[] = [
-		{ label: "Dashboard", href: "/", icon: LayoutDashboardIcon, keywords: ["home", "overview", "kpi"] },
-		{ label: "Analytics", href: "/analytics", icon: BarChart3Icon, keywords: ["charts", "stats", "reports"] },
-		{ label: "Users", href: "/users", icon: UsersIcon, keywords: ["accounts", "members", "people"] },
-		{ label: "Content", href: "/content", icon: FileTextIcon, keywords: ["pages", "blog", "articles"] },
-		{ label: "Roles", href: "/roles", icon: ShieldIcon, keywords: ["permissions", "access", "admin"] },
-		{ label: "Notifications", href: "/notifications", icon: BellIcon, keywords: ["alerts", "messages"] },
-		{ label: "Database", href: "/database", icon: DatabaseIcon, keywords: ["tables", "sql", "storage"] },
-		{ label: "Settings", href: "/settings", icon: SettingsIcon, keywords: ["preferences", "profile", "config"] },
-	];
+	const navItems = $derived(getVisibleCommandItems(allowedMenuIds));
 
 	function resultIcon(type: string) {
 		switch (type) {
@@ -65,7 +54,7 @@
 		}
 		loading = true;
 		try {
-			const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
+		const res = await fetch(`${resolve("/api/search")}?q=${encodeURIComponent(q)}`);
 			if (res.ok) {
 				searchResults = await res.json();
 			}
@@ -80,14 +69,22 @@
 		debounceTimer = setTimeout(() => fetchSearch(q), 250);
 	});
 
+	function withBase(path: string) {
+		return `${base}${path}`;
+	}
+
 	function navigate(href: string) {
 		open = false;
-		goto(href);
+		goto(withBase(href));
 	}
 
 	function handleAction(action: () => void) {
 		open = false;
 		action();
+	}
+
+	function can(permission: PermissionKey) {
+		return permissions.includes(permission);
 	}
 </script>
 
@@ -145,14 +142,15 @@
 						Navigation
 					</Command.GroupHeading>
 					<Command.GroupItems>
-						{#each navItems as item (item.href)}
+						{#each navItems as item, i (item.id)}
+							{@const Icon = menuIcons[item.iconKey]}
 							<Command.Item
 								value={item.label}
-								keywords={item.keywords}
+								keywords={item.keywords ?? []}
 								onSelect={() => navigate(item.href)}
-								class="data-[selected]:bg-accent data-[selected]:text-accent-foreground relative flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none select-none"
+								class="data-selected:bg-accent data-selected:text-accent-foreground relative flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none select-none"
 							>
-								<item.icon class="text-muted-foreground size-4" />
+								<Icon class="text-muted-foreground size-4" />
 								{item.label}
 							</Command.Item>
 						{/each}
@@ -174,7 +172,7 @@
 									value={`search-${result.id}`}
 									forceMount
 									onSelect={() => navigate(result.href)}
-									class="data-[selected]:bg-accent data-[selected]:text-accent-foreground relative flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none select-none"
+									class="data-selected:bg-accent data-selected:text-accent-foreground relative flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none select-none"
 								>
 									<Icon class="text-muted-foreground size-4 shrink-0" />
 									<div class="min-w-0 flex-1">
@@ -195,20 +193,33 @@
 						Quick Actions
 					</Command.GroupHeading>
 					<Command.GroupItems>
-						<Command.Item
-							value="New Page"
-							keywords={["create", "add", "content"]}
-							onSelect={() => navigate("/content/new")}
-							class="data-[selected]:bg-accent data-[selected]:text-accent-foreground relative flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none select-none"
-						>
-							<PlusIcon class="text-muted-foreground size-4" />
-							New Page
-						</Command.Item>
+						{#if can("requests:create")}
+							<Command.Item
+								value="New Request"
+								keywords={["create", "add", "leave", "booking", "borrow", "service"]}
+								onSelect={() => navigate("/requests")}
+								class="data-selected:bg-accent data-selected:text-accent-foreground relative flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none select-none"
+							>
+								<TicketCheckIcon class="text-muted-foreground size-4" />
+								New Request
+							</Command.Item>
+						{/if}
+						{#if can("content:manage")}
+							<Command.Item
+								value="New Page"
+								keywords={["create", "add", "content"]}
+								onSelect={() => navigate("/content/new")}
+								class="data-selected:bg-accent data-selected:text-accent-foreground relative flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none select-none"
+							>
+								<PlusIcon class="text-muted-foreground size-4" />
+								New Content Page
+							</Command.Item>
+						{/if}
 						<Command.Item
 							value="Toggle Theme"
 							keywords={["dark", "light", "mode", "switch"]}
 							onSelect={() => handleAction(toggleMode)}
-							class="data-[selected]:bg-accent data-[selected]:text-accent-foreground relative flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none select-none"
+							class="data-selected:bg-accent data-selected:text-accent-foreground relative flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none select-none"
 						>
 							<SunMoonIcon class="text-muted-foreground size-4" />
 							Toggle Theme

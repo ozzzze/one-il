@@ -1,8 +1,8 @@
 <svelte:head>
-	<title>Deployment - SvelteForge Admin Documentation</title>
+	<title>Deployment - ONE-IL Documentation</title>
 	<meta
 		name="description"
-		content="Deploy SvelteForge Admin (SvelteKit + Supabase) with Docker or any Node.js host."
+		content="Deploy ONE-IL (SvelteKit + Supabase) with Docker or any Node.js host."
 	/>
 </svelte:head>
 
@@ -10,7 +10,7 @@
 	<h1>Deployment</h1>
 
 	<p class="lead">
-		SvelteForge Admin ใช้ <strong>SvelteKit</strong> (adapter-node) และ <strong>Supabase</strong> (Postgres + Auth).
+		ONE-IL ใช้ <strong>SvelteKit</strong> (adapter-node) และ <strong>Supabase</strong> (Postgres + Auth).
 		ดังนั้นการ deploy จะเหมือนเว็บ Node.js ปกติ โดยต้องตั้งค่า environment variables สำหรับ Supabase ให้ครบ.
 	</p>
 
@@ -22,8 +22,8 @@
 	</ul>
 
 	<h2>Docker</h2>
-	<pre><code class="language-bash">docker build -t svelteforge-admin .
-docker run -p 3000:3000 --env-file .env svelteforge-admin</code></pre>
+	<pre><code class="language-bash">docker build -t one-il .
+docker run -p 3000:3000 --env-file .env one-il</code></pre>
 
 	<p>
 		แนะนำให้จัดการ secrets ผ่าน orchestrator (Render/Fly/Railway/Kubernetes) แทนการ commit ไฟล์ <code>.env</code>.

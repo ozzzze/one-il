@@ -1,8 +1,10 @@
 import { getServiceRoleClient } from "$lib/server/supabase-admin.js";
 import { fail, redirect, error } from "@sveltejs/kit";
+import { assertPermission } from "$lib/server/guards.js";
 import type { Actions, PageServerLoad } from "./$types.js";
 
-export const load: PageServerLoad = async ({ params }) => {
+export const load: PageServerLoad = async ({ params, locals }) => {
+	assertPermission(locals.user, "content:manage");
 	const admin = getServiceRoleClient();
 	const { data: page } = await admin.from("pages").select("*").eq("id", params.id).maybeSingle();
 
@@ -23,7 +25,8 @@ function slugify(text: string): string {
 }
 
 export const actions: Actions = {
-	default: async ({ request, params }) => {
+	default: async ({ request, params, locals }) => {
+		assertPermission(locals.user, "content:manage");
 		const admin = getServiceRoleClient();
 		const formData = await request.formData();
 		const title = formData.get("title");

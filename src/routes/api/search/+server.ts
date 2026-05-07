@@ -1,5 +1,6 @@
 import { json, error } from "@sveltejs/kit";
 import { getServiceRoleClient } from "$lib/server/supabase-admin.js";
+import { hasPermission } from "$lib/auth/roles.js";
 import type { RequestHandler } from "./$types.js";
 
 export const GET: RequestHandler = async ({ url, locals }) => {
@@ -13,9 +14,15 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 	}
 
 	const admin = getServiceRoleClient();
+	const canSearchUsers = hasPermission(locals.user.role, "users:manage");
+	const canSearchPages = hasPermission(locals.user.role, "content:view");
 	const [userResultsRes, pageResultsRes, notificationResultsRes] = await Promise.all([
-		admin.from("users").select("id,name,email").or(`name.ilike.%${q}%,email.ilike.%${q}%`).limit(5),
-		admin.from("pages").select("id,title,slug").ilike("title", `%${q}%`).limit(5),
+		canSearchUsers
+			? admin.from("users").select("id,name,email").or(`name.ilike.%${q}%,email.ilike.%${q}%`).limit(5)
+			: Promise.resolve({ data: [] }),
+		canSearchPages
+			? admin.from("pages").select("id,title,slug").ilike("title", `%${q}%`).limit(5)
+			: Promise.resolve({ data: [] }),
 		admin
 			.from("notifications")
 			.select("id,title,message")

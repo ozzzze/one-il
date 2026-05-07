@@ -1,6 +1,6 @@
 <svelte:head>
-	<title>Authentication - SvelteForge Admin Documentation</title>
-	<meta name="description" content="Authentication with Supabase SSR in SvelteForge Admin." />
+	<title>Authentication - ONE-IL Documentation</title>
+	<meta name="description" content="Authentication with Supabase SSR in ONE-IL." />
 </svelte:head>
 
 <div class="prose dark:prose-invert max-w-none">

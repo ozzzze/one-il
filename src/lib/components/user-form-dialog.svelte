@@ -5,13 +5,15 @@
 	import { Input } from "$lib/components/ui/input/index.js";
 	import { Label } from "$lib/components/ui/label/index.js";
 	import { enhance } from "$app/forms";
+	import type { Role } from "$lib/auth/roles.js";
+	import { roleOptions } from "$lib/auth/roles.js";
 
 	type UserData = {
 		id: string;
 		name: string;
 		email: string;
 		username: string;
-		role: string;
+		role: Role;
 	};
 
 	type Props = {
@@ -25,13 +27,9 @@
 	const title = $derived(mode === "create" ? "Add User" : "Edit User");
 	const action = $derived(mode === "create" ? "?/create" : "?/update");
 
-	let role = $derived(user?.role ?? "viewer");
+	let role: Role = $derived(user?.role ?? "user");
 
-	$effect(() => {
-		role = user?.role ?? "viewer";
-	});
-
-	const roleText = $derived(role ? role[0].toUpperCase() + role.slice(1) : "");
+	const roleText = $derived(roleOptions.find((option) => option.value === role)?.label ?? "");
 </script>
 
 <Dialog.Root bind:open>
@@ -79,9 +77,9 @@
 							<span>{roleText}</span>
 						</Select.Trigger>
 						<Select.Content>
-							<Select.Item value="admin">Admin</Select.Item>
-							<Select.Item value="editor">Editor</Select.Item>
-							<Select.Item value="viewer">Viewer</Select.Item>
+							{#each roleOptions as option, i (option.value)}
+								<Select.Item value={option.value}>{option.label}</Select.Item>
+							{/each}
 						</Select.Content>
 					</Select.Root>
 				</div>

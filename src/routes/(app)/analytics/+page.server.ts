@@ -1,7 +1,9 @@
 import { getServiceRoleClient } from "$lib/server/supabase-admin.js";
+import { assertPermission } from "$lib/server/guards.js";
 import type { PageServerLoad } from "./$types.js";
 
-export const load: PageServerLoad = async () => {
+export const load: PageServerLoad = async ({ locals }) => {
+	assertPermission(locals.user, "analytics:view");
 	const admin = getServiceRoleClient();
 	const [userRowsRes, pageRowsRes, notificationRowsRes, topAuthorsRes] = await Promise.all([
 		admin.from("users").select("created_at,name,id"),

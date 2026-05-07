@@ -1,11 +1,12 @@
 import { getServiceRoleClient } from "$lib/server/supabase-admin.js";
 import { fail } from "@sveltejs/kit";
+import { hasPermission, isRole } from "$lib/auth/roles.js";
 import type { Actions, PageServerLoad } from "./$types.js";
 
 const defaultSettings: Record<string, string> = {
-	siteName: "SvelteForge Admin",
+	siteName: "ONE-IL",
 	timezone: "UTC",
-	defaultRole: "viewer",
+	defaultRole: "user",
 	maintenanceMode: "false",
 };
 
@@ -36,7 +37,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	};
 
 	const settings = { ...defaultSettings };
-	if (user.role === "admin") {
+	if (hasPermission(user.role, "settings:manage")) {
 		const { data: rows } = await admin.from("app_settings").select("key,value");
 		for (const row of rows ?? []) {
 			settings[row.key] = row.value;
@@ -61,7 +62,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	return {
 		profile,
 		settings,
-		isAdmin: user.role === "admin",
+		isAdmin: hasPermission(user.role, "settings:manage"),
 		sessions: [] as { id: string; userAgent: string | null; ipAddress: string | null; createdAt: Date | null; expiresAt: number }[],
 		currentSessionId: "",
 		notificationPrefs: notifPrefs,
@@ -132,7 +133,7 @@ export const actions: Actions = {
 
 	updateSettings: async ({ request, locals }) => {
 		const admin = getServiceRoleClient();
-		if (locals.user!.role !== "admin") {
+		if (!hasPermission(locals.user!.role, "settings:manage")) {
 			return fail(403, { message: "Admin access required" });
 		}
 
@@ -143,9 +144,9 @@ export const actions: Actions = {
 		const maintenanceMode = formData.get("maintenanceMode");
 
 		const entries: [string, string][] = [
-			["siteName", typeof siteName === "string" ? siteName : "SvelteForge Admin"],
+			["siteName", typeof siteName === "string" ? siteName : "ONE-IL"],
 			["timezone", typeof timezone === "string" ? timezone : "UTC"],
-			["defaultRole", typeof defaultRole === "string" ? defaultRole : "viewer"],
+			["defaultRole", isRole(defaultRole) ? defaultRole : "user"],
 			["maintenanceMode", maintenanceMode === "on" ? "true" : "false"],
 		];
 

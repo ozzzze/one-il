@@ -1,8 +1,11 @@
 import { getServiceRoleClient } from "$lib/server/supabase-admin.js";
 import { fail } from "@sveltejs/kit";
+import { isRole, parseRole } from "$lib/auth/roles.js";
+import { assertPermission } from "$lib/server/guards.js";
 import type { Actions, PageServerLoad } from "./$types.js";
 
 export const load: PageServerLoad = async ({ locals }) => {
+	assertPermission(locals.user, "users:manage");
 	const admin = getServiceRoleClient();
 	const { data: allUsers, error } = await admin
 		.from("users")
@@ -19,7 +22,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 				name: user.name,
 				email: user.email,
 				username: user.username,
-				role: user.role,
+				role: parseRole(user.role),
 				createdAt: user.created_at,
 			})) ?? [],
 		currentUserId: locals.user!.id,
@@ -27,7 +30,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 };
 
 export const actions: Actions = {
-	create: async ({ request }) => {
+	create: async ({ request, locals }) => {
+		assertPermission(locals.user, "users:manage");
 		let admin;
 		try {
 			admin = getServiceRoleClient();
@@ -61,7 +65,7 @@ export const actions: Actions = {
 		if (typeof password !== "string" || password.length < 6 || password.length > 255) {
 			return fail(400, { message: "Password must be 6-255 characters" });
 		}
-		if (typeof role !== "string" || !["admin", "editor", "viewer"].includes(role)) {
+		if (!isRole(role)) {
 			return fail(400, { message: "Invalid role" });
 		}
 
@@ -103,7 +107,7 @@ export const actions: Actions = {
 			username: lowerUser,
 			password_hash: null,
 			name,
-			role: role as "admin" | "editor" | "viewer",
+			role,
 		});
 		if (profileError) {
 			return fail(400, { message: "Username or email already taken in profile table" });
@@ -112,7 +116,8 @@ export const actions: Actions = {
 		return { success: true };
 	},
 
-	update: async ({ request }) => {
+	update: async ({ request, locals }) => {
+		assertPermission(locals.user, "users:manage");
 		let admin;
 		try {
 			admin = getServiceRoleClient();
@@ -135,7 +140,7 @@ export const actions: Actions = {
 		if (typeof email !== "string" || !email.includes("@") || email.length > 255) {
 			return fail(400, { message: "Valid email is required" });
 		}
-		if (typeof role !== "string" || !["admin", "editor", "viewer"].includes(role)) {
+		if (!isRole(role)) {
 			return fail(400, { message: "Invalid role" });
 		}
 
@@ -180,7 +185,7 @@ export const actions: Actions = {
 			.update({
 				name,
 				email: lower,
-				role: role as "admin" | "editor" | "viewer",
+				role,
 				updated_at: new Date().toISOString(),
 			})
 			.eq("id", id);
@@ -192,6 +197,7 @@ export const actions: Actions = {
 	},
 
 	delete: async ({ request, locals }) => {
+		assertPermission(locals.user, "users:manage");
 		let admin;
 		try {
 			admin = getServiceRoleClient();
@@ -242,6 +248,7 @@ export const actions: Actions = {
 	},
 
 	bulkDelete: async ({ request, locals }) => {
+		assertPermission(locals.user, "users:manage");
 		let admin;
 		try {
 			admin = getServiceRoleClient();

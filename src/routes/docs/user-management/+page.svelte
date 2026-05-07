@@ -1,5 +1,5 @@
 <svelte:head>
-	<title>User Management - SvelteForge Admin Documentation</title>
+	<title>User Management - ONE-IL Documentation</title>
 	<meta name="description" content="User management backed by Supabase (auth.users + public.users)." />
 </svelte:head>
 

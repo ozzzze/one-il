@@ -1,26 +1,11 @@
 import { getServiceRoleClient } from "$lib/server/supabase-admin.js";
 import { fail } from "@sveltejs/kit";
+import { isRole, parseRole, roleDefinitions } from "$lib/auth/roles.js";
+import { assertPermission } from "$lib/server/guards.js";
 import type { Actions, PageServerLoad } from "./$types.js";
 
-const roleDefinitions = [
-	{
-		name: "admin" as const,
-		description: "Full system access. Can manage users, content, settings, and view database info.",
-		permissions: ["Manage users", "Manage content", "Manage settings", "View database", "Manage roles"],
-	},
-	{
-		name: "editor" as const,
-		description: "Can create and edit content. Cannot manage users or system settings.",
-		permissions: ["Create content", "Edit content", "Delete own content", "View analytics"],
-	},
-	{
-		name: "viewer" as const,
-		description: "Read-only access. Can view content and their own profile.",
-		permissions: ["View content", "View dashboard", "Edit own profile"],
-	},
-];
-
-export const load: PageServerLoad = async () => {
+export const load: PageServerLoad = async ({ locals }) => {
+	assertPermission(locals.user, "roles:manage");
 	const admin = getServiceRoleClient();
 	const { data: allUsers } = await admin.from("users").select("id,name,email,role").order("name", {
 		ascending: true,
@@ -28,15 +13,16 @@ export const load: PageServerLoad = async () => {
 
 	const roles = roleDefinitions.map((role) => ({
 		...role,
-		users: (allUsers ?? []).filter((u) => u.role === role.name),
-		count: (allUsers ?? []).filter((u) => u.role === role.name).length,
+		users: (allUsers ?? []).filter((u) => parseRole(u.role) === role.name),
+		count: (allUsers ?? []).filter((u) => parseRole(u.role) === role.name).length,
 	}));
 
 	return { roles };
 };
 
 export const actions: Actions = {
-	changeRole: async ({ request }) => {
+	changeRole: async ({ request, locals }) => {
+		assertPermission(locals.user, "roles:manage");
 		const admin = getServiceRoleClient();
 		const formData = await request.formData();
 		const userId = formData.get("userId");
@@ -45,7 +31,7 @@ export const actions: Actions = {
 		if (typeof userId !== "string") {
 			return fail(400, { message: "User ID is required" });
 		}
-		if (typeof newRole !== "string" || !["admin", "editor", "viewer"].includes(newRole)) {
+		if (!isRole(newRole)) {
 			return fail(400, { message: "Invalid role" });
 		}
 
@@ -64,7 +50,7 @@ export const actions: Actions = {
 		await admin
 			.from("users")
 			.update({
-				role: newRole as "admin" | "editor" | "viewer",
+				role: newRole,
 				updated_at: new Date().toISOString(),
 			})
 			.eq("id", userId);

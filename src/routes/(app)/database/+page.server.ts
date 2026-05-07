@@ -1,11 +1,10 @@
 import { getServiceRoleClient } from "$lib/server/supabase-admin.js";
 import { error } from "@sveltejs/kit";
+import { assertPermission } from "$lib/server/guards.js";
 import type { PageServerLoad } from "./$types.js";
 
 export const load: PageServerLoad = async ({ locals }) => {
-	if (locals.user!.role !== "admin") {
-		error(403, "Admin access required");
-	}
+	assertPermission(locals.user, "database:view");
 	const admin = getServiceRoleClient();
 	const [usersCountRes, sessionsCountRes, pagesCountRes, notificationsCountRes, settingsCountRes] =
 		await Promise.all([

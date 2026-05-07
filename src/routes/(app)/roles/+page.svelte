@@ -9,11 +9,12 @@
 	import UsersIcon from "@lucide/svelte/icons/users";
 	import CheckIcon from "@lucide/svelte/icons/check";
 	import { toast } from "svelte-sonner";
+	import type { Role } from "$lib/auth/roles.js";
 
 	let { data, form } = $props();
 
 	let roleChangeOpen = $state(false);
-	let roleChangeUser = $state({ id: "", name: "", role: "" });
+	let roleChangeUser = $state<{ id: string; name: string; role: Role }>({ id: "", name: "", role: "user" });
 
 	$effect(() => {
 		if (form?.message) toast.error(form.message);
@@ -29,17 +30,19 @@
 			.slice(0, 2);
 	}
 
-	function openRoleChange(user: { id: string; name: string; role: string }) {
+	function openRoleChange(user: { id: string; name: string; role: Role }) {
 		roleChangeUser = user;
 		roleChangeOpen = true;
 	}
 
-	function roleColor(role: string) {
+	function roleColor(role: Role) {
 		switch (role) {
 			case "admin":
 				return "border-primary/20 bg-primary/5";
 			case "editor":
 				return "border-blue-500/20 bg-blue-500/5";
+			case "user":
+				return "border-emerald-500/20 bg-emerald-500/5";
 			default:
 				return "border-muted";
 		}
@@ -47,7 +50,7 @@
 </script>
 
 <svelte:head>
-	<title>Roles - SvelteForge Admin</title>
+	<title>Roles - ONE-IL</title>
 </svelte:head>
 
 <div class="space-y-6">
@@ -66,7 +69,7 @@
 								<ShieldIcon class="size-5" />
 							</div>
 							<div>
-								<Card.Title class="capitalize">{role.name}</Card.Title>
+								<Card.Title>{role.label}</Card.Title>
 								<Card.Description>{role.description}</Card.Description>
 							</div>
 						</div>
@@ -80,7 +83,7 @@
 					<div>
 						<p class="text-muted-foreground mb-2 text-xs font-medium uppercase tracking-wider">Permissions</p>
 						<div class="flex flex-wrap gap-2">
-							{#each role.permissions as perm}
+							{#each role.permissions as perm, i (perm)}
 								<Badge variant="outline" class="gap-1">
 									<CheckIcon class="size-3" />
 									{perm}

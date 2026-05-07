@@ -1,4 +1,6 @@
 import { getServiceRoleClient } from "./supabase-admin.js";
+import type { Role } from "$lib/auth/roles.js";
+import { parseRole } from "$lib/auth/roles.js";
 
 export { generateId } from "./id.js";
 
@@ -7,7 +9,7 @@ export type SessionUser = {
 	email: string;
 	username: string;
 	name: string;
-	role: "admin" | "editor" | "viewer";
+	role: Role;
 	avatarUrl: string | null;
 };
 
@@ -26,7 +28,7 @@ export async function loadSessionUser(userId: string): Promise<SessionUser | nul
 		email: data.email,
 		username: data.username,
 		name: data.name,
-		role: data.role,
+		role: parseRole(data.role),
 		avatarUrl: data.avatar_url,
 	} satisfies SessionUser;
 }

@@ -1,5 +1,7 @@
 import { redirect, error } from "@sveltejs/kit";
 import { getServiceRoleClient } from "$lib/server/supabase-admin.js";
+import { getPermissions } from "$lib/auth/roles.js";
+import { getAllowedMenuIds } from "$lib/navigation/menu.js";
 import type { LayoutServerLoad } from "./$types.js";
 
 export const load: LayoutServerLoad = async ({ locals }) => {
@@ -43,6 +45,8 @@ export const load: LayoutServerLoad = async ({ locals }) => {
 
 	return {
 		user: locals.user,
+		permissions: getPermissions(locals.user.role),
+		allowedMenuIds: getAllowedMenuIds(locals.user.role),
 		unreadNotificationCount: count ?? 0,
 		recentNotifications:
 			recentNotifications?.map((item) => ({

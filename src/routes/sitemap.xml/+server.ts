@@ -1,7 +1,7 @@
 import { getServiceRoleClient } from "$lib/server/supabase-admin.js";
 import type { RequestHandler } from "./$types.js";
 
-const SITE_URL = "https://svelteforge-admin.dev";
+const SITE_URL = "https://one-il.dev";
 
 const staticRoutes = ["/login", "/register", "/pricing"];
 

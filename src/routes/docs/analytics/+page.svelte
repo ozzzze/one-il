@@ -1,5 +1,5 @@
 <svelte:head>
-	<title>Analytics & Charts - SvelteForge Admin Documentation</title>
+	<title>Analytics & Charts - ONE-IL Documentation</title>
 	<meta name="description" content="Analytics patterns with LayerChart + Supabase server-side aggregation." />
 </svelte:head>
 

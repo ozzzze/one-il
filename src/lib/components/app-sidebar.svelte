@@ -1,13 +1,5 @@
 <script lang="ts">
-	import LayoutDashboardIcon from "@lucide/svelte/icons/layout-dashboard";
-	import UsersIcon from "@lucide/svelte/icons/users";
 	import SettingsIcon from "@lucide/svelte/icons/settings";
-	import BarChart3Icon from "@lucide/svelte/icons/bar-chart-3";
-	import FileTextIcon from "@lucide/svelte/icons/file-text";
-	import ShieldIcon from "@lucide/svelte/icons/shield";
-	import BellIcon from "@lucide/svelte/icons/bell";
-	import DatabaseIcon from "@lucide/svelte/icons/database";
-	import BookOpenIcon from "@lucide/svelte/icons/book-open";
 	import CrownIcon from "@lucide/svelte/icons/crown";
 	import ExternalLinkIcon from "@lucide/svelte/icons/external-link";
 	import ChevronDownIcon from "@lucide/svelte/icons/chevron-down";
@@ -15,26 +7,31 @@
 	import UserIcon from "@lucide/svelte/icons/user";
 	import BellRingIcon from "@lucide/svelte/icons/bell-ring";
 	import LockIcon from "@lucide/svelte/icons/lock";
-	import ZapIcon from "@lucide/svelte/icons/zap";
 	import KeyboardIcon from "@lucide/svelte/icons/keyboard";
 	import HelpCircleIcon from "@lucide/svelte/icons/help-circle";
+	import ilLogo from "$lib/assets/layout/il-logo.png";
 
 	import * as Sidebar from "$lib/components/ui/sidebar/index.js";
 	import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
 	import * as Avatar from "$lib/components/ui/avatar/index.js";
 	import { Badge } from "$lib/components/ui/badge/index.js";
+	import { resolve } from "$app/paths";
+	import type { Role } from "$lib/auth/roles.js";
+	import { getVisibleMenuGroups } from "$lib/navigation/menu.js";
+	import { menuIcons } from "$lib/navigation/icons.js";
 
 	type Props = {
 		user: {
 			name: string;
 			email: string;
 			username: string;
-			role: string;
+			role: Role;
 		};
+		allowedMenuIds: string[];
 		notificationCount?: number;
 	};
 
-	let { user, notificationCount = 0 }: Props = $props();
+	let { user, allowedMenuIds, notificationCount = 0 }: Props = $props();
 
 	function getInitials(name: string) {
 		return name
@@ -45,49 +42,12 @@
 			.slice(0, 2);
 	}
 
-	type NavItem = {
-		title: string;
-		url: string;
-		icon: typeof LayoutDashboardIcon;
-		badge?: string;
-	};
+	const visibleMenuGroups = $derived(getVisibleMenuGroups(allowedMenuIds));
 
-	type NavGroup = {
-		label: string;
-		items: NavItem[];
-	};
+	function menuBadge(id: string) {
+		return id === "notifications" && notificationCount > 0 ? String(notificationCount) : undefined;
+	}
 
-	const navigation: NavGroup[] = $derived([
-		{
-			label: "Overview",
-			items: [
-				{ title: "Dashboard", url: "/", icon: LayoutDashboardIcon },
-				{ title: "Analytics", url: "/analytics", icon: BarChart3Icon },
-			],
-		},
-		{
-			label: "Management",
-			items: [
-				{ title: "Users", url: "/users", icon: UsersIcon },
-				{ title: "Content", url: "/content", icon: FileTextIcon },
-				{ title: "Roles", url: "/roles", icon: ShieldIcon },
-			],
-		},
-		{
-			label: "System",
-			items: [
-				{
-					title: "Notifications",
-					url: "/notifications",
-					icon: BellIcon,
-					badge: notificationCount > 0 ? String(notificationCount) : undefined,
-				},
-				{ title: "Database", url: "/database", icon: DatabaseIcon },
-				{ title: "Settings", url: "/settings", icon: SettingsIcon },
-				{ title: "Documentation", url: "/docs", icon: BookOpenIcon },
-			],
-		},
-	]);
 </script>
 
 <Sidebar.Root>
@@ -96,15 +56,15 @@
 			<Sidebar.MenuItem>
 				<Sidebar.MenuButton size="lg">
 					{#snippet child({ props })}
-						<a href="/" {...props}>
-							<div
-								class="bg-primary text-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg"
-							>
-								<ZapIcon class="size-4" />
-							</div>
+						<a href={resolve("/")} {...props}>
+							<img
+								src={ilLogo}
+								alt="Innovative Learning logo"
+								class="size-8 rounded-lg object-contain"
+							/>
 							<div class="flex flex-col gap-0.5 leading-none">
-								<span class="font-semibold">SvelteForge</span>
-								<span class="text-xs">Admin Dashboard</span>
+								<span class="font-semibold">ONE-IL</span>
+								<span class="text-xs">Innovative Learning</span>
 							</div>
 						</a>
 					{/snippet}
@@ -114,23 +74,25 @@
 	</Sidebar.Header>
 
 	<Sidebar.Content>
-		{#each navigation as group (group.label)}
+		{#each visibleMenuGroups as group, groupIndex (group.label)}
 			<Sidebar.Group>
 				<Sidebar.GroupLabel>{group.label}</Sidebar.GroupLabel>
 				<Sidebar.GroupContent>
 					<Sidebar.Menu>
-						{#each group.items as item (item.title)}
+						{#each group.items as item, itemIndex (item.id)}
+							{@const Icon = menuIcons[item.iconKey]}
+							{@const badge = menuBadge(item.id)}
 							<Sidebar.MenuItem>
 								<Sidebar.MenuButton>
 									{#snippet child({ props })}
-										<a href={item.url} {...props}>
-											<item.icon class="size-4" />
-											<span>{item.title}</span>
+										<a href={resolve(item.href)} {...props}>
+											<Icon class="size-4" />
+											<span>{item.label}</span>
 										</a>
 									{/snippet}
 								</Sidebar.MenuButton>
-								{#if item.badge}
-									<Sidebar.MenuBadge>{item.badge}</Sidebar.MenuBadge>
+								{#if badge}
+									<Sidebar.MenuBadge>{badge}</Sidebar.MenuBadge>
 								{/if}
 							</Sidebar.MenuItem>
 						{/each}
@@ -185,7 +147,7 @@
 						<DropdownMenu.Separator />
 						<DropdownMenu.Item>
 							{#snippet child({ props })}
-								<a href="/settings" {...props}>
+								<a href={resolve("/settings")} {...props}>
 									<UserIcon class="mr-2 size-4" />
 									Profile
 								</a>
@@ -193,7 +155,7 @@
 						</DropdownMenu.Item>
 						<DropdownMenu.Item>
 							{#snippet child({ props })}
-								<a href="/notifications" {...props}>
+								<a href={resolve("/notifications")} {...props}>
 									<BellRingIcon class="mr-2 size-4" />
 									Notifications
 									{#if notificationCount > 0}
@@ -204,7 +166,7 @@
 						</DropdownMenu.Item>
 						<DropdownMenu.Item>
 							{#snippet child({ props })}
-								<a href="/settings" {...props}>
+								<a href={resolve("/settings")} {...props}>
 									<SettingsIcon class="mr-2 size-4" />
 									Settings
 								</a>
@@ -213,7 +175,7 @@
 						<DropdownMenu.Separator />
 						<DropdownMenu.Item>
 							{#snippet child({ props })}
-								<a href="/lock" {...props}>
+								<a href={resolve("/lock")} {...props}>
 									<LockIcon class="mr-2 size-4" />
 									Lock Screen
 								</a>
@@ -221,7 +183,7 @@
 						</DropdownMenu.Item>
 						<DropdownMenu.Item>
 							{#snippet child({ props })}
-								<a href="/settings" {...props}>
+								<a href={resolve("/settings")} {...props}>
 									<KeyboardIcon class="mr-2 size-4" />
 									Keyboard Shortcuts
 								</a>
@@ -229,7 +191,7 @@
 						</DropdownMenu.Item>
 						<DropdownMenu.Item>
 							{#snippet child({ props })}
-								<a href="/" {...props}>
+								<a href={resolve("/")} {...props}>
 									<HelpCircleIcon class="mr-2 size-4" />
 									Help & Support
 								</a>
@@ -245,7 +207,7 @@
 							Log out
 						</DropdownMenu.Item>
 					</DropdownMenu.Content>
-					<form id="logout-form" method="POST" action="/logout" class="hidden"></form>
+					<form id="logout-form" method="POST" action={resolve("/logout")} class="hidden"></form>
 				</DropdownMenu.Root>
 			</Sidebar.MenuItem>
 		</Sidebar.Menu>

@@ -18,6 +18,7 @@
 	import { toast } from "svelte-sonner";
 	import { enhance } from "$app/forms";
 	import { exportToCSV, exportToJSON } from "$lib/utils/export.js";
+	import type { Role } from "$lib/auth/roles.js";
 
 	let { data, form } = $props();
 
@@ -31,7 +32,7 @@
 	let currentPage = $state(1);
 	let selectedIds = $state(new Set<string>());
 
-	let editUser = $state<{ id: string; name: string; email: string; username: string; role: string } | null>(null);
+	let editUser = $state<{ id: string; name: string; email: string; username: string; role: Role } | null>(null);
 	let deleteId = $state("");
 
 	const filtered = $derived(
@@ -99,10 +100,11 @@
 		}
 	}
 
-	function roleBadgeVariant(role: string) {
+	function roleBadgeVariant(role: Role) {
 		switch (role) {
 			case "admin": return "default" as const;
 			case "editor": return "secondary" as const;
+			case "user": return "outline" as const;
 			default: return "outline" as const;
 		}
 	}
@@ -144,7 +146,7 @@
 </script>
 
 <svelte:head>
-	<title>Users - SvelteForge Admin</title>
+	<title>Users - ONE-IL</title>
 </svelte:head>
 
 <div class="space-y-6">

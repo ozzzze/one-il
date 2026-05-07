@@ -1,5 +1,5 @@
 <svelte:head>
-	<title>Content Management - SvelteForge Admin Documentation</title>
+	<title>Content Management - ONE-IL Documentation</title>
 	<meta name="description" content="Content management (pages) backed by Supabase." />
 </svelte:head>
 

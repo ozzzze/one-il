@@ -1,13 +1,13 @@
 <svelte:head>
-	<title>Routing - SvelteForge Admin Documentation</title>
-	<meta name="description" content="SvelteKit routing patterns used in SvelteForge Admin." />
+	<title>Routing - ONE-IL Documentation</title>
+	<meta name="description" content="SvelteKit routing patterns used in ONE-IL." />
 </svelte:head>
 
 <div class="prose dark:prose-invert max-w-none">
 	<h1>Routing &amp; Navigation</h1>
 
 	<p>
-		SvelteForge Admin ใช้ route groups ของ SvelteKit เพื่อแยก layout และ auth boundary:
+		ONE-IL ใช้ route groups ของ SvelteKit เพื่อแยก layout และ auth boundary:
 	</p>
 
 	<ul>

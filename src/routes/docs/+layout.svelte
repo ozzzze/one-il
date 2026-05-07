@@ -14,11 +14,11 @@
 	import SettingsIcon from "@lucide/svelte/icons/settings";
 	import CloudIcon from "@lucide/svelte/icons/cloud";
 	import CodeIcon from "@lucide/svelte/icons/code";
-	import ZapIcon from "@lucide/svelte/icons/zap";
 	import ExternalLinkIcon from "@lucide/svelte/icons/external-link";
 	import MenuIcon from "@lucide/svelte/icons/menu";
 	import XIcon from "@lucide/svelte/icons/x";
 	import ChevronRightIcon from "@lucide/svelte/icons/chevron-right";
+	import ilLogo from "$lib/assets/layout/il-logo.png";
 
 	let { children } = $props();
 
@@ -68,18 +68,18 @@
 </script>
 
 <svelte:head>
-	<title>Documentation - SvelteForge Admin</title>
+	<title>Documentation - ONE-IL</title>
 </svelte:head>
 
 <div class="bg-background min-h-screen">
 	<!-- Top Navigation Bar -->
-	<header class="bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 w-full border-b backdrop-blur">
+	<header class="bg-background/95 supports-backdrop-filter:bg-background/60 sticky top-0 z-50 w-full border-b backdrop-blur">
 		<div class="mx-auto flex h-14 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
 			<a href="/" class="flex items-center gap-2">
 				<div class="bg-primary text-primary-foreground flex size-7 items-center justify-center rounded-md">
-					<ZapIcon class="size-4" />
+					<img src={ilLogo} alt="Innovative Learning logo" class="size-4 object-contain" />
 				</div>
-				<span class="text-sm font-bold">SvelteForge</span>
+				<span class="text-sm font-bold">ONE-IL</span>
 			</a>
 			<span class="text-muted-foreground text-sm">/</span>
 			<a href="/docs" class="text-sm font-medium">Docs</a>
@@ -91,7 +91,7 @@
 					rel="noopener noreferrer"
 					class="bg-primary text-primary-foreground hover:bg-primary/90 hidden items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors sm:flex"
 				>
-					<ZapIcon class="size-3" />
+					<img src={ilLogo} alt="Innovative Learning logo" class="size-3 object-contain" />
 					Go Premium
 					<ExternalLinkIcon class="size-3" />
 				</a>
@@ -154,7 +154,7 @@
 							class="group block rounded-lg border border-dashed p-3 transition-colors hover:border-primary hover:bg-primary/5"
 						>
 							<div class="flex items-center gap-2">
-								<ZapIcon class="text-primary size-4" />
+								<img src={ilLogo} alt="Innovative Learning logo" class="size-4 object-contain" />
 								<span class="text-sm font-semibold">Go Premium</span>
 								<ExternalLinkIcon class="text-muted-foreground size-3 transition-transform group-hover:translate-x-0.5" />
 							</div>

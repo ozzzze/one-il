@@ -1,8 +1,11 @@
 import { getServiceRoleClient } from "$lib/server/supabase-admin.js";
 import { fail } from "@sveltejs/kit";
+import { hasPermission } from "$lib/auth/roles.js";
+import { assertPermission } from "$lib/server/guards.js";
 import type { Actions, PageServerLoad } from "./$types.js";
 
-export const load: PageServerLoad = async () => {
+export const load: PageServerLoad = async ({ locals }) => {
+	assertPermission(locals.user, "content:view");
 	const admin = getServiceRoleClient();
 	const { data: allPages } = await admin
 		.from("pages")
@@ -10,6 +13,7 @@ export const load: PageServerLoad = async () => {
 		.order("updated_at", { ascending: true });
 
 	return {
+		canManageContent: hasPermission(locals.user.role, "content:manage"),
 		pages:
 			allPages?.map((page) => ({
 				id: page.id,
@@ -26,7 +30,8 @@ export const load: PageServerLoad = async () => {
 };
 
 export const actions: Actions = {
-	delete: async ({ request }) => {
+	delete: async ({ request, locals }) => {
+		assertPermission(locals.user, "content:manage");
 		const admin = getServiceRoleClient();
 		const formData = await request.formData();
 		const id = formData.get("id");
@@ -40,7 +45,8 @@ export const actions: Actions = {
 		return { success: true };
 	},
 
-	bulkDelete: async ({ request }) => {
+	bulkDelete: async ({ request, locals }) => {
+		assertPermission(locals.user, "content:manage");
 		const admin = getServiceRoleClient();
 		const formData = await request.formData();
 		const idsRaw = formData.get("ids");

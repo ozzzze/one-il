@@ -1,5 +1,5 @@
 <script lang="ts">
-	import favicon from "$lib/assets/favicon.svg";
+	import ilLogo from "$lib/assets/layout/il-logo.png";
 	import { ModeWatcher } from "mode-watcher";
 	import { MetaTags } from "svelte-meta-tags";
 	import { onNavigate } from "$app/navigation";
@@ -19,20 +19,20 @@
 </script>
 
 <MetaTags
-	title="SvelteForge Admin"
-	titleTemplate="%s | SvelteForge Admin"
+	title="ONE-IL"
+	titleTemplate="%s | ONE-IL"
 	description="A full-featured admin dashboard built with SvelteKit 2, Svelte 5, Tailwind CSS 4, Supabase, and session-based auth."
 	openGraph={{
 		type: "website",
-		url: "https://svelteforge-admin.dev",
-		title: "SvelteForge Admin",
+		url: "https://one-il.dev",
+		title: "ONE-IL",
 		description:
 			"A full-featured admin dashboard built with SvelteKit 2, Svelte 5, Tailwind CSS 4, Supabase, and session-based auth.",
-		siteName: "SvelteForge Admin",
+		siteName: "ONE-IL",
 	}}
 	twitter={{
 		cardType: "summary",
-		title: "SvelteForge Admin",
+		title: "ONE-IL",
 		description:
 			"A full-featured admin dashboard built with SvelteKit 2, Svelte 5, Tailwind CSS 4, Supabase, and session-based auth.",
 	}}
@@ -41,7 +41,7 @@
 <ModeWatcher />
 
 <svelte:head>
-	<link rel="icon" href={favicon} />
+	<link rel="icon" href={ilLogo} />
 </svelte:head>
 
 {@render children()}

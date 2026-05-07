@@ -20,7 +20,7 @@
 </script>
 
 <svelte:head>
-	<title>Locked - SvelteForge Admin</title>
+	<title>Locked - ONE-IL</title>
 </svelte:head>
 
 <div class="bg-background flex min-h-screen items-center justify-center p-4">

@@ -22,6 +22,7 @@
 	import AlertTriangleIcon from "@lucide/svelte/icons/alert-triangle";
 	import CalendarIcon from "@lucide/svelte/icons/calendar";
 	import WrenchIcon from "@lucide/svelte/icons/wrench";
+	import { roleOptions } from "$lib/auth/roles.js";
 
 	let { data, form } = $props();
 
@@ -54,6 +55,10 @@
 		if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
 		return `${Math.floor(seconds / 86400)}d ago`;
 	}
+
+	const defaultRoleText = $derived(
+		roleOptions.find((option) => option.value === data.settings.defaultRole)?.label ?? data.settings.defaultRole
+	);
 
 	const notifLabels: Record<string, { label: string; description: string; icon: typeof BellIcon }> =
 		{
@@ -91,7 +96,7 @@
 </script>
 
 <svelte:head>
-	<title>Settings - SvelteForge Admin</title>
+	<title>Settings - ONE-IL</title>
 </svelte:head>
 
 <div class="space-y-6">
@@ -179,7 +184,7 @@
 				</Card.Header>
 				<Card.Content>
 					<div class="space-y-4">
-						{#each data.sessions as session}
+						{#each data.sessions as session, i (session.id)}
 							{@const ua = parseUserAgent(session.userAgent)}
 							{@const isCurrent = session.id === data.currentSessionId}
 							{@const DeviceIcon = getDeviceIcon(ua.device)}
@@ -226,7 +231,7 @@
 				</Card.Header>
 				<Card.Content>
 					<form method="POST" action="?/updateNotificationPrefs" use:enhance class="space-y-4">
-						{#each Object.entries(notifLabels) as [key, { label, description, icon: Icon }]}
+						{#each Object.entries(notifLabels) as [key, { label, description, icon: Icon }], i (key)}
 							<div class="flex items-center justify-between rounded-lg border p-4">
 								<div class="flex items-center gap-3">
 									<Icon class="text-muted-foreground size-5" />
@@ -281,12 +286,12 @@
 								<Label>Default User Role</Label>
 								<Select.Root name="defaultRole" type="single" value={data.settings.defaultRole}>
 									<Select.Trigger>
-										<span class="capitalize">{data.settings.defaultRole}</span>
+										<span>{defaultRoleText}</span>
 									</Select.Trigger>
 									<Select.Content>
-										<Select.Item value="admin">Admin</Select.Item>
-										<Select.Item value="editor">Editor</Select.Item>
-										<Select.Item value="viewer">Viewer</Select.Item>
+										{#each roleOptions as option, i (option.value)}
+											<Select.Item value={option.value}>{option.label}</Select.Item>
+										{/each}
 									</Select.Content>
 								</Select.Root>
 								<p class="text-muted-foreground text-xs">Role assigned to new users by default.</p>
