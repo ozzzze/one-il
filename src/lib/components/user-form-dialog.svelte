@@ -24,6 +24,14 @@
 
 	const title = $derived(mode === "create" ? "Add User" : "Edit User");
 	const action = $derived(mode === "create" ? "?/create" : "?/update");
+
+	let role = $derived(user?.role ?? "viewer");
+
+	$effect(() => {
+		role = user?.role ?? "viewer";
+	});
+
+	const roleText = $derived(role ? role[0].toUpperCase() + role.slice(1) : "");
 </script>
 
 <Dialog.Root bind:open>
@@ -66,9 +74,9 @@
 				{/if}
 				<div class="grid gap-2">
 					<Label for="role">Role</Label>
-					<Select.Root name="role" type="single" value={user?.role ?? "viewer"}>
+					<Select.Root name="role" type="single" bind:value={role}>
 						<Select.Trigger>
-							<span>{user?.role ?? "viewer"}</span>
+							<span>{roleText}</span>
 						</Select.Trigger>
 						<Select.Content>
 							<Select.Item value="admin">Admin</Select.Item>
