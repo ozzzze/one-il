@@ -289,10 +289,10 @@
 			</Card.Header>
 			<Card.Content>
 				{#key mode.current}
-					{#if contentTrendData().length > 0}
+					{#if contentTrendData.length > 0}
 						<Chart.Container config={contentTrendConfig} class="h-[300px] w-full">
 							<BarChart
-								data={contentTrendData()}
+								data={contentTrendData}
 								x="month"
 								xScale={scaleBand().padding(0.3)}
 								series={[

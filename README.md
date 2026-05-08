@@ -433,6 +433,31 @@ Components are installed to `src/lib/components/ui/`. Do not edit them directly 
 
 Edit `src/app.css` to customize the color palette. ONE-IL uses Tailwind CSS 4's native CSS theming with OKLCH colors and CSS custom properties for light/dark mode.
 
+### Fonts (Google Sans)
+
+ONE-IL uses **Google Sans** as the default UI font, self-hosted from `static/fonts/google-sans/`. The font files are **not committed to the repo** (proprietary Google font, ignored via `.gitignore`). The app falls back gracefully to `system-ui` when fonts are missing, so the app still runs without them — just without the Google Sans look.
+
+To enable Google Sans locally:
+
+1. Obtain `GoogleSans-*.woff2` files (8 weights/styles: Regular, Italic, Medium, MediumItalic, SemiBold, SemiBoldItalic, Bold, BoldItalic).
+2. Place them in `static/fonts/google-sans/` matching these exact filenames:
+
+   ```text
+   static/fonts/google-sans/
+   ├── GoogleSans-Regular.woff2
+   ├── GoogleSans-Italic.woff2
+   ├── GoogleSans-Medium.woff2
+   ├── GoogleSans-MediumItalic.woff2
+   ├── GoogleSans-SemiBold.woff2
+   ├── GoogleSans-SemiBoldItalic.woff2
+   ├── GoogleSans-Bold.woff2
+   └── GoogleSans-BoldItalic.woff2
+   ```
+
+3. Restart `pnpm dev` — fonts are loaded via `@font-face` declarations in `src/app.css`.
+
+To use a different font, edit `--font-sans` under `@theme inline` in `src/app.css` and update the `@font-face` declarations accordingly.
+
 ### Adding New Routes
 
 1. Create a new directory under `src/routes/(app)/` for protected routes

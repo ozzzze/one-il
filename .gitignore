@@ -27,3 +27,6 @@ vite.config.ts.timestamp-*
 *.db-journal
 *.db-wal
 *.db-shm
+
+# Proprietary fonts (do not commit)
+/static/fonts/google-sans/
