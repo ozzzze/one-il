@@ -17,6 +17,8 @@
 	import { Badge } from "$lib/components/ui/badge/index.js";
 	import { resolve } from "$app/paths";
 	import type { Role } from "$lib/auth/roles.js";
+	import { getUiLabels } from "$lib/content/labels.js";
+	import type { Locale } from "$lib/i18n/locales.js";
 	import { getVisibleMenuGroups } from "$lib/navigation/menu.js";
 	import { menuIcons } from "$lib/navigation/icons.js";
 
@@ -28,10 +30,11 @@
 			role: Role;
 		};
 		allowedMenuIds: string[];
+		locale: Locale;
 		notificationCount?: number;
 	};
 
-	let { user, allowedMenuIds, notificationCount = 0 }: Props = $props();
+	let { user, allowedMenuIds, locale, notificationCount = 0 }: Props = $props();
 
 	function getInitials(name: string) {
 		return name
@@ -42,7 +45,8 @@
 			.slice(0, 2);
 	}
 
-	const visibleMenuGroups = $derived(getVisibleMenuGroups(allowedMenuIds));
+	const visibleMenuGroups = $derived(getVisibleMenuGroups(allowedMenuIds, locale));
+	const ui = $derived(getUiLabels(locale));
 
 	function menuBadge(id: string) {
 		return id === "notifications" && notificationCount > 0 ? String(notificationCount) : undefined;
@@ -85,7 +89,7 @@
 							<Sidebar.MenuItem>
 								<Sidebar.MenuButton>
 									{#snippet child({ props })}
-										<a href={resolve(item.href)} {...props}>
+										<a href={item.href} {...props}>
 											<Icon class="size-4" />
 											<span>{item.label}</span>
 										</a>
@@ -111,7 +115,7 @@
 			class="group flex items-center gap-2 rounded-lg border border-dashed border-amber-500/40 bg-amber-500/5 px-3 py-2.5 transition-all hover:border-amber-500 hover:bg-amber-500/10"
 		>
 			<CrownIcon class="size-4 text-amber-500" />
-			<span class="flex-1 text-sm font-semibold">Go Pro</span>
+			<span class="flex-1 text-sm font-semibold">{ui.goPro}</span>
 			<Badge class="bg-amber-500 text-white hover:bg-amber-600 text-[10px] px-1.5">PRO</Badge>
 			<ExternalLinkIcon class="size-3 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
 		</a>
@@ -141,7 +145,7 @@
 					</DropdownMenu.Trigger>
 					<DropdownMenu.Content class="w-56" align="end" side="top">
 						<DropdownMenu.Label class="flex items-center gap-2">
-							My Account
+							{ui.myAccount}
 							<Badge variant="outline" class="text-xs capitalize">{user.role}</Badge>
 						</DropdownMenu.Label>
 						<DropdownMenu.Separator />
@@ -149,7 +153,7 @@
 							{#snippet child({ props })}
 								<a href={resolve("/settings")} {...props}>
 									<UserIcon class="mr-2 size-4" />
-									Profile
+									{ui.profile}
 								</a>
 							{/snippet}
 						</DropdownMenu.Item>
@@ -157,7 +161,7 @@
 							{#snippet child({ props })}
 								<a href={resolve("/notifications")} {...props}>
 									<BellRingIcon class="mr-2 size-4" />
-									Notifications
+									{ui.notifications}
 									{#if notificationCount > 0}
 										<Badge variant="secondary" class="ml-auto text-[10px] h-5 px-1.5">{notificationCount}</Badge>
 									{/if}
@@ -168,7 +172,7 @@
 							{#snippet child({ props })}
 								<a href={resolve("/settings")} {...props}>
 									<SettingsIcon class="mr-2 size-4" />
-									Settings
+									{ui.settings}
 								</a>
 							{/snippet}
 						</DropdownMenu.Item>
@@ -177,7 +181,7 @@
 							{#snippet child({ props })}
 								<a href={resolve("/lock")} {...props}>
 									<LockIcon class="mr-2 size-4" />
-									Lock Screen
+									{ui.lockScreen}
 								</a>
 							{/snippet}
 						</DropdownMenu.Item>
@@ -185,7 +189,7 @@
 							{#snippet child({ props })}
 								<a href={resolve("/settings")} {...props}>
 									<KeyboardIcon class="mr-2 size-4" />
-									Keyboard Shortcuts
+									{ui.keyboardShortcuts}
 								</a>
 							{/snippet}
 						</DropdownMenu.Item>
@@ -193,7 +197,7 @@
 							{#snippet child({ props })}
 								<a href={resolve("/")} {...props}>
 									<HelpCircleIcon class="mr-2 size-4" />
-									Help & Support
+									{ui.helpSupport}
 								</a>
 							{/snippet}
 						</DropdownMenu.Item>
@@ -204,7 +208,7 @@
 								(document.getElementById("logout-form") as HTMLFormElement | null)?.requestSubmit()}
 						>
 							<LogOutIcon class="mr-2 size-4" />
-							Log out
+							{ui.logOut}
 						</DropdownMenu.Item>
 					</DropdownMenu.Content>
 					<form id="logout-form" method="POST" action={resolve("/logout")} class="hidden"></form>

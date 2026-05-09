@@ -16,7 +16,35 @@
 		createdAt: Date | null;
 	};
 
-	let { count = 0, notifications = [] }: { count: number; notifications: Notification[] } = $props();
+let {
+	count = 0,
+	notifications = [],
+	locale = "en",
+}: { count: number; notifications: Notification[]; locale?: "en" | "th" } = $props();
+
+const copy = $derived.by(() =>
+	locale === "th"
+		? {
+				notifications: "การแจ้งเตือน",
+				unread: (n: number) => `ยังไม่อ่าน ${n}`,
+				none: "ไม่มีการแจ้งเตือน",
+				viewAll: "ดูการแจ้งเตือนทั้งหมด",
+				justNow: "เมื่อสักครู่",
+				minAgo: (m: number) => `${m} นาทีที่แล้ว`,
+				hourAgo: (h: number) => `${h} ชม. ที่แล้ว`,
+				dayAgo: (d: number) => `${d} วันที่แล้ว`,
+			}
+		: {
+				notifications: "Notifications",
+				unread: (n: number) => `${n} unread`,
+				none: "No notifications",
+				viewAll: "View all notifications",
+				justNow: "just now",
+				minAgo: (m: number) => `${m}m ago`,
+				hourAgo: (h: number) => `${h}h ago`,
+				dayAgo: (d: number) => `${d}d ago`,
+			}
+);
 
 	function typeIcon(type: string) {
 		switch (type) {
@@ -49,12 +77,12 @@
 		const now = new Date();
 		const diff = now.getTime() - new Date(date).getTime();
 		const minutes = Math.floor(diff / 60000);
-		if (minutes < 1) return "just now";
-		if (minutes < 60) return `${minutes}m ago`;
+	if (minutes < 1) return copy.justNow;
+	if (minutes < 60) return copy.minAgo(minutes);
 		const hours = Math.floor(minutes / 60);
-		if (hours < 24) return `${hours}h ago`;
+	if (hours < 24) return copy.hourAgo(hours);
 		const days = Math.floor(hours / 24);
-		return `${days}d ago`;
+	return copy.dayAgo(days);
 	}
 </script>
 
@@ -70,16 +98,16 @@
 						</span>
 					{/if}
 				</span>
-				<span class="sr-only">Notifications</span>
+				<span class="sr-only">{copy.notifications}</span>
 			</Button>
 		{/snippet}
 	</Popover.Trigger>
 	<Popover.Content class="w-80 overflow-hidden p-0" align="end">
 		<div class="border-b px-4 py-3">
 			<div class="flex items-center justify-between">
-				<h4 class="text-sm font-semibold">Notifications</h4>
+				<h4 class="text-sm font-semibold">{copy.notifications}</h4>
 				{#if count > 0}
-					<Badge variant="secondary" class="text-[10px]">{count} unread</Badge>
+					<Badge variant="secondary" class="text-[10px]">{copy.unread(count)}</Badge>
 				{/if}
 			</div>
 		</div>
@@ -87,7 +115,7 @@
 			{#if notifications.length === 0}
 				<div class="flex flex-col items-center gap-2 py-8">
 					<BellIcon class="text-muted-foreground size-8" />
-					<p class="text-muted-foreground text-xs">No notifications</p>
+					<p class="text-muted-foreground text-xs">{copy.none}</p>
 				</div>
 			{:else}
 				<div class="divide-y">
@@ -109,7 +137,7 @@
 		</div>
 		<div class="border-t px-4 py-2">
 			<a href="/notifications" class="text-primary block text-center text-xs font-medium hover:underline">
-				View all notifications
+				{copy.viewAll}
 			</a>
 		</div>
 	</Popover.Content>

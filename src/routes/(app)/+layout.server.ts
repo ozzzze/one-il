@@ -45,6 +45,7 @@ export const load: LayoutServerLoad = async ({ locals }) => {
 
 	return {
 		user: locals.user,
+		locale: locals.locale,
 		permissions: getPermissions(locals.user.role),
 		allowedMenuIds: getAllowedMenuIds(locals.user.role),
 		unreadNotificationCount: count ?? 0,

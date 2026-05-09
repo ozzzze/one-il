@@ -3,16 +3,22 @@
 	import { Button } from "$lib/components/ui/button/index.js";
 	import { base } from "$app/paths";
 	import LayoutGridIcon from "@lucide/svelte/icons/layout-grid";
+	import { getUiLabels } from "$lib/content/labels.js";
+	import type { Locale } from "$lib/i18n/locales.js";
 	import { getVisibleCommandItems } from "$lib/navigation/menu.js";
 	import { menuIcons } from "$lib/navigation/icons.js";
 
 	type Props = {
 		allowedMenuIds: string[];
+		locale: Locale;
 	};
 
-	let { allowedMenuIds }: Props = $props();
+	let { allowedMenuIds, locale }: Props = $props();
 
-	const apps = $derived(getVisibleCommandItems(allowedMenuIds).filter((item) => !item.id.startsWith("gateway-")));
+	const apps = $derived(
+		getVisibleCommandItems(allowedMenuIds, locale).filter((item) => !item.id.startsWith("gateway-"))
+	);
+	const ui = $derived(getUiLabels(locale));
 
 	let open = $state(false);
 
@@ -26,7 +32,7 @@
 		{#snippet child({ props })}
 			<Button variant="ghost" size="icon" {...props}>
 				<LayoutGridIcon class="size-4" />
-				<span class="sr-only">Apps menu</span>
+				<span class="sr-only">{ui.appsMenu}</span>
 			</Button>
 		{/snippet}
 	</Popover.Trigger>

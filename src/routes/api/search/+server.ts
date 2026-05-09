@@ -1,6 +1,7 @@
 import { json, error } from "@sveltejs/kit";
 import { getServiceRoleClient } from "$lib/server/supabase-admin.js";
 import { hasPermission } from "$lib/auth/roles.js";
+import { getUiLabels } from "$lib/content/labels.js";
 import type { RequestHandler } from "./$types.js";
 
 export const GET: RequestHandler = async ({ url, locals }) => {
@@ -14,11 +15,20 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 	}
 
 	const admin = getServiceRoleClient();
+	const ui = getUiLabels(locals.locale);
 	const canSearchUsers = hasPermission(locals.user.role, "users:manage");
+	const canSearchEmployees = hasPermission(locals.user.role, "employees:manage");
 	const canSearchPages = hasPermission(locals.user.role, "content:view");
-	const [userResultsRes, pageResultsRes, notificationResultsRes] = await Promise.all([
+	const [userResultsRes, employeeResultsRes, pageResultsRes, notificationResultsRes] = await Promise.all([
 		canSearchUsers
 			? admin.from("users").select("id,name,email").or(`name.ilike.%${q}%,email.ilike.%${q}%`).limit(5)
+			: Promise.resolve({ data: [] }),
+		canSearchEmployees
+			? admin
+					.from("employees")
+					.select("id,first_name,last_name,email,employee_no")
+					.or(`first_name.ilike.%${q}%,last_name.ilike.%${q}%,employee_no.ilike.%${q}%`)
+					.limit(5)
 			: Promise.resolve({ data: [] }),
 		canSearchPages
 			? admin.from("pages").select("id,title,slug").ilike("title", `%${q}%`).limit(5)
@@ -31,6 +41,7 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 			.limit(5),
 	]);
 	const userResults = userResultsRes.data ?? [];
+	const employeeResults = employeeResultsRes.data ?? [];
 	const pageResults = pageResultsRes.data ?? [];
 	const notificationResults = notificationResultsRes.data ?? [];
 
@@ -41,6 +52,13 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 			title: u.name,
 			subtitle: u.email,
 			href: "/users",
+		})),
+		...employeeResults.map((employee) => ({
+			type: "employee" as const,
+			id: employee.id,
+			title: `${employee.first_name} ${employee.last_name}`,
+			subtitle: employee.employee_no ?? employee.email ?? ui.employeeFallback,
+			href: "/employees",
 		})),
 		...pageResults.map((p) => ({
 			type: "page" as const,

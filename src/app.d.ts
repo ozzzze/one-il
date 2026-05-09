@@ -2,6 +2,7 @@
 import type { Session as SupabaseSession } from "@supabase/supabase-js";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { SessionUser } from "$lib/server/auth.js";
+import type { Locale } from "$lib/i18n/locales.js";
 
 declare global {
 	namespace App {
@@ -10,6 +11,7 @@ declare global {
 			supabase: SupabaseClient;
 			session: SupabaseSession | null;
 			user: SessionUser | null;
+			locale: Locale;
 		}
 		// interface PageData {}
 		// interface PageState {}

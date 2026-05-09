@@ -3,6 +3,7 @@ import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_PUBLISHABLE_KEY } from "$env/stati
 import { redirect, type Handle } from "@sveltejs/kit";
 import { sequence } from "@sveltejs/kit/hooks";
 import { loadSessionUser } from "$lib/server/auth.js";
+import { LOCALE_COOKIE, isLocale, resolveRequestLocale } from "$lib/i18n/locales.js";
 
 const supabaseHandle: Handle = async ({ event, resolve }) => {
 	event.locals.supabase = createServerClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_PUBLISHABLE_KEY, {
@@ -24,6 +25,25 @@ const supabaseHandle: Handle = async ({ event, resolve }) => {
 };
 
 const authGuard: Handle = async ({ event, resolve }) => {
+	event.locals.locale = resolveRequestLocale({
+		cookieLocale: event.cookies.get(LOCALE_COOKIE),
+		acceptLanguage: event.request.headers.get("accept-language"),
+	});
+
+	const lang = event.url.searchParams.get("lang");
+	if (isLocale(lang)) {
+		event.locals.locale = lang;
+		event.cookies.set(LOCALE_COOKIE, lang, {
+			path: "/",
+			sameSite: "lax",
+			maxAge: 60 * 60 * 24 * 365,
+		});
+
+		const next = new URL(event.url);
+		next.searchParams.delete("lang");
+		redirect(303, `${next.pathname}${next.search}`);
+	}
+
 	const supabase = event.locals.supabase;
 
 	const {

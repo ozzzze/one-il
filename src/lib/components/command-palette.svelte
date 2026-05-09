@@ -13,6 +13,8 @@
 	import UserIcon from "@lucide/svelte/icons/user";
 	import LoaderIcon from "@lucide/svelte/icons/loader";
 	import type { PermissionKey } from "$lib/auth/roles.js";
+	import { getUiLabels } from "$lib/content/labels.js";
+	import type { Locale } from "$lib/i18n/locales.js";
 	import { getVisibleCommandItems } from "$lib/navigation/menu.js";
 	import { menuIcons } from "$lib/navigation/icons.js";
 
@@ -27,17 +29,18 @@
 	type Props = {
 		allowedMenuIds: string[];
 		permissions: PermissionKey[];
+		locale: Locale;
 	};
 
-	let { allowedMenuIds, permissions }: Props = $props();
+	let { allowedMenuIds, permissions, locale }: Props = $props();
 
 	let open = $state(false);
 	let query = $state("");
 	let searchResults = $state<SearchResult[]>([]);
 	let loading = $state(false);
-	let debounceTimer: ReturnType<typeof setTimeout>;
 
-	const navItems = $derived(getVisibleCommandItems(allowedMenuIds));
+	const navItems = $derived(getVisibleCommandItems(allowedMenuIds, locale));
+	const ui = $derived(getUiLabels(locale));
 
 	function resultIcon(type: string) {
 		switch (type) {
@@ -65,8 +68,8 @@
 
 	$effect(() => {
 		const q = query;
-		clearTimeout(debounceTimer);
-		debounceTimer = setTimeout(() => fetchSearch(q), 250);
+		const timer = setTimeout(() => fetchSearch(q), 250);
+		return () => clearTimeout(timer);
 	});
 
 	function withBase(path: string) {
@@ -103,7 +106,7 @@
 	onclick={() => (open = true)}
 >
 	<SearchIcon class="size-3.5" />
-	<span class="hidden sm:inline">Search...</span>
+	<span class="hidden sm:inline">{ui.search}</span>
 	<kbd class="bg-background pointer-events-none hidden h-5 items-center gap-0.5 rounded border px-1.5 font-mono text-[10px] font-medium sm:inline-flex">
 		<span class="text-xs">&#8984;</span>K
 	</kbd>
@@ -117,13 +120,13 @@
 		<Command.Root
 			shouldFilter={true}
 			loop
-			label="Command palette"
+			label={ui.commandPaletteLabel}
 		>
 			<div class="flex items-center border-b px-3">
 				<SearchIcon class="text-muted-foreground mr-2 size-4 shrink-0" />
 				<Command.Input
 					class="placeholder:text-muted-foreground flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none disabled:cursor-not-allowed disabled:opacity-50"
-					placeholder="Type a command or search..."
+					placeholder={ui.commandPalettePlaceholder}
 					bind:value={query}
 				/>
 				{#if loading}
@@ -132,14 +135,14 @@
 			</div>
 			<Command.List class="max-h-[300px] overflow-y-auto overflow-x-hidden px-1 py-1.5">
 				<Command.Empty class="text-muted-foreground py-6 text-center text-sm">
-					No results found.
+					{ui.noResultsFound}
 				</Command.Empty>
 
 				<Command.Group value="navigation">
 					<Command.GroupHeading
 						class="text-muted-foreground px-2 py-1.5 text-xs font-medium"
 					>
-						Navigation
+						{ui.navigation}
 					</Command.GroupHeading>
 					<Command.GroupItems>
 						{#each navItems as item, i (item.id)}
@@ -163,7 +166,7 @@
 						<Command.GroupHeading
 							class="text-muted-foreground px-2 py-1.5 text-xs font-medium"
 						>
-							Search Results
+							{ui.searchResults}
 						</Command.GroupHeading>
 						<Command.GroupItems>
 							{#each searchResults as result (result.id)}
@@ -190,39 +193,39 @@
 					<Command.GroupHeading
 						class="text-muted-foreground px-2 py-1.5 text-xs font-medium"
 					>
-						Quick Actions
+						{ui.quickActions}
 					</Command.GroupHeading>
 					<Command.GroupItems>
 						{#if can("requests:create")}
 							<Command.Item
-								value="New Request"
+								value={ui.newRequest}
 								keywords={["create", "add", "leave", "booking", "borrow", "service"]}
 								onSelect={() => navigate("/requests")}
 								class="data-selected:bg-accent data-selected:text-accent-foreground relative flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none select-none"
 							>
 								<TicketCheckIcon class="text-muted-foreground size-4" />
-								New Request
+								{ui.newRequest}
 							</Command.Item>
 						{/if}
 						{#if can("content:manage")}
 							<Command.Item
-								value="New Page"
+								value={ui.newPage}
 								keywords={["create", "add", "content"]}
 								onSelect={() => navigate("/content/new")}
 								class="data-selected:bg-accent data-selected:text-accent-foreground relative flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none select-none"
 							>
 								<PlusIcon class="text-muted-foreground size-4" />
-								New Content Page
+								{ui.newContentPage}
 							</Command.Item>
 						{/if}
 						<Command.Item
-							value="Toggle Theme"
+							value={ui.toggleTheme}
 							keywords={["dark", "light", "mode", "switch"]}
 							onSelect={() => handleAction(toggleMode)}
 							class="data-selected:bg-accent data-selected:text-accent-foreground relative flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none select-none"
 						>
 							<SunMoonIcon class="text-muted-foreground size-4" />
-							Toggle Theme
+							{ui.toggleTheme}
 						</Command.Item>
 					</Command.GroupItems>
 				</Command.Group>
