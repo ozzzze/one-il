@@ -16,6 +16,8 @@ export const MENU_ITEM_LABELS = {
 	requests: "Requests",
 	modules: "Modules",
 	users: "Users",
+	employees: "Employees",
+	roomBooking: "Room Booking",
 	content: "Content",
 	roles: "Roles",
 	notifications: "Notifications",

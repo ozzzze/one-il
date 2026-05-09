@@ -11,9 +11,11 @@ export type IconKey =
 	| "gateway"
 	| "notifications"
 	| "requests"
+	| "room"
 	| "roles"
 	| "settings"
 	| "users"
+	| "employees"
 	| "office"
 	| "academic"
 	| "services";
@@ -87,6 +89,14 @@ export const menuGroups: MenuGroup[] = [
 				requiredPermissions: ["users:manage"],
 			},
 			{
+				id: "employees",
+				label: MENU_ITEM_LABELS.employees,
+				href: "/employees",
+				iconKey: "employees",
+				keywords: ["employee", "personnel", "organization", "supervisor", "assignment"],
+				requiredPermissions: ["employees:manage"],
+			},
+			{
 				id: "content",
 				label: MENU_ITEM_LABELS.content,
 				href: "/content",
@@ -138,6 +148,14 @@ export const menuGroups: MenuGroup[] = [
 				iconKey: "docs",
 				keywords: ["help", "guide", "documentation"],
 				requiredPermissions: ["profile:manage"],
+			},
+			{
+				id: "room-booking",
+				label: MENU_ITEM_LABELS.roomBooking,
+				href: "/room-booking",
+				iconKey: "room",
+				keywords: ["room", "booking", "meeting", "module mockup"],
+				requiredPermissions: ["requests:create"],
 			},
 		],
 	},

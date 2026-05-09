@@ -8,10 +8,12 @@ import GatewayIcon from "@lucide/svelte/icons/door-open";
 import NotificationsIcon from "@lucide/svelte/icons/bell";
 import OfficeIcon from "@lucide/svelte/icons/building-2";
 import RequestsIcon from "@lucide/svelte/icons/clipboard-list";
+import RoomIcon from "@lucide/svelte/icons/calendar-days";
 import RolesIcon from "@lucide/svelte/icons/shield";
 import ServicesIcon from "@lucide/svelte/icons/handshake";
 import SettingsIcon from "@lucide/svelte/icons/settings";
 import UsersIcon from "@lucide/svelte/icons/users";
+import EmployeesIcon from "@lucide/svelte/icons/network";
 import type { IconKey } from "./menu.js";
 import type { Component } from "svelte";
 
@@ -26,8 +28,10 @@ export const menuIcons = {
 	notifications: NotificationsIcon,
 	office: OfficeIcon,
 	requests: RequestsIcon,
+	room: RoomIcon,
 	roles: RolesIcon,
 	services: ServicesIcon,
 	settings: SettingsIcon,
 	users: UsersIcon,
+	employees: EmployeesIcon,
 } satisfies Record<IconKey, Component>;
