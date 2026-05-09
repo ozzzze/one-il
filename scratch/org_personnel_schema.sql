@@ -55,10 +55,17 @@ create table if not exists public.employees (
   first_name text not null,
   last_name text not null,
   email text unique,
+  user_id uuid references public.users (id) on delete set null,
+  app_role text check (
+    app_role is null or app_role in ('admin', 'editor', 'viewer', 'user')
+  ),
   status text not null default 'ACTIVE' check (status in ('ACTIVE', 'INACTIVE')),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+create unique index if not exists uq_employees_user_id on public.employees (user_id)
+  where user_id is not null;
 
 -- 4) Assignment of employee to org unit and position
 create table if not exists public.employee_assignments (

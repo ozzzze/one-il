@@ -58,6 +58,8 @@ create policy positions_employees_write on public.positions for all
 -- employees
 drop policy if exists employees_employees_read on public.employees;
 create policy employees_employees_read on public.employees for select using (public.has_employees_manage());
+drop policy if exists employees_self_read on public.employees;
+create policy employees_self_read on public.employees for select using (user_id = (select auth.uid()));
 drop policy if exists employees_employees_write on public.employees;
 create policy employees_employees_write on public.employees for all
   using (public.has_employees_manage())

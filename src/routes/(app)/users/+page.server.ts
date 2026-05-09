@@ -142,6 +142,9 @@ export const actions: Actions = {
 			return fail(400, { message: t.profileTaken });
 		}
 
+		// Matching employee rows are linked and profile role/name synced via DB trigger
+		// `users_after_insert_link_employee` → `link_employee_user_by_email`.
+
 		return { success: true };
 	},
 
