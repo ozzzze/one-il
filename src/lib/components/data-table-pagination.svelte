@@ -10,11 +10,36 @@
 		totalItems = 0,
 		pageSize = $bindable(10),
 		currentPage = $bindable(1),
+		locale = "en",
 	}: {
 		totalItems: number;
 		pageSize: number;
 		currentPage: number;
+		locale?: "en" | "th";
 	} = $props();
+	const copy = $derived.by(() =>
+		locale === "th"
+			? {
+					showing: "แสดง",
+					of: "จาก",
+					noResults: "ไม่พบผลลัพธ์",
+					rows: "แถว",
+					firstPage: "หน้าแรก",
+					previousPage: "หน้าก่อนหน้า",
+					nextPage: "หน้าถัดไป",
+					lastPage: "หน้าสุดท้าย",
+				}
+			: {
+					showing: "Showing",
+					of: "of",
+					noResults: "No results",
+					rows: "Rows",
+					firstPage: "First page",
+					previousPage: "Previous page",
+					nextPage: "Next page",
+					lastPage: "Last page",
+				}
+	);
 
 	const totalPages = $derived(Math.max(1, Math.ceil(totalItems / pageSize)));
 	const startItem = $derived((currentPage - 1) * pageSize + 1);
@@ -30,14 +55,14 @@
 <div class="flex items-center justify-between px-2 py-4">
 	<div class="text-muted-foreground text-sm">
 		{#if totalItems > 0}
-			Showing {startItem}–{endItem} of {totalItems}
+			{copy.showing} {startItem}–{endItem} {copy.of} {totalItems}
 		{:else}
-			No results
+			{copy.noResults}
 		{/if}
 	</div>
 	<div class="flex items-center gap-4">
 		<div class="flex items-center gap-2">
-			<span class="text-muted-foreground text-sm">Rows</span>
+			<span class="text-muted-foreground text-sm">{copy.rows}</span>
 			<Select.Root
 				type="single"
 				value={String(pageSize)}
@@ -67,7 +92,7 @@
 				onclick={() => goToPage(1)}
 			>
 				<ChevronsLeftIcon class="size-4" />
-				<span class="sr-only">First page</span>
+				<span class="sr-only">{copy.firstPage}</span>
 			</Button>
 			<Button
 				variant="outline"
@@ -77,7 +102,7 @@
 				onclick={() => goToPage(currentPage - 1)}
 			>
 				<ChevronLeftIcon class="size-4" />
-				<span class="sr-only">Previous page</span>
+				<span class="sr-only">{copy.previousPage}</span>
 			</Button>
 			<span class="text-muted-foreground px-2 text-sm">
 				{currentPage} / {totalPages}
@@ -90,7 +115,7 @@
 				onclick={() => goToPage(currentPage + 1)}
 			>
 				<ChevronRightIcon class="size-4" />
-				<span class="sr-only">Next page</span>
+				<span class="sr-only">{copy.nextPage}</span>
 			</Button>
 			<Button
 				variant="outline"
@@ -100,7 +125,7 @@
 				onclick={() => goToPage(totalPages)}
 			>
 				<ChevronsRightIcon class="size-4" />
-				<span class="sr-only">Last page</span>
+				<span class="sr-only">{copy.lastPage}</span>
 			</Button>
 		</div>
 	</div>

@@ -12,9 +12,25 @@
 		userId: string;
 		userName: string;
 		currentRole: Role;
+	locale?: "en" | "th";
 	};
 
-	let { open = $bindable(false), userId, userName, currentRole }: Props = $props();
+let { open = $bindable(false), userId, userName, currentRole, locale = "en" }: Props = $props();
+const copy = $derived.by(() =>
+	locale === "th"
+		? {
+				title: "เปลี่ยนบทบาท",
+				description: (name: string, role: Role) => `เปลี่ยนบทบาทของ ${name} บทบาทปัจจุบัน: ${role}`,
+				newRole: "บทบาทใหม่",
+				updateRole: "อัปเดตบทบาท",
+			}
+		: {
+				title: "Change Role",
+				description: (name: string, role: Role) => `Change role for ${name}. Current role: ${role}.`,
+				newRole: "New Role",
+				updateRole: "Update Role",
+			}
+);
 
 	let newRole: Role = $derived(currentRole);
 
@@ -24,9 +40,9 @@
 <Dialog.Root bind:open>
 	<Dialog.Content class="sm:max-w-[350px]">
 		<Dialog.Header>
-			<Dialog.Title>Change Role</Dialog.Title>
+			<Dialog.Title>{copy.title}</Dialog.Title>
 			<Dialog.Description>
-				Change role for {userName}. Current role: {currentRole}.
+				{copy.description(userName, currentRole)}
 			</Dialog.Description>
 		</Dialog.Header>
 		<form method="POST" action="?/changeRole" use:enhance={() => {
@@ -40,7 +56,7 @@
 			<input type="hidden" name="userId" value={userId} />
 			<div class="grid gap-4 py-4">
 				<div class="grid gap-2">
-					<Label for="newRole">New Role</Label>
+					<Label for="newRole">{copy.newRole}</Label>
 					<Select.Root name="newRole" type="single" bind:value={newRole}>
 						<Select.Trigger>
 							<span>{newRoleText}</span>
@@ -54,7 +70,7 @@
 				</div>
 			</div>
 			<Dialog.Footer>
-				<Button type="submit">Update Role</Button>
+				<Button type="submit">{copy.updateRole}</Button>
 			</Dialog.Footer>
 		</form>
 	</Dialog.Content>

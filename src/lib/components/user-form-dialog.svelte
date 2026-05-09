@@ -20,11 +20,46 @@
 		open: boolean;
 		mode: "create" | "edit";
 		user?: UserData | null;
+	locale?: "en" | "th";
 	};
 
-	let { open = $bindable(false), mode, user = null }: Props = $props();
+let { open = $bindable(false), mode, user = null, locale = "en" }: Props = $props();
 
-	const title = $derived(mode === "create" ? "Add User" : "Edit User");
+const copy = $derived.by(() =>
+	locale === "th"
+		? {
+				addUser: "เพิ่มผู้ใช้",
+				editUser: "แก้ไขผู้ใช้",
+				createDesc: "สร้างบัญชีผู้ใช้ใหม่",
+				editDesc: "อัปเดตรายละเอียดผู้ใช้",
+				name: "ชื่อ",
+				email: "อีเมล",
+				username: "ชื่อผู้ใช้",
+				usernamePlaceholder: "ตัวพิมพ์เล็ก, 3-31 ตัวอักษร",
+				password: "รหัสผ่าน",
+				passwordPlaceholder: "อย่างน้อย 6 ตัวอักษร",
+				role: "บทบาท",
+				create: "สร้าง",
+				saveChanges: "บันทึกการเปลี่ยนแปลง",
+			}
+		: {
+				addUser: "Add User",
+				editUser: "Edit User",
+				createDesc: "Create a new user account.",
+				editDesc: "Update user details.",
+				name: "Name",
+				email: "Email",
+				username: "Username",
+				usernamePlaceholder: "lowercase, 3-31 chars",
+				password: "Password",
+				passwordPlaceholder: "6+ characters",
+				role: "Role",
+				create: "Create",
+				saveChanges: "Save Changes",
+			}
+);
+
+const title = $derived(mode === "create" ? copy.addUser : copy.editUser);
 	const action = $derived(mode === "create" ? "?/create" : "?/update");
 
 	let role: Role = $derived(user?.role ?? "user");
@@ -37,7 +72,7 @@
 		<Dialog.Header>
 			<Dialog.Title>{title}</Dialog.Title>
 			<Dialog.Description>
-				{mode === "create" ? "Create a new user account." : "Update user details."}
+				{mode === "create" ? copy.createDesc : copy.editDesc}
 			</Dialog.Description>
 		</Dialog.Header>
 		<form method="POST" {action} use:enhance={() => {
@@ -53,25 +88,25 @@
 			{/if}
 			<div class="grid gap-4 py-4">
 				<div class="grid gap-2">
-					<Label for="name">Name</Label>
+					<Label for="name">{copy.name}</Label>
 					<Input id="name" name="name" value={user?.name ?? ""} required />
 				</div>
 				<div class="grid gap-2">
-					<Label for="email">Email</Label>
+					<Label for="email">{copy.email}</Label>
 					<Input id="email" name="email" type="email" value={user?.email ?? ""} required />
 				</div>
 				{#if mode === "create"}
 					<div class="grid gap-2">
-						<Label for="username">Username</Label>
-						<Input id="username" name="username" placeholder="lowercase, 3-31 chars" required />
+						<Label for="username">{copy.username}</Label>
+						<Input id="username" name="username" placeholder={copy.usernamePlaceholder} required />
 					</div>
 					<div class="grid gap-2">
-						<Label for="password">Password</Label>
-						<Input id="password" name="password" type="password" placeholder="6+ characters" required />
+						<Label for="password">{copy.password}</Label>
+						<Input id="password" name="password" type="password" placeholder={copy.passwordPlaceholder} required />
 					</div>
 				{/if}
 				<div class="grid gap-2">
-					<Label for="role">Role</Label>
+					<Label for="role">{copy.role}</Label>
 					<Select.Root name="role" type="single" bind:value={role}>
 						<Select.Trigger>
 							<span>{roleText}</span>
@@ -85,7 +120,7 @@
 				</div>
 			</div>
 			<Dialog.Footer>
-				<Button type="submit">{mode === "create" ? "Create" : "Save Changes"}</Button>
+				<Button type="submit">{mode === "create" ? copy.create : copy.saveChanges}</Button>
 			</Dialog.Footer>
 		</form>
 	</Dialog.Content>

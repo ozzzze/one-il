@@ -7,21 +7,39 @@
 		action: string;
 		id: string;
 		itemName?: string;
+	locale?: "en" | "th";
 	};
 
-	let { open = $bindable(false), action, id, itemName = "item" }: Props = $props();
+let { open = $bindable(false), action, id, itemName = "item", locale = "en" }: Props = $props();
+const copy = $derived.by(() =>
+	locale === "th"
+		? {
+				areYouSure: "ยืนยันการดำเนินการ?",
+				description: (name: string) =>
+					`การดำเนินการนี้จะลบ ${name} อย่างถาวร และไม่สามารถย้อนกลับได้`,
+				cancel: "ยกเลิก",
+				delete: "ลบ",
+			}
+		: {
+				areYouSure: "Are you sure?",
+				description: (name: string) =>
+					`This will permanently delete this ${name}. This action cannot be undone.`,
+				cancel: "Cancel",
+				delete: "Delete",
+			}
+);
 </script>
 
 <AlertDialog.Root bind:open>
 	<AlertDialog.Content>
 		<AlertDialog.Header>
-			<AlertDialog.Title>Are you sure?</AlertDialog.Title>
+			<AlertDialog.Title>{copy.areYouSure}</AlertDialog.Title>
 			<AlertDialog.Description>
-				This will permanently delete this {itemName}. This action cannot be undone.
+				{copy.description(itemName)}
 			</AlertDialog.Description>
 		</AlertDialog.Header>
 		<AlertDialog.Footer>
-			<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+			<AlertDialog.Cancel>{copy.cancel}</AlertDialog.Cancel>
 			<form method="POST" action={action} use:enhance={() => {
 				return async ({ update }) => {
 					await update();
@@ -30,7 +48,7 @@
 			}}>
 				<input type="hidden" name="id" value={id} />
 				<AlertDialog.Action type="submit" class="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-					Delete
+					{copy.delete}
 				</AlertDialog.Action>
 			</form>
 		</AlertDialog.Footer>
