@@ -17,6 +17,7 @@ export type IconKey =
 	| "settings"
 	| "users"
 	| "employees"
+	| "organization"
 	| "office"
 	| "academic"
 	| "services";
@@ -100,6 +101,23 @@ export function getMenuGroups(locale: Locale): MenuGroup[] {
 					iconKey: "employees",
 					keywords: ["employee", "personnel", "organization", "supervisor", "assignment"],
 					requiredPermissions: ["employees:manage"],
+				},
+				{
+					id: "organization",
+					label: itemLabels.organization,
+					href: "/organization/positions",
+					iconKey: "organization",
+					keywords: [
+						"organization",
+						"structure",
+						"position",
+						"org unit",
+						"department",
+						"ตำแหน่ง",
+						"หน่วยงาน",
+						"องค์กร",
+					],
+					requiredPermissions: ["organization:manage"],
 				},
 				{
 					id: "content",

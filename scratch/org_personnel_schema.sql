@@ -12,6 +12,7 @@ create table if not exists public.org_units (
   id uuid primary key default gen_random_uuid(),
   code text not null unique,
   name text not null,
+  name_en text,
   unit_type text not null check (
     unit_type in (
       'DIRECTOR_OFFICE',
@@ -33,6 +34,7 @@ create table if not exists public.positions (
   id uuid primary key default gen_random_uuid(),
   code text not null unique,
   name text not null,
+  name_en text,
   role_level int not null check (role_level between 1 and 4),
   can_command_staff boolean not null default false,
   deputy_category text null check (
@@ -266,32 +268,34 @@ execute function public.validate_singleton_active_roles();
 -- ======================================================
 -- Seed baseline positions for this org structure
 -- ======================================================
-insert into public.positions (code, name, role_level, can_command_staff, deputy_category)
+insert into public.positions (code, name, name_en, role_level, can_command_staff, deputy_category)
 values
-  ('DIRECTOR', 'ผู้อำนวยการ', 1, true, null),
-  ('DEPUTY_DIRECTOR', 'รองผู้อำนวยการฝ่ายบริหาร', 2, true, 'ADMIN'),
-  ('DEPUTY_DIRECTOR_RESEARCH', 'รองผู้อำนวยการฝ่ายวิจัยและนวัตกรรม', 2, true, 'RESEARCH'),
-  ('DEPUTY_DIRECTOR_EDU_NETWORK', 'รองผู้อำนวยการฝ่ายการศึกษาและเครือข่าย', 2, true, 'EDU_NETWORK'),
-  ('HEAD', 'หัวหน้างาน', 3, true, null),
-  ('STAFF', 'เจ้าหน้าที่', 4, false, null),
-  ('LECTURER', 'อาจารย์', 4, false, null),
-  ('PROGRAM_CHAIR', 'ประธานหลักสูตร', 2, false, null)
+  ('DIRECTOR', 'ผู้อำนวยการ', 'Director', 1, true, null),
+  ('DEPUTY_DIRECTOR', 'รองผู้อำนวยการฝ่ายบริหาร', 'Deputy Director (Administration)', 2, true, 'ADMIN'),
+  ('DEPUTY_DIRECTOR_RESEARCH', 'รองผู้อำนวยการฝ่ายวิจัยและนวัตกรรม', 'Deputy Director (Research and Innovation)', 2, true, 'RESEARCH'),
+  ('DEPUTY_DIRECTOR_EDU_NETWORK', 'รองผู้อำนวยการฝ่ายการศึกษาและเครือข่าย', 'Deputy Director (Education and Networks)', 2, true, 'EDU_NETWORK'),
+  ('HEAD', 'หัวหน้างาน', 'Section Head', 3, true, null),
+  ('STAFF', 'เจ้าหน้าที่', 'Staff', 4, false, null),
+  ('LECTURER', 'อาจารย์', 'Lecturer', 4, false, null),
+  ('PROGRAM_CHAIR', 'ประธานหลักสูตร', 'Program Chair', 2, false, null)
 on conflict (code) do update
 set
   name = excluded.name,
+  name_en = excluded.name_en,
   role_level = excluded.role_level,
   can_command_staff = excluded.can_command_staff,
   deputy_category = excluded.deputy_category,
   updated_at = now();
 
 -- Seed org units based on provided org chart
-insert into public.org_units (code, name, unit_type, parent_unit_id, sort_order)
+insert into public.org_units (code, name, name_en, unit_type, parent_unit_id, sort_order)
 values
-  ('DIRECTOR_OFFICE', 'สำนักงานผู้อำนวยการ', 'DIRECTOR_OFFICE', null, 1),
-  ('SCI_TECH_GROUP', 'กลุ่มวิชาวิทยาศาสตร์และเทคโนโลยีศึกษา', 'SCI_TECH_GROUP', null, 2)
+  ('DIRECTOR_OFFICE', 'สำนักงานผู้อำนวยการ', 'Director''s Office', 'DIRECTOR_OFFICE', null, 1),
+  ('SCI_TECH_GROUP', 'กลุ่มวิชาวิทยาศาสตร์และเทคโนโลยีศึกษา', 'Science and Educational Technology Group', 'SCI_TECH_GROUP', null, 2)
 on conflict (code) do update
 set
   name = excluded.name,
+  name_en = excluded.name_en,
   unit_type = excluded.unit_type,
   sort_order = excluded.sort_order,
   updated_at = now();
@@ -301,24 +305,25 @@ with base as (
   from public.org_units
   where code in ('DIRECTOR_OFFICE', 'SCI_TECH_GROUP')
 )
-insert into public.org_units (code, name, unit_type, parent_unit_id, sort_order)
-select 'SUPPORT_GENERAL_ADMIN', 'งานบริหารทั่วไป', 'SUPPORT_SECTION', b.id, 1
+insert into public.org_units (code, name, name_en, unit_type, parent_unit_id, sort_order)
+select 'SUPPORT_GENERAL_ADMIN', 'งานบริหารทั่วไป', 'General Administration', 'SUPPORT_SECTION', b.id, 1
 from base b where b.code = 'DIRECTOR_OFFICE'
 union all
-select 'SUPPORT_FINANCE_SUPPLY', 'งานคลังและพัสดุ', 'SUPPORT_SECTION', b.id, 2
+select 'SUPPORT_FINANCE_SUPPLY', 'งานคลังและพัสดุ', 'Finance and Supplies', 'SUPPORT_SECTION', b.id, 2
 from base b where b.code = 'DIRECTOR_OFFICE'
 union all
-select 'SUPPORT_EDUCATION', 'งานการศึกษา', 'SUPPORT_SECTION', b.id, 3
+select 'SUPPORT_EDUCATION', 'งานการศึกษา', 'Academic Affairs', 'SUPPORT_SECTION', b.id, 3
 from base b where b.code = 'DIRECTOR_OFFICE'
 union all
-select 'SUPPORT_IT', 'งานเทคโนโลยีสารสนเทศ', 'SUPPORT_SECTION', b.id, 4
+select 'SUPPORT_IT', 'งานเทคโนโลยีสารสนเทศ', 'Information Technology', 'SUPPORT_SECTION', b.id, 4
 from base b where b.code = 'DIRECTOR_OFFICE'
 union all
-select 'ACADEMIC_LECTURERS', 'คณาจารย์สถาบันฯ', 'ACADEMIC_SECTION', b.id, 1
+select 'ACADEMIC_LECTURERS', 'คณาจารย์สถาบันฯ', 'Institute Faculty', 'ACADEMIC_SECTION', b.id, 1
 from base b where b.code = 'SCI_TECH_GROUP'
 on conflict (code) do update
 set
   name = excluded.name,
+  name_en = excluded.name_en,
   unit_type = excluded.unit_type,
   parent_unit_id = excluded.parent_unit_id,
   sort_order = excluded.sort_order,

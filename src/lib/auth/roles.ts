@@ -91,6 +91,7 @@ export const permissionKeys = [
 	"content:manage",
 	"gateway:access",
 	"employees:manage",
+	"organization:manage",
 	"requests:view_own",
 	"requests:create",
 	"requests:update_own",

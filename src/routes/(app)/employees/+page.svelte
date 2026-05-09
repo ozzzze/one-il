@@ -131,14 +131,22 @@ const successMessageByAction = $derived.by<Record<string, string>>(() => ({
 		return `${supervisor.first_name} ${supervisor.last_name}`;
 	}
 
+	function localizedDisplayName(name: string, nameEn: string | null | undefined): string {
+		if (data.locale === "th") return name;
+		const en = nameEn?.trim();
+		return en && en.length > 0 ? en : name;
+	}
+
 	function positionLabel(assignment: Employee["primaryAssignment"]): string {
 		if (!assignment?.positions) return "—";
-		return `${assignment.positions.code} - ${assignment.positions.name}`;
+		const p = assignment.positions;
+		return `${p.code} - ${localizedDisplayName(p.name, p.name_en)}`;
 	}
 
 	function orgUnitLabel(assignment: Employee["primaryAssignment"]): string {
 		if (!assignment?.org_units) return "—";
-		return `${assignment.org_units.code} - ${assignment.org_units.name}`;
+		const u = assignment.org_units;
+		return `${u.code} - ${localizedDisplayName(u.name, u.name_en)}`;
 	}
 </script>
 
@@ -277,7 +285,9 @@ const successMessageByAction = $derived.by<Record<string, string>>(() => ({
 						>
 							<option value="">{copy.selectPosition}</option>
 							{#each data.positions as position, i (position.id)}
-								<option value={position.id}>{position.code} - {position.name}</option>
+								<option value={position.id}>
+									{localizedDisplayName(position.name, position.name_en)}
+								</option>
 							{/each}
 						</select>
 					</div>
@@ -289,7 +299,9 @@ const successMessageByAction = $derived.by<Record<string, string>>(() => ({
 						>
 							<option value="">{copy.selectOrgUnit}</option>
 							{#each data.orgUnits as orgUnit, i (orgUnit.id)}
-								<option value={orgUnit.id}>{orgUnit.code} - {orgUnit.name}</option>
+								<option value={orgUnit.id}>
+									{localizedDisplayName(orgUnit.name, orgUnit.name_en)}
+								</option>
 							{/each}
 						</select>
 						<Input type="date" name="startsAt" required />

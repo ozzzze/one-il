@@ -54,8 +54,14 @@ type EmployeeRow = {
 				starts_at: string;
 				ends_at: string | null;
 				is_primary: boolean;
-				positions: { id: string; name: string; code: string }[] | { id: string; name: string; code: string } | null;
-				org_units: { id: string; name: string; code: string }[] | { id: string; name: string; code: string } | null;
+				positions:
+					| { id: string; name: string; name_en: string | null; code: string }[]
+					| { id: string; name: string; name_en: string | null; code: string }
+					| null;
+				org_units:
+					| { id: string; name: string; name_en: string | null; code: string }[]
+					| { id: string; name: string; name_en: string | null; code: string }
+					| null;
 		  }[]
 		| null;
 	employee_supervisors:
@@ -80,8 +86,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 				id, employee_no, first_name, last_name, email, status, created_at,
 				employee_assignments(
 					id, starts_at, ends_at, is_primary,
-					positions(id, name, code),
-					org_units(id, name, code)
+					positions(id, name, name_en, code),
+					org_units(id, name, name_en, code)
 				),
 				employee_supervisors(
 					id, starts_at, ends_at,
@@ -90,8 +96,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 			`
 			)
 			.order("created_at", { ascending: true }),
-		admin.from("positions").select("id,code,name,role_level").order("role_level", { ascending: true }),
-		admin.from("org_units").select("id,code,name,unit_type,sort_order").order("sort_order", { ascending: true }),
+		admin.from("positions").select("id,code,name,name_en,role_level").order("role_level", { ascending: true }),
+		admin.from("org_units").select("id,code,name,name_en,unit_type,sort_order").order("sort_order", { ascending: true }),
 		admin.from("programs").select("id,code,name,is_active").order("name", { ascending: true }),
 	]);
 
