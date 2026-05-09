@@ -7,63 +7,7 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Google Sans — self-hosted from /static/fonts/google-sans */
-@font-face {
-	font-family: "Google Sans";
-	font-style: normal;
-	font-weight: 400;
-	font-display: swap;
-	src: url("/fonts/google-sans/GoogleSans-Regular.woff2") format("woff2");
-}
-@font-face {
-	font-family: "Google Sans";
-	font-style: italic;
-	font-weight: 400;
-	font-display: swap;
-	src: url("/fonts/google-sans/GoogleSans-Italic.woff2") format("woff2");
-}
-@font-face {
-	font-family: "Google Sans";
-	font-style: normal;
-	font-weight: 500;
-	font-display: swap;
-	src: url("/fonts/google-sans/GoogleSans-Medium.woff2") format("woff2");
-}
-@font-face {
-	font-family: "Google Sans";
-	font-style: italic;
-	font-weight: 500;
-	font-display: swap;
-	src: url("/fonts/google-sans/GoogleSans-MediumItalic.woff2") format("woff2");
-}
-@font-face {
-	font-family: "Google Sans";
-	font-style: normal;
-	font-weight: 600;
-	font-display: swap;
-	src: url("/fonts/google-sans/GoogleSans-SemiBold.woff2") format("woff2");
-}
-@font-face {
-	font-family: "Google Sans";
-	font-style: italic;
-	font-weight: 600;
-	font-display: swap;
-	src: url("/fonts/google-sans/GoogleSans-SemiBoldItalic.woff2") format("woff2");
-}
-@font-face {
-	font-family: "Google Sans";
-	font-style: normal;
-	font-weight: 700;
-	font-display: swap;
-	src: url("/fonts/google-sans/GoogleSans-Bold.woff2") format("woff2");
-}
-@font-face {
-	font-family: "Google Sans";
-	font-style: italic;
-	font-weight: 700;
-	font-display: swap;
-	src: url("/fonts/google-sans/GoogleSans-BoldItalic.woff2") format("woff2");
-}
+/* Optional Google Sans self-hosting was removed to avoid 404s when local font files are absent. */
 
 :root {
 	--radius: 0.625rem;
