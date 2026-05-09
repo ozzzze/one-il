@@ -1,6 +1,6 @@
 import { getServiceRoleClient } from "$lib/server/supabase-admin.js";
 import { fail } from "@sveltejs/kit";
-import { isRole, parseRole, roleDefinitions } from "$lib/auth/roles.js";
+import { getRoleDefinitions, isRole, parseRole } from "$lib/auth/roles.js";
 import { assertPermission } from "$lib/server/guards.js";
 import type { Actions, PageServerLoad } from "./$types.js";
 
@@ -11,6 +11,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		ascending: true,
 	});
 
+	const roleDefinitions = getRoleDefinitions(locals.locale);
 	const roles = roleDefinitions.map((role) => ({
 		...role,
 		users: (allUsers ?? []).filter((u) => parseRole(u.role) === role.name),

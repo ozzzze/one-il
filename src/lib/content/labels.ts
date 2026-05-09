@@ -53,6 +53,11 @@ const LABELS = {
 			newContentPage: "New Content Page",
 			toggleTheme: "Toggle Theme",
 			employeeFallback: "Employee",
+			language: "Language",
+			switchLanguage: "Switch language",
+			english: "English",
+			thai: "Thai",
+			formSaving: "Saving...",
 		},
 	},
 	th: {
@@ -107,6 +112,11 @@ const LABELS = {
 			newContentPage: "สร้างหน้าเนื้อหาใหม่",
 			toggleTheme: "สลับธีม",
 			employeeFallback: "บุคลากร",
+			language: "ภาษา",
+			switchLanguage: "สลับภาษา",
+			english: "อังกฤษ",
+			thai: "ไทย",
+			formSaving: "กำลังบันทึก...",
 		},
 	},
 } as const;

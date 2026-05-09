@@ -22,9 +22,30 @@
 	import AlertTriangleIcon from "@lucide/svelte/icons/alert-triangle";
 	import CalendarIcon from "@lucide/svelte/icons/calendar";
 	import WrenchIcon from "@lucide/svelte/icons/wrench";
-	import { roleOptions } from "$lib/auth/roles.js";
+	import { getRoleLabel, getRoleOptions, isRole } from "$lib/auth/roles.js";
+	import SaveSubmitButton from "$lib/components/save-submit-button.svelte";
+	import { getUiLabels } from "$lib/content/labels.js";
+	import { pendingEnhance } from "$lib/forms/pending-enhance.js";
 
 	let { data, form } = $props();
+
+	const uiLabels = $derived(getUiLabels(data.locale));
+	let savePendingProfile = $state(false);
+	let savePendingPassword = $state(false);
+	let savePendingNotifications = $state(false);
+	let savePendingSettings = $state(false);
+
+	let timezoneValue = $state("");
+	let defaultRoleValue = $state("");
+
+	$effect.pre(() => {
+		timezoneValue = data.settings.timezone;
+		defaultRoleValue = data.settings.defaultRole;
+	});
+
+	const defaultRoleLabel = $derived(
+		isRole(defaultRoleValue) ? getRoleLabel(defaultRoleValue, data.locale) : defaultRoleValue
+	);
 	const copy = $derived.by(() =>
 		data.locale === "th"
 			? {
@@ -191,9 +212,7 @@
 		return `${Math.floor(seconds / 86400)}d ago`;
 	}
 
-	const defaultRoleText = $derived(
-		roleOptions.find((option) => option.value === data.settings.defaultRole)?.label ?? data.settings.defaultRole
-	);
+	const roleOptions = $derived(getRoleOptions(data.locale));
 
 	const notifLabels = $derived.by(
 		() =>
@@ -259,7 +278,12 @@
 					<Card.Description>{copy.updateProfileDesc}</Card.Description>
 				</Card.Header>
 				<Card.Content>
-					<form method="POST" action="?/updateProfile" use:enhance class="space-y-4">
+					<form
+						method="POST"
+						action="?/updateProfile"
+						use:enhance={pendingEnhance((v) => (savePendingProfile = v))}
+						class="space-y-4"
+					>
 						<div class="grid gap-2">
 							<Label for="name">{copy.name}</Label>
 							<Input id="name" name="name" value={data.profile.name} required />
@@ -273,7 +297,11 @@
 							<Input value={data.profile.username} disabled />
 							<p class="text-muted-foreground text-xs">{copy.usernameImmutable}</p>
 						</div>
-						<Button type="submit">{copy.saveProfile}</Button>
+						<SaveSubmitButton
+							pending={savePendingProfile}
+							idleLabel={copy.saveProfile}
+							savingLabel={uiLabels.formSaving}
+						/>
 					</form>
 				</Card.Content>
 			</Card.Root>
@@ -284,7 +312,12 @@
 					<Card.Description>{copy.changePasswordDesc}</Card.Description>
 				</Card.Header>
 				<Card.Content>
-					<form method="POST" action="?/changePassword" use:enhance class="space-y-4">
+					<form
+						method="POST"
+						action="?/changePassword"
+						use:enhance={pendingEnhance((v) => (savePendingPassword = v))}
+						class="space-y-4"
+					>
 						<div class="grid gap-2">
 							<Label for="currentPassword">{copy.currentPassword}</Label>
 							<Input id="currentPassword" name="currentPassword" type="password" required />
@@ -298,7 +331,11 @@
 							<Label for="confirmPassword">{copy.confirmNewPassword}</Label>
 							<Input id="confirmPassword" name="confirmPassword" type="password" required />
 						</div>
-						<Button type="submit">{copy.changePasswordCta}</Button>
+						<SaveSubmitButton
+							pending={savePendingPassword}
+							idleLabel={copy.changePasswordCta}
+							savingLabel={uiLabels.formSaving}
+						/>
 					</form>
 				</Card.Content>
 			</Card.Root>
@@ -367,7 +404,12 @@
 					<Card.Description>{copy.notifPrefsDesc}</Card.Description>
 				</Card.Header>
 				<Card.Content>
-					<form method="POST" action="?/updateNotificationPrefs" use:enhance class="space-y-4">
+					<form
+						method="POST"
+						action="?/updateNotificationPrefs"
+						use:enhance={pendingEnhance((v) => (savePendingNotifications = v))}
+						class="space-y-4"
+					>
 						{#each Object.entries(notifLabels) as [key, { label, description, icon: Icon }], i (key)}
 							<div class="flex items-center justify-between rounded-lg border p-4">
 								<div class="flex items-center gap-3">
@@ -380,7 +422,11 @@
 								<Switch name={key} checked={data.notificationPrefs[key]} />
 							</div>
 						{/each}
-						<Button type="submit">{copy.savePreferences}</Button>
+						<SaveSubmitButton
+							pending={savePendingNotifications}
+							idleLabel={copy.savePreferences}
+							savingLabel={uiLabels.formSaving}
+						/>
 					</form>
 				</Card.Content>
 			</Card.Root>
@@ -394,7 +440,12 @@
 						<Card.Description>{copy.appSettingsDesc}</Card.Description>
 					</Card.Header>
 					<Card.Content>
-						<form method="POST" action="?/updateSettings" use:enhance class="space-y-6">
+						<form
+							method="POST"
+							action="?/updateSettings"
+							use:enhance={pendingEnhance((v) => (savePendingSettings = v))}
+							class="space-y-6"
+						>
 							<div class="grid gap-2">
 								<Label for="siteName">{copy.siteName}</Label>
 								<Input id="siteName" name="siteName" value={data.settings.siteName} />
@@ -402,9 +453,9 @@
 
 							<div class="grid gap-2">
 								<Label>{copy.timezone}</Label>
-								<Select.Root name="timezone" type="single" value={data.settings.timezone}>
+								<Select.Root name="timezone" type="single" bind:value={timezoneValue}>
 									<Select.Trigger>
-										<span>{data.settings.timezone}</span>
+										<span>{timezoneValue}</span>
 									</Select.Trigger>
 									<Select.Content>
 										<Select.Item value="UTC">UTC</Select.Item>
@@ -421,9 +472,9 @@
 
 							<div class="grid gap-2">
 								<Label>{copy.defaultRole}</Label>
-								<Select.Root name="defaultRole" type="single" value={data.settings.defaultRole}>
+								<Select.Root name="defaultRole" type="single" bind:value={defaultRoleValue}>
 									<Select.Trigger>
-										<span>{defaultRoleText}</span>
+										<span>{defaultRoleLabel}</span>
 									</Select.Trigger>
 									<Select.Content>
 										{#each roleOptions as option, i (option.value)}
@@ -447,7 +498,11 @@
 								/>
 							</div>
 
-							<Button type="submit">{copy.saveSettings}</Button>
+							<SaveSubmitButton
+								pending={savePendingSettings}
+								idleLabel={copy.saveSettings}
+								savingLabel={uiLabels.formSaving}
+							/>
 						</form>
 					</Card.Content>
 				</Card.Root>

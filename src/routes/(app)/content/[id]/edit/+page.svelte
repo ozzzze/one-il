@@ -1,5 +1,8 @@
 <script lang="ts">
 	import { Button } from "$lib/components/ui/button/index.js";
+	import SaveSubmitButton from "$lib/components/save-submit-button.svelte";
+	import { getUiLabels } from "$lib/content/labels.js";
+	import { pendingEnhance } from "$lib/forms/pending-enhance.js";
 	import { Input } from "$lib/components/ui/input/index.js";
 	import { Label } from "$lib/components/ui/label/index.js";
 	import { Textarea } from "$lib/components/ui/textarea/index.js";
@@ -10,6 +13,10 @@
 	import ArrowLeftIcon from "@lucide/svelte/icons/arrow-left";
 
 	let { data, form } = $props();
+
+	const uiLabels = $derived(getUiLabels(data.locale));
+	let savePending = $state(false);
+
 const copy = $derived.by(() =>
 	data.locale === "th"
 		? {
@@ -92,7 +99,7 @@ const copy = $derived.by(() =>
 
 	<Card.Root>
 		<Card.Content class="pt-6">
-			<form method="POST" use:enhance class="space-y-6">
+			<form method="POST" use:enhance={pendingEnhance((v) => (savePending = v))} class="space-y-6">
 				<div class="grid gap-2">
 					<Label for="title">{copy.titleLabel}</Label>
 					<Input
@@ -163,7 +170,11 @@ const copy = $derived.by(() =>
 
 				<div class="flex justify-end gap-2">
 					<Button variant="outline" href="/content">{copy.cancel}</Button>
-					<Button type="submit">{copy.saveChanges}</Button>
+					<SaveSubmitButton
+						pending={savePending}
+						idleLabel={copy.saveChanges}
+						savingLabel={uiLabels.formSaving}
+					/>
 				</div>
 			</form>
 		</Card.Content>

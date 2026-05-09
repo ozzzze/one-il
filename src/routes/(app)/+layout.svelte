@@ -9,6 +9,7 @@
 	import CommandPalette from "$lib/components/command-palette.svelte";
 	import NotificationBell from "$lib/components/notification-bell.svelte";
 	import AppsMenu from "$lib/components/apps-menu.svelte";
+	import LanguageSwitcher from "$lib/components/language-switcher.svelte";
 	import { getMenuItemLabels } from "$lib/content/labels.js";
 
 	let { children, data } = $props();
@@ -92,6 +93,7 @@
 					locale={data.locale}
 				/>
 				<AppsMenu allowedMenuIds={data.allowedMenuIds} locale={data.locale} />
+				<LanguageSwitcher locale={data.locale} compact />
 				<ThemeToggle />
 			</div>
 		</header>

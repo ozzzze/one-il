@@ -1,12 +1,14 @@
 <script lang="ts">
 	import * as Dialog from "$lib/components/ui/dialog/index.js";
 	import * as Select from "$lib/components/ui/select/index.js";
-	import { Button } from "$lib/components/ui/button/index.js";
+	import SaveSubmitButton from "$lib/components/save-submit-button.svelte";
 	import { Input } from "$lib/components/ui/input/index.js";
 	import { Label } from "$lib/components/ui/label/index.js";
 	import { enhance } from "$app/forms";
 	import type { Role } from "$lib/auth/roles.js";
-	import { roleOptions } from "$lib/auth/roles.js";
+	import { getRoleOptions } from "$lib/auth/roles.js";
+	import { getUiLabels } from "$lib/content/labels.js";
+	import { pendingEnhance } from "$lib/forms/pending-enhance.js";
 
 	type UserData = {
 		id: string;
@@ -62,8 +64,16 @@ const copy = $derived.by(() =>
 const title = $derived(mode === "create" ? copy.addUser : copy.editUser);
 	const action = $derived(mode === "create" ? "?/create" : "?/update");
 
-	let role: Role = $derived(user?.role ?? "user");
+	const uiLabels = $derived(getUiLabels(locale));
+	let savePending = $state(false);
 
+	let role = $state<Role>("user");
+
+	$effect.pre(() => {
+		role = user?.role ?? "user";
+	});
+
+	const roleOptions = $derived(getRoleOptions(locale));
 	const roleText = $derived(roleOptions.find((option) => option.value === role)?.label ?? "");
 </script>
 
@@ -75,14 +85,16 @@ const title = $derived(mode === "create" ? copy.addUser : copy.editUser);
 				{mode === "create" ? copy.createDesc : copy.editDesc}
 			</Dialog.Description>
 		</Dialog.Header>
-		<form method="POST" {action} use:enhance={() => {
-			return async ({ result, update }) => {
+		<form
+			method="POST"
+			{action}
+			use:enhance={pendingEnhance((v) => (savePending = v), () => async ({ result, update }) => {
 				if (result.type === "success" || result.type === "redirect") {
 					open = false;
 				}
 				await update();
-			};
-		}}>
+			})}
+		>
 			{#if mode === "edit" && user}
 				<input type="hidden" name="id" value={user.id} />
 			{/if}
@@ -120,7 +132,11 @@ const title = $derived(mode === "create" ? copy.addUser : copy.editUser);
 				</div>
 			</div>
 			<Dialog.Footer>
-				<Button type="submit">{mode === "create" ? copy.create : copy.saveChanges}</Button>
+				<SaveSubmitButton
+					pending={savePending}
+					idleLabel={mode === "create" ? copy.create : copy.saveChanges}
+					savingLabel={uiLabels.formSaving}
+				/>
 			</Dialog.Footer>
 		</form>
 	</Dialog.Content>

@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { enhance } from "$app/forms";
 	import { Badge } from "$lib/components/ui/badge/index.js";
-	import { Button } from "$lib/components/ui/button/index.js";
+	import SaveSubmitButton from "$lib/components/save-submit-button.svelte";
+	import { getUiLabels } from "$lib/content/labels.js";
+	import { pendingEnhance } from "$lib/forms/pending-enhance.js";
 	import * as Card from "$lib/components/ui/card/index.js";
 	import { Input } from "$lib/components/ui/input/index.js";
 	import * as Table from "$lib/components/ui/table/index.js";
@@ -9,6 +11,13 @@
 	import type { ActionData, PageData } from "./$types.js";
 
 	let { data, form }: { data: PageData; form?: ActionData } = $props();
+
+	const uiLabels = $derived(getUiLabels(data.locale));
+	let savePendingCreateEmployee = $state(false);
+	let savePendingAssignPrimary = $state(false);
+	let savePendingSetSupervisor = $state(false);
+	let savePendingAssignProgramChair = $state(false);
+
 	type Employee = PageData["employees"][number];
 	type StatusFilter = "ALL" | "ACTIVE" | "INACTIVE";
 
@@ -212,7 +221,12 @@ const successMessageByAction = $derived.by<Record<string, string>>(() => ({
 				<Card.Description class="text-xs">{copy.createEmployeeDesc}</Card.Description>
 			</Card.Header>
 			<Card.Content class="pt-0">
-				<form method="POST" action="?/createEmployee" use:enhance class="grid gap-2">
+				<form
+					method="POST"
+					action="?/createEmployee"
+					use:enhance={pendingEnhance((v) => (savePendingCreateEmployee = v))}
+					class="grid gap-2"
+				>
 					<div class="grid gap-2 sm:grid-cols-2">
 						<Input name="firstName" placeholder={copy.firstName} required />
 						<Input name="lastName" placeholder={copy.lastName} required />
@@ -222,7 +236,12 @@ const successMessageByAction = $derived.by<Record<string, string>>(() => ({
 						<Input name="employeeNo" placeholder={copy.employeeNo} />
 					</div>
 					<div class="flex justify-end">
-						<Button type="submit" size="sm">{copy.createEmployee}</Button>
+						<SaveSubmitButton
+							size="sm"
+							pending={savePendingCreateEmployee}
+							idleLabel={copy.createEmployee}
+							savingLabel={uiLabels.formSaving}
+						/>
 					</div>
 				</form>
 			</Card.Content>
@@ -234,7 +253,12 @@ const successMessageByAction = $derived.by<Record<string, string>>(() => ({
 				<Card.Description class="text-xs">{copy.assignPrimaryDesc}</Card.Description>
 			</Card.Header>
 			<Card.Content class="pt-0">
-				<form method="POST" action="?/assignPrimary" use:enhance class="grid gap-2">
+				<form
+					method="POST"
+					action="?/assignPrimary"
+					use:enhance={pendingEnhance((v) => (savePendingAssignPrimary = v))}
+					class="grid gap-2"
+				>
 					<div class="grid gap-2 sm:grid-cols-2">
 						<select
 							name="employeeId"
@@ -272,7 +296,12 @@ const successMessageByAction = $derived.by<Record<string, string>>(() => ({
 					</div>
 					<input type="hidden" name="isPrimary" value="true" />
 					<div class="flex justify-end">
-						<Button type="submit" size="sm">{copy.assignPrimaryBtn}</Button>
+						<SaveSubmitButton
+							size="sm"
+							pending={savePendingAssignPrimary}
+							idleLabel={copy.assignPrimaryBtn}
+							savingLabel={uiLabels.formSaving}
+						/>
 					</div>
 				</form>
 			</Card.Content>
@@ -284,7 +313,12 @@ const successMessageByAction = $derived.by<Record<string, string>>(() => ({
 				<Card.Description class="text-xs">{copy.setSupervisorDesc}</Card.Description>
 			</Card.Header>
 			<Card.Content class="pt-0">
-				<form method="POST" action="?/setSupervisor" use:enhance class="grid gap-2">
+				<form
+					method="POST"
+					action="?/setSupervisor"
+					use:enhance={pendingEnhance((v) => (savePendingSetSupervisor = v))}
+					class="grid gap-2"
+				>
 					<div class="grid gap-2 sm:grid-cols-2">
 						<select
 							name="employeeId"
@@ -311,7 +345,12 @@ const successMessageByAction = $derived.by<Record<string, string>>(() => ({
 						<Input type="date" name="startsAt" required />
 					</div>
 					<div class="flex justify-end">
-						<Button type="submit" size="sm">{copy.setSupervisorBtn}</Button>
+						<SaveSubmitButton
+							size="sm"
+							pending={savePendingSetSupervisor}
+							idleLabel={copy.setSupervisorBtn}
+							savingLabel={uiLabels.formSaving}
+						/>
 					</div>
 				</form>
 			</Card.Content>
@@ -323,7 +362,12 @@ const successMessageByAction = $derived.by<Record<string, string>>(() => ({
 				<Card.Description class="text-xs">{copy.assignProgramChairDesc}</Card.Description>
 			</Card.Header>
 			<Card.Content class="pt-0">
-				<form method="POST" action="?/assignProgramChair" use:enhance class="grid gap-2">
+				<form
+					method="POST"
+					action="?/assignProgramChair"
+					use:enhance={pendingEnhance((v) => (savePendingAssignProgramChair = v))}
+					class="grid gap-2"
+				>
 					<div class="grid gap-2 sm:grid-cols-2">
 						<select
 							name="programId"
@@ -350,7 +394,12 @@ const successMessageByAction = $derived.by<Record<string, string>>(() => ({
 						<Input type="date" name="startsAt" required />
 					</div>
 					<div class="flex justify-end">
-						<Button type="submit" size="sm">{copy.assignProgramChairBtn}</Button>
+						<SaveSubmitButton
+							size="sm"
+							pending={savePendingAssignProgramChair}
+							idleLabel={copy.assignProgramChairBtn}
+							savingLabel={uiLabels.formSaving}
+						/>
 					</div>
 				</form>
 			</Card.Content>
