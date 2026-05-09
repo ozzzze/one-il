@@ -114,7 +114,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 					positions(id, name, name_en, code),
 					org_units(id, name, name_en, code)
 				),
-				employee_supervisors(
+				employee_supervisors!employee_supervisors_employee_id_fkey(
 					id, starts_at, ends_at,
 					supervisor:employees!employee_supervisors_supervisor_employee_id_fkey(id, first_name, last_name)
 				)
