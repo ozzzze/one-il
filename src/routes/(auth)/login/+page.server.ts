@@ -6,21 +6,36 @@ import type { Actions, PageServerLoad } from "./$types.js";
 export const load: PageServerLoad = async ({ locals }) => {
 	if (locals.user) redirect(302, "/");
 	return {
+		locale: locals.locale,
 		enabledProviders: getEnabledProviders(),
 	};
 };
 
 export const actions: Actions = {
 	default: async ({ request, locals }) => {
+		const t =
+			locals.locale === "th"
+				? {
+						invalidUsername: "ชื่อผู้ใช้ไม่ถูกต้อง (ต้องมี 3-31 ตัวอักษร)",
+						invalidPassword: "รหัสผ่านไม่ถูกต้อง (ต้องมี 6-255 ตัวอักษร)",
+						dbUnavailable: "ไม่สามารถเชื่อมต่อฐานข้อมูลผู้ใช้ได้ในขณะนี้ กรุณาลองใหม่",
+						incorrectCredentials: "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง",
+					}
+				: {
+						invalidUsername: "Invalid username (3-31 characters required)",
+						invalidPassword: "Invalid password (6-255 characters required)",
+						dbUnavailable: "Cannot reach user database right now. Please try again.",
+						incorrectCredentials: "Incorrect username or password",
+					};
 		const formData = await request.formData();
 		const username = formData.get("username");
 		const password = formData.get("password");
 
 		if (typeof username !== "string" || username.length < 3 || username.length > 31) {
-			return fail(400, { message: "Invalid username (3-31 characters required)" });
+			return fail(400, { message: t.invalidUsername });
 		}
 		if (typeof password !== "string" || password.length < 6 || password.length > 255) {
-			return fail(400, { message: "Invalid password (6-255 characters required)" });
+			return fail(400, { message: t.invalidPassword });
 		}
 
 		const normalizedUsername = username.toLowerCase();
@@ -31,12 +46,12 @@ export const actions: Actions = {
 			.eq("username", normalizedUsername)
 			.maybeSingle();
 		if (userLookupError) {
-			return fail(500, { message: "Cannot reach user database right now. Please try again." });
+			return fail(500, { message: t.dbUnavailable });
 		}
 		const existingUser = data ? { email: data.email as string } : null;
 
 		if (!existingUser) {
-			return fail(400, { message: "Incorrect username or password" });
+			return fail(400, { message: t.incorrectCredentials });
 		}
 
 		const { error } = await locals.supabase.auth.signInWithPassword({

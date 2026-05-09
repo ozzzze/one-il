@@ -6,6 +6,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		redirect(302, "/login");
 	}
 	return {
+		locale: locals.locale,
 		user: {
 			name: locals.user.name,
 			email: locals.user.email,
@@ -24,7 +25,9 @@ export const actions: Actions = {
 		const password = formData.get("password");
 
 		if (typeof password !== "string" || password.length < 1) {
-			return fail(400, { message: "Password is required" });
+			return fail(400, {
+				message: locals.locale === "th" ? "ต้องระบุรหัสผ่าน" : "Password is required",
+			});
 		}
 
 		const { error } = await locals.supabase.auth.signInWithPassword({
@@ -33,7 +36,9 @@ export const actions: Actions = {
 		});
 
 		if (error) {
-			return fail(400, { message: "Incorrect password" });
+			return fail(400, {
+				message: locals.locale === "th" ? "รหัสผ่านไม่ถูกต้อง" : "Incorrect password",
+			});
 		}
 
 		redirect(302, "/");

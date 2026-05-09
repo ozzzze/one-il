@@ -6,11 +6,33 @@
 	import { Label } from "$lib/components/ui/label/index.js";
 	import ilLogo from "$lib/assets/layout/il-logo.png";
 
-	let { form } = $props();
+	let { form, data } = $props();
+	const locale = $derived(data.locale ?? "en");
+	const copy = $derived.by(() =>
+		locale === "th"
+			? {
+					pageTitle: "สมัครสมาชิก - ONE-IL",
+					title: "สร้างบัญชี",
+					desc: "เริ่มใช้งาน ONE-IL",
+					fullName: "ชื่อ-นามสกุล",
+					createAccount: "สร้างบัญชี",
+					alreadyAccount: "มีบัญชีอยู่แล้วใช่ไหม?",
+					signIn: "เข้าสู่ระบบ",
+				}
+			: {
+					pageTitle: "Register - ONE-IL",
+					title: "Create an account",
+					desc: "Get started with ONE-IL",
+					fullName: "Full Name",
+					createAccount: "Create account",
+					alreadyAccount: "Already have an account?",
+					signIn: "Sign in",
+				}
+	);
 </script>
 
 <svelte:head>
-	<title>Register - ONE-IL</title>
+	<title>{copy.pageTitle}</title>
 </svelte:head>
 
 <div class="bg-background flex min-h-screen items-center justify-center p-4">
@@ -23,8 +45,8 @@
 					<img src={ilLogo} alt="Innovative Learning logo" class="size-6 object-contain" />
 				</div>
 			</div>
-			<Card.Title class="text-2xl font-bold">Create an account</Card.Title>
-			<Card.Description>Get started with ONE-IL</Card.Description>
+			<Card.Title class="text-2xl font-bold">{copy.title}</Card.Title>
+			<Card.Description>{copy.desc}</Card.Description>
 		</Card.Header>
 		<Card.Content>
 			{#if form?.message}
@@ -34,7 +56,7 @@
 			{/if}
 			<form method="POST" use:enhance class="space-y-4">
 				<div class="space-y-2">
-					<Label for="name">Full Name</Label>
+					<Label for="name">{copy.fullName}</Label>
 					<Input
 						id="name"
 						name="name"
@@ -45,7 +67,7 @@
 					/>
 				</div>
 				<div class="space-y-2">
-					<Label for="email">Email</Label>
+					<Label for="email">{locale === "th" ? "อีเมล" : "Email"}</Label>
 					<Input
 						id="email"
 						name="email"
@@ -56,18 +78,18 @@
 					/>
 				</div>
 				<div class="space-y-2">
-					<Label for="username">Username</Label>
+					<Label for="username">{locale === "th" ? "ชื่อผู้ใช้" : "Username"}</Label>
 					<Input
 						id="username"
 						name="username"
 						type="text"
-						placeholder="johndoe"
+						placeholder={locale === "th" ? "ชื่อผู้ใช้" : "johndoe"}
 						required
 						autocomplete="username"
 					/>
 				</div>
 				<div class="space-y-2">
-					<Label for="password">Password</Label>
+					<Label for="password">{locale === "th" ? "รหัสผ่าน" : "Password"}</Label>
 					<Input
 						id="password"
 						name="password"
@@ -77,13 +99,13 @@
 						autocomplete="new-password"
 					/>
 				</div>
-				<Button type="submit" class="w-full">Create account</Button>
+				<Button type="submit" class="w-full">{copy.createAccount}</Button>
 			</form>
 		</Card.Content>
 		<Card.Footer class="justify-center">
 			<p class="text-muted-foreground text-sm">
-				Already have an account?
-				<a href="/login" class="text-primary underline-offset-4 hover:underline">Sign in</a>
+				{copy.alreadyAccount}
+				<a href="/login" class="text-primary underline-offset-4 hover:underline">{copy.signIn}</a>
 			</p>
 		</Card.Footer>
 	</Card.Root>

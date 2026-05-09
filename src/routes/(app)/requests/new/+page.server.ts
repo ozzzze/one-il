@@ -1,7 +1,7 @@
 import { fail, redirect } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types.js";
 import { newFacultyRequestFormSchema, requestKindSchema } from "$lib/requests/request-schema.js";
-import { requestKindMeta } from "$lib/requests/request-meta.js";
+import { getRequestKindMeta } from "$lib/requests/request-meta.js";
 import { assertPermission } from "$lib/server/guards.js";
 
 export const load: PageServerLoad = async ({ url, locals }) => {
@@ -12,8 +12,9 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 		redirect(302, "/requests");
 	}
 	const kind = parsedKind.data;
+	const requestKindMeta = getRequestKindMeta(locals.locale);
 	const meta = requestKindMeta[kind];
-	return { kind, label: meta.label, description: meta.description };
+	return { kind, label: meta.label, description: meta.description, locale: locals.locale };
 };
 
 export const actions = {
@@ -33,7 +34,10 @@ export const actions = {
 		if (!parsed.success) {
 			const flat = parsed.error.flatten();
 			return fail(400, {
-				message: "Please fix the highlighted fields.",
+				message:
+					locals.locale === "th"
+						? "กรุณาแก้ไขช่องที่มีการแจ้งเตือน"
+						: "Please fix the highlighted fields.",
 				fieldErrors: flat.fieldErrors,
 			});
 		}

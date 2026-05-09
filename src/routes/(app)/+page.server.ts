@@ -1,7 +1,9 @@
 import { getServiceRoleClient } from "$lib/server/supabase-admin.js";
+import { getDashboardPageCopy } from "$lib/content/page-copy.js";
 import type { PageServerLoad } from "./$types.js";
 
 export const load: PageServerLoad = async ({ locals }) => {
+	const copy = getDashboardPageCopy(locals.locale);
 	const admin = getServiceRoleClient();
 	const thisMonthStart = new Date();
 	thisMonthStart.setDate(1);
@@ -93,12 +95,12 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const activity: ActivityItem[] = [
 		...(recentUsers ?? []).map((u) => ({
 			label: u.name,
-			description: "Joined the platform",
+			description: copy.activity.joinedPlatform,
 			time: new Date(u.created_at),
 		})),
 		...(recentPages ?? []).map((p) => ({
-			label: Array.isArray(p.users) ? (p.users[0]?.name ?? "Unknown") : "Unknown",
-			description: `Created "${p.title}"`,
+			label: Array.isArray(p.users) ? (p.users[0]?.name ?? copy.activity.unknown) : copy.activity.unknown,
+			description: copy.activity.createdByTitle(p.title),
 			time: new Date(p.created_at),
 		})),
 	]

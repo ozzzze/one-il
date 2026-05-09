@@ -12,10 +12,11 @@ export const load: PageServerLoad = async ({ locals }) => {
 		.select("id,name,email,username,role,created_at")
 		.order("created_at", { ascending: true });
 	if (error) {
-		return { users: [], currentUserId: locals.user!.id };
+		return { users: [], currentUserId: locals.user!.id, locale: locals.locale };
 	}
 
 	return {
+		locale: locals.locale,
 		users:
 			allUsers?.map((user) => ({
 				id: user.id,
@@ -31,12 +32,40 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 export const actions: Actions = {
 	create: async ({ request, locals }) => {
+		const t =
+			locals.locale === "th"
+				? {
+						noServiceKey: "เซิร์ฟเวอร์ไม่มี SUPABASE_SERVICE_ROLE_KEY",
+						nameRequired: "ต้องระบุชื่อ (1-100 ตัวอักษร)",
+						emailRequired: "ต้องระบุอีเมลที่ถูกต้อง",
+						usernameRule:
+							"ชื่อผู้ใช้ต้องยาว 3-31 ตัวอักษร และใช้ได้เฉพาะตัวพิมพ์เล็ก ตัวเลข ขีดกลาง และขีดล่าง",
+						passwordRule: "รหัสผ่านต้องมี 6-255 ตัวอักษร",
+						invalidRole: "บทบาทไม่ถูกต้อง",
+						uniqueCheckFail: "ไม่สามารถตรวจสอบชื่อผู้ใช้/อีเมลซ้ำได้ในขณะนี้",
+						alreadyTaken: "ชื่อผู้ใช้หรืออีเมลนี้ถูกใช้งานแล้ว",
+						authCreateFail: "ไม่สามารถสร้างผู้ใช้ในระบบยืนยันตัวตนได้",
+						profileTaken: "ชื่อผู้ใช้หรืออีเมลนี้ถูกใช้งานแล้วในตารางโปรไฟล์",
+					}
+				: {
+						noServiceKey: "Server missing SUPABASE_SERVICE_ROLE_KEY",
+						nameRequired: "Name is required (1-100 characters)",
+						emailRequired: "Valid email is required",
+						usernameRule:
+							"Username must be 3-31 characters, lowercase letters, numbers, hyphens, underscores",
+						passwordRule: "Password must be 6-255 characters",
+						invalidRole: "Invalid role",
+						uniqueCheckFail: "Cannot validate user uniqueness right now",
+						alreadyTaken: "Username or email already taken",
+						authCreateFail: "Could not create auth user",
+						profileTaken: "Username or email already taken in profile table",
+					};
 		assertPermission(locals.user, "users:manage");
 		let admin;
 		try {
 			admin = getServiceRoleClient();
 		} catch {
-			return fail(500, { message: "Server missing SUPABASE_SERVICE_ROLE_KEY" });
+			return fail(500, { message: t.noServiceKey });
 		}
 
 		const formData = await request.formData();
@@ -47,10 +76,10 @@ export const actions: Actions = {
 		const role = formData.get("role");
 
 		if (typeof name !== "string" || name.length < 1 || name.length > 100) {
-			return fail(400, { message: "Name is required (1-100 characters)" });
+			return fail(400, { message: t.nameRequired });
 		}
 		if (typeof email !== "string" || !email.includes("@") || email.length > 255) {
-			return fail(400, { message: "Valid email is required" });
+			return fail(400, { message: t.emailRequired });
 		}
 		if (
 			typeof username !== "string" ||
@@ -59,14 +88,14 @@ export const actions: Actions = {
 			!/^[a-z0-9_-]+$/.test(username)
 		) {
 			return fail(400, {
-				message: "Username must be 3-31 characters, lowercase letters, numbers, hyphens, underscores",
+				message: t.usernameRule,
 			});
 		}
 		if (typeof password !== "string" || password.length < 6 || password.length > 255) {
-			return fail(400, { message: "Password must be 6-255 characters" });
+			return fail(400, { message: t.passwordRule });
 		}
 		if (!isRole(role)) {
-			return fail(400, { message: "Invalid role" });
+			return fail(400, { message: t.invalidRole });
 		}
 
 		const lowerEmail = email.toLowerCase();
@@ -78,10 +107,10 @@ export const actions: Actions = {
 			.or(`username.eq.${lowerUser},email.eq.${lowerEmail}`)
 			.limit(1);
 		if (duplicateError) {
-			return fail(500, { message: "Cannot validate user uniqueness right now" });
+			return fail(500, { message: t.uniqueCheckFail });
 		}
 		if ((duplicate?.length ?? 0) > 0) {
-			return fail(400, { message: "Username or email already taken" });
+			return fail(400, { message: t.alreadyTaken });
 		}
 
 		const { data: created, error } = await admin.auth.admin.createUser({
@@ -96,7 +125,7 @@ export const actions: Actions = {
 		});
 
 		if (error || !created.user) {
-			return fail(400, { message: error?.message ?? "Could not create auth user" });
+			return fail(400, { message: error?.message ?? t.authCreateFail });
 		}
 
 		const uid = created.user.id;
@@ -110,19 +139,43 @@ export const actions: Actions = {
 			role,
 		});
 		if (profileError) {
-			return fail(400, { message: "Username or email already taken in profile table" });
+			return fail(400, { message: t.profileTaken });
 		}
 
 		return { success: true };
 	},
 
 	update: async ({ request, locals }) => {
+		const t =
+			locals.locale === "th"
+				? {
+						noServiceKey: "เซิร์ฟเวอร์ไม่มี SUPABASE_SERVICE_ROLE_KEY",
+						userIdRequired: "ต้องระบุรหัสผู้ใช้",
+						nameRequired: "ต้องระบุชื่อ (1-100 ตัวอักษร)",
+						emailRequired: "ต้องระบุอีเมลที่ถูกต้อง",
+						invalidRole: "บทบาทไม่ถูกต้อง",
+						loadTargetFail: "ไม่สามารถโหลดข้อมูลผู้ใช้เป้าหมายได้",
+						adminCountFail: "ไม่สามารถตรวจสอบจำนวนแอดมินได้",
+						lastAdminDemote: "ไม่สามารถลดสิทธิ์แอดมินคนสุดท้ายได้",
+						emailTaken: "อีเมลนี้ถูกใช้งานแล้ว",
+					}
+				: {
+						noServiceKey: "Server missing SUPABASE_SERVICE_ROLE_KEY",
+						userIdRequired: "User ID is required",
+						nameRequired: "Name is required (1-100 characters)",
+						emailRequired: "Valid email is required",
+						invalidRole: "Invalid role",
+						loadTargetFail: "Cannot load target user",
+						adminCountFail: "Cannot validate admin count",
+						lastAdminDemote: "Cannot demote the last admin",
+						emailTaken: "Email already taken",
+					};
 		assertPermission(locals.user, "users:manage");
 		let admin;
 		try {
 			admin = getServiceRoleClient();
 		} catch {
-			return fail(500, { message: "Server missing SUPABASE_SERVICE_ROLE_KEY" });
+			return fail(500, { message: t.noServiceKey });
 		}
 
 		const formData = await request.formData();
@@ -132,16 +185,16 @@ export const actions: Actions = {
 		const role = formData.get("role");
 
 		if (typeof id !== "string") {
-			return fail(400, { message: "User ID is required" });
+			return fail(400, { message: t.userIdRequired });
 		}
 		if (typeof name !== "string" || name.length < 1 || name.length > 100) {
-			return fail(400, { message: "Name is required (1-100 characters)" });
+			return fail(400, { message: t.nameRequired });
 		}
 		if (typeof email !== "string" || !email.includes("@") || email.length > 255) {
-			return fail(400, { message: "Valid email is required" });
+			return fail(400, { message: t.emailRequired });
 		}
 		if (!isRole(role)) {
-			return fail(400, { message: "Invalid role" });
+			return fail(400, { message: t.invalidRole });
 		}
 
 		const { data: existing, error: existingError } = await admin
@@ -150,7 +203,7 @@ export const actions: Actions = {
 			.eq("id", id)
 			.maybeSingle();
 		if (existingError) {
-			return fail(500, { message: "Cannot load target user" });
+			return fail(500, { message: t.loadTargetFail });
 		}
 		if (existing?.role === "admin" && role !== "admin") {
 			const { count: adminCount, error: adminCountError } = await admin
@@ -158,10 +211,10 @@ export const actions: Actions = {
 				.select("id", { count: "exact", head: true })
 				.eq("role", "admin");
 			if (adminCountError) {
-				return fail(500, { message: "Cannot validate admin count" });
+				return fail(500, { message: t.adminCountFail });
 			}
 			if (Number(adminCount ?? 0) <= 1) {
-				return fail(400, { message: "Cannot demote the last admin" });
+				return fail(400, { message: t.lastAdminDemote });
 			}
 		}
 
@@ -190,30 +243,48 @@ export const actions: Actions = {
 			})
 			.eq("id", id);
 		if (updateProfileError) {
-			return fail(400, { message: "Email already taken" });
+			return fail(400, { message: t.emailTaken });
 		}
 
 		return { success: true };
 	},
 
 	delete: async ({ request, locals }) => {
+		const t =
+			locals.locale === "th"
+				? {
+						noServiceKey: "เซิร์ฟเวอร์ไม่มี SUPABASE_SERVICE_ROLE_KEY",
+						userIdRequired: "ต้องระบุรหัสผู้ใช้",
+						cannotDeleteSelf: "คุณไม่สามารถลบบัญชีของตัวเองได้",
+						loadTargetFail: "ไม่สามารถโหลดข้อมูลผู้ใช้เป้าหมายได้",
+						adminCountFail: "ไม่สามารถตรวจสอบจำนวนแอดมินได้",
+						lastAdminDelete: "ไม่สามารถลบแอดมินคนสุดท้ายได้",
+					}
+				: {
+						noServiceKey: "Server missing SUPABASE_SERVICE_ROLE_KEY",
+						userIdRequired: "User ID is required",
+						cannotDeleteSelf: "You cannot delete your own account",
+						loadTargetFail: "Cannot load target user",
+						adminCountFail: "Cannot validate admin count",
+						lastAdminDelete: "Cannot delete the last admin",
+					};
 		assertPermission(locals.user, "users:manage");
 		let admin;
 		try {
 			admin = getServiceRoleClient();
 		} catch {
-			return fail(500, { message: "Server missing SUPABASE_SERVICE_ROLE_KEY" });
+			return fail(500, { message: t.noServiceKey });
 		}
 
 		const formData = await request.formData();
 		const id = formData.get("id");
 
 		if (typeof id !== "string") {
-			return fail(400, { message: "User ID is required" });
+			return fail(400, { message: t.userIdRequired });
 		}
 
 		if (id === locals.user!.id) {
-			return fail(400, { message: "You cannot delete your own account" });
+			return fail(400, { message: t.cannotDeleteSelf });
 		}
 
 		const { data: target, error: targetError } = await admin
@@ -222,7 +293,7 @@ export const actions: Actions = {
 			.eq("id", id)
 			.maybeSingle();
 		if (targetError) {
-			return fail(500, { message: "Cannot load target user" });
+			return fail(500, { message: t.loadTargetFail });
 		}
 		if (target?.role === "admin") {
 			const { count: adminCount, error: adminCountError } = await admin
@@ -230,10 +301,10 @@ export const actions: Actions = {
 				.select("id", { count: "exact", head: true })
 				.eq("role", "admin");
 			if (adminCountError) {
-				return fail(500, { message: "Cannot validate admin count" });
+				return fail(500, { message: t.adminCountFail });
 			}
 			if (Number(adminCount ?? 0) <= 1) {
-				return fail(400, { message: "Cannot delete the last admin" });
+				return fail(400, { message: t.lastAdminDelete });
 			}
 		}
 
@@ -248,19 +319,35 @@ export const actions: Actions = {
 	},
 
 	bulkDelete: async ({ request, locals }) => {
+		const t =
+			locals.locale === "th"
+				? {
+						noServiceKey: "เซิร์ฟเวอร์ไม่มี SUPABASE_SERVICE_ROLE_KEY",
+						noneSelected: "ยังไม่ได้เลือกผู้ใช้",
+						cannotDeleteSelf: "คุณไม่สามารถลบบัญชีของตัวเองได้",
+						adminUsersFail: "ไม่สามารถตรวจสอบผู้ใช้แอดมินได้",
+						cannotDeleteAllAdmins: "ไม่สามารถลบผู้ใช้แอดมินทั้งหมดได้",
+					}
+				: {
+						noServiceKey: "Server missing SUPABASE_SERVICE_ROLE_KEY",
+						noneSelected: "No users selected",
+						cannotDeleteSelf: "You cannot delete your own account",
+						adminUsersFail: "Cannot validate admin users",
+						cannotDeleteAllAdmins: "Cannot delete all admin users",
+					};
 		assertPermission(locals.user, "users:manage");
 		let admin;
 		try {
 			admin = getServiceRoleClient();
 		} catch {
-			return fail(500, { message: "Server missing SUPABASE_SERVICE_ROLE_KEY" });
+			return fail(500, { message: t.noServiceKey });
 		}
 
 		const formData = await request.formData();
 		const idsRaw = formData.get("ids");
 
 		if (typeof idsRaw !== "string" || !idsRaw.trim()) {
-			return fail(400, { message: "No users selected" });
+			return fail(400, { message: t.noneSelected });
 		}
 
 		const ids = idsRaw.split(",").filter(Boolean);
@@ -268,7 +355,7 @@ export const actions: Actions = {
 
 		const toDelete = ids.filter((id) => id !== currentUserId);
 		if (toDelete.length === 0) {
-			return fail(400, { message: "You cannot delete your own account" });
+			return fail(400, { message: t.cannotDeleteSelf });
 		}
 
 		const { data: admins, error: adminsError } = await admin
@@ -276,11 +363,11 @@ export const actions: Actions = {
 			.select("id")
 			.eq("role", "admin");
 		if (adminsError) {
-			return fail(500, { message: "Cannot validate admin users" });
+			return fail(500, { message: t.adminUsersFail });
 		}
 		const remainingAdmins = (admins ?? []).filter((a) => !toDelete.includes(a.id));
 		if (remainingAdmins.length === 0) {
-			return fail(400, { message: "Cannot delete all admin users" });
+			return fail(400, { message: t.cannotDeleteAllAdmins });
 		}
 
 		for (const id of toDelete) {

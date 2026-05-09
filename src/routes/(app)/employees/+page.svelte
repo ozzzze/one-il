@@ -1,0 +1,360 @@
+<script lang="ts">
+	import { enhance } from "$app/forms";
+	import { Badge } from "$lib/components/ui/badge/index.js";
+	import { Button } from "$lib/components/ui/button/index.js";
+	import * as Card from "$lib/components/ui/card/index.js";
+	import { Input } from "$lib/components/ui/input/index.js";
+	import * as Table from "$lib/components/ui/table/index.js";
+	import { toast } from "svelte-sonner";
+	import type { ActionData, PageData } from "./$types.js";
+
+	let { data, form }: { data: PageData; form?: ActionData } = $props();
+	type Employee = PageData["employees"][number];
+	type StatusFilter = "ALL" | "ACTIVE" | "INACTIVE";
+
+	let search = $state("");
+	let statusFilter = $state<StatusFilter>("ALL");
+const copy = $derived.by(() =>
+	data.locale === "th"
+		? {
+				pageTitle: "บุคลากร - ONE-IL",
+				title: "บุคลากร",
+				description: "จัดการโปรไฟล์บุคลากร ตำแหน่งหลัก ลำดับหัวหน้างาน และหัวหน้าหลักสูตร",
+				loadError: "ข้อมูลอ้างอิงบางส่วนโหลดไม่สำเร็จ กรุณารีเฟรชแล้วลองใหม่",
+				searchPlaceholder: "ค้นหารหัสพนักงาน ชื่อ หรืออีเมล",
+				allStatuses: "ทุกสถานะ",
+				employee: "บุคลากร",
+				noMatch: "ไม่พบข้อมูลบุคลากรตามเงื่อนไขที่เลือก",
+				createEmployee: "สร้างข้อมูลบุคลากร",
+				createEmployeeDesc: "เพิ่มโปรไฟล์บุคลากรใหม่",
+				firstName: "ชื่อ",
+				lastName: "นามสกุล",
+				email: "อีเมล",
+				employeeNo: "รหัสพนักงาน",
+				assignPrimary: "กำหนดตำแหน่งหลัก",
+				assignPrimaryDesc: "กำหนดบทบาทหลักและหน่วยงานหลักของบุคลากร",
+				selectEmployee: "เลือกบุคลากร",
+				selectPosition: "เลือกตำแหน่ง",
+				selectOrgUnit: "เลือกหน่วยงาน",
+				assignPrimaryBtn: "กำหนดตำแหน่งหลัก",
+				setSupervisor: "กำหนดหัวหน้างาน",
+				setSupervisorDesc: "กำหนดหัวหน้างานสายบังคับบัญชา",
+				selectSupervisor: "เลือกหัวหน้างาน",
+				setSupervisorBtn: "บันทึกหัวหน้างาน",
+				assignProgramChair: "กำหนดหัวหน้าหลักสูตร",
+				assignProgramChairDesc: "กำหนดหัวหน้าหลักสูตรตามวันที่เริ่มต้น",
+				selectProgram: "เลือกหลักสูตร",
+				assignProgramChairBtn: "กำหนดหัวหน้าหลักสูตร",
+			}
+		: {
+				pageTitle: "Employees - ONE-IL",
+				title: "Employees",
+				description:
+					"Manage employee profiles, primary positions, supervisor hierarchy, and program chairs.",
+				loadError: "Some employee reference data failed to load. Please refresh and try again.",
+				searchPlaceholder: "Search employee no, name, or email",
+				allStatuses: "All Statuses",
+				employee: "employee",
+				noMatch: "No employee records match current filters.",
+				createEmployee: "Create Employee",
+				createEmployeeDesc: "Create a new employee profile.",
+				firstName: "First name",
+				lastName: "Last name",
+				email: "Email",
+				employeeNo: "Employee No",
+				assignPrimary: "Assign Primary Position",
+				assignPrimaryDesc: "Assign employee primary role and org unit.",
+				selectEmployee: "Select employee",
+				selectPosition: "Select position",
+				selectOrgUnit: "Select org unit",
+				assignPrimaryBtn: "Assign Primary",
+				setSupervisor: "Set Supervisor",
+				setSupervisorDesc: "Set line supervisor for an employee.",
+				selectSupervisor: "Select supervisor",
+				setSupervisorBtn: "Set Supervisor",
+				assignProgramChair: "Assign Program Chair",
+				assignProgramChairDesc: "Assign program chair by start date.",
+				selectProgram: "Select program",
+				assignProgramChairBtn: "Assign Program Chair",
+			}
+);
+
+	const filteredEmployees = $derived.by(() => {
+		const normalizedSearch = search.trim().toLowerCase();
+		return data.employees.filter((employee) => {
+			const fullName = employee.fullName.toLowerCase();
+			const employeeNo = (employee.employeeNo ?? "").toLowerCase();
+			const email = (employee.email ?? "").toLowerCase();
+			const status = employee.status.toUpperCase();
+			const matchesSearch =
+				normalizedSearch.length === 0 ||
+				fullName.includes(normalizedSearch) ||
+				employeeNo.includes(normalizedSearch) ||
+				email.includes(normalizedSearch);
+			const matchesStatus = statusFilter === "ALL" || status === statusFilter;
+			return matchesSearch && matchesStatus;
+		});
+	});
+
+const successMessageByAction = $derived.by<Record<string, string>>(() => ({
+	createEmployee: data.locale === "th" ? "สร้างข้อมูลบุคลากรสำเร็จ" : "Employee created successfully",
+	assignPrimary: data.locale === "th" ? "กำหนดตำแหน่งหลักสำเร็จ" : "Primary position assigned successfully",
+	setSupervisor: data.locale === "th" ? "อัปเดตหัวหน้างานสำเร็จ" : "Supervisor updated successfully",
+	assignProgramChair:
+		data.locale === "th" ? "กำหนดหัวหน้าหลักสูตรสำเร็จ" : "Program chair assigned successfully",
+}));
+
+	$effect(() => {
+		if (form?.message) toast.error(form.message);
+		if (form?.success) {
+			const message = form.action ? successMessageByAction[form.action] : "Employees updated successfully";
+			toast.success(message ?? "Employees updated successfully");
+		}
+	});
+
+	function statusBadgeVariant(status: string) {
+		return status.toUpperCase() === "ACTIVE" ? "default" : "secondary";
+	}
+
+	function supervisorName(employee: Employee): string {
+		const supervisor = employee.activeSupervisor?.supervisor;
+		if (!supervisor) return "—";
+		return `${supervisor.first_name} ${supervisor.last_name}`;
+	}
+
+	function positionLabel(assignment: Employee["primaryAssignment"]): string {
+		if (!assignment?.positions) return "—";
+		return `${assignment.positions.code} - ${assignment.positions.name}`;
+	}
+
+	function orgUnitLabel(assignment: Employee["primaryAssignment"]): string {
+		if (!assignment?.org_units) return "—";
+		return `${assignment.org_units.code} - ${assignment.org_units.name}`;
+	}
+</script>
+
+<svelte:head>
+	<title>{copy.pageTitle}</title>
+</svelte:head>
+
+<div class="space-y-4">
+	<div class="space-y-1">
+		<h1 class="text-2xl font-semibold tracking-tight">{copy.title}</h1>
+		<p class="text-muted-foreground text-sm">
+			{copy.description}
+		</p>
+	</div>
+
+	{#if data.errors.employees || data.errors.positions || data.errors.orgUnits || data.errors.programs}
+		<div class="border-destructive/30 bg-destructive/5 text-destructive rounded-md border px-3 py-2 text-xs">
+			{copy.loadError}
+		</div>
+	{/if}
+
+	<div class="flex flex-wrap items-center gap-2">
+		<div class="min-w-[240px] flex-1">
+			<Input placeholder={copy.searchPlaceholder} bind:value={search} />
+		</div>
+		<select
+			class="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring inline-flex h-9 min-w-[160px] rounded-md border px-3 py-1 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+			bind:value={statusFilter}
+		>
+			<option value="ALL">{copy.allStatuses}</option>
+			<option value="ACTIVE">ACTIVE</option>
+			<option value="INACTIVE">INACTIVE</option>
+		</select>
+		<p class="text-muted-foreground text-xs">
+			{filteredEmployees.length} {copy.employee}{filteredEmployees.length !== 1 && data.locale !== "th" ? "s" : ""}
+		</p>
+	</div>
+
+	<div class="rounded-md border">
+		<Table.Root>
+			<Table.Header>
+				<Table.Row class="h-9">
+					<Table.Head class="h-9 px-3 text-xs">employee_no</Table.Head>
+					<Table.Head class="h-9 px-3 text-xs">full name</Table.Head>
+					<Table.Head class="h-9 px-3 text-xs">email</Table.Head>
+					<Table.Head class="h-9 px-3 text-xs">status</Table.Head>
+					<Table.Head class="h-9 px-3 text-xs">primary position</Table.Head>
+					<Table.Head class="h-9 px-3 text-xs">org unit</Table.Head>
+					<Table.Head class="h-9 px-3 text-xs">supervisor</Table.Head>
+				</Table.Row>
+			</Table.Header>
+			<Table.Body>
+				{#each filteredEmployees as employee, i (employee.id)}
+					<Table.Row class="h-9">
+						<Table.Cell class="px-3 py-1.5 text-xs">{employee.employeeNo ?? "—"}</Table.Cell>
+						<Table.Cell class="px-3 py-1.5 text-xs font-medium">{employee.fullName}</Table.Cell>
+						<Table.Cell class="text-muted-foreground px-3 py-1.5 text-xs">{employee.email ?? "—"}</Table.Cell>
+						<Table.Cell class="px-3 py-1.5 text-xs">
+							<Badge variant={statusBadgeVariant(employee.status)}>{employee.status.toUpperCase()}</Badge>
+						</Table.Cell>
+						<Table.Cell class="px-3 py-1.5 text-xs">{positionLabel(employee.primaryAssignment)}</Table.Cell>
+						<Table.Cell class="px-3 py-1.5 text-xs">{orgUnitLabel(employee.primaryAssignment)}</Table.Cell>
+						<Table.Cell class="px-3 py-1.5 text-xs">{supervisorName(employee)}</Table.Cell>
+					</Table.Row>
+				{:else}
+					<Table.Row>
+						<Table.Cell colspan={7} class="h-16 text-center text-sm">
+							{copy.noMatch}
+						</Table.Cell>
+					</Table.Row>
+				{/each}
+			</Table.Body>
+		</Table.Root>
+	</div>
+
+	<div class="grid gap-3 lg:grid-cols-2">
+		<Card.Root>
+			<Card.Header class="space-y-1 py-3">
+				<Card.Title class="text-sm">{copy.createEmployee}</Card.Title>
+				<Card.Description class="text-xs">{copy.createEmployeeDesc}</Card.Description>
+			</Card.Header>
+			<Card.Content class="pt-0">
+				<form method="POST" action="?/createEmployee" use:enhance class="grid gap-2">
+					<div class="grid gap-2 sm:grid-cols-2">
+						<Input name="firstName" placeholder={copy.firstName} required />
+						<Input name="lastName" placeholder={copy.lastName} required />
+					</div>
+					<div class="grid gap-2 sm:grid-cols-2">
+						<Input type="email" name="email" placeholder={copy.email} />
+						<Input name="employeeNo" placeholder={copy.employeeNo} />
+					</div>
+					<div class="flex justify-end">
+						<Button type="submit" size="sm">{copy.createEmployee}</Button>
+					</div>
+				</form>
+			</Card.Content>
+		</Card.Root>
+
+		<Card.Root>
+			<Card.Header class="space-y-1 py-3">
+				<Card.Title class="text-sm">{copy.assignPrimary}</Card.Title>
+				<Card.Description class="text-xs">{copy.assignPrimaryDesc}</Card.Description>
+			</Card.Header>
+			<Card.Content class="pt-0">
+				<form method="POST" action="?/assignPrimary" use:enhance class="grid gap-2">
+					<div class="grid gap-2 sm:grid-cols-2">
+						<select
+							name="employeeId"
+							required
+							class="border-input bg-background ring-offset-background focus-visible:ring-ring inline-flex h-9 rounded-md border px-3 py-1 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+						>
+							<option value="">{copy.selectEmployee}</option>
+							{#each data.employees as employee, i (employee.id)}
+								<option value={employee.id}>{employee.fullName}</option>
+							{/each}
+						</select>
+						<select
+							name="positionId"
+							required
+							class="border-input bg-background ring-offset-background focus-visible:ring-ring inline-flex h-9 rounded-md border px-3 py-1 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+						>
+							<option value="">{copy.selectPosition}</option>
+							{#each data.positions as position, i (position.id)}
+								<option value={position.id}>{position.code} - {position.name}</option>
+							{/each}
+						</select>
+					</div>
+					<div class="grid gap-2 sm:grid-cols-2">
+						<select
+							name="orgUnitId"
+							required
+							class="border-input bg-background ring-offset-background focus-visible:ring-ring inline-flex h-9 rounded-md border px-3 py-1 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+						>
+							<option value="">{copy.selectOrgUnit}</option>
+							{#each data.orgUnits as orgUnit, i (orgUnit.id)}
+								<option value={orgUnit.id}>{orgUnit.code} - {orgUnit.name}</option>
+							{/each}
+						</select>
+						<Input type="date" name="startsAt" required />
+					</div>
+					<input type="hidden" name="isPrimary" value="true" />
+					<div class="flex justify-end">
+						<Button type="submit" size="sm">{copy.assignPrimaryBtn}</Button>
+					</div>
+				</form>
+			</Card.Content>
+		</Card.Root>
+
+		<Card.Root>
+			<Card.Header class="space-y-1 py-3">
+				<Card.Title class="text-sm">{copy.setSupervisor}</Card.Title>
+				<Card.Description class="text-xs">{copy.setSupervisorDesc}</Card.Description>
+			</Card.Header>
+			<Card.Content class="pt-0">
+				<form method="POST" action="?/setSupervisor" use:enhance class="grid gap-2">
+					<div class="grid gap-2 sm:grid-cols-2">
+						<select
+							name="employeeId"
+							required
+							class="border-input bg-background ring-offset-background focus-visible:ring-ring inline-flex h-9 rounded-md border px-3 py-1 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+						>
+							<option value="">{copy.selectEmployee}</option>
+							{#each data.employees as employee, i (employee.id)}
+								<option value={employee.id}>{employee.fullName}</option>
+							{/each}
+						</select>
+						<select
+							name="supervisorEmployeeId"
+							required
+							class="border-input bg-background ring-offset-background focus-visible:ring-ring inline-flex h-9 rounded-md border px-3 py-1 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+						>
+							<option value="">{copy.selectSupervisor}</option>
+							{#each data.employees as supervisor, i (supervisor.id)}
+								<option value={supervisor.id}>{supervisor.fullName}</option>
+							{/each}
+						</select>
+					</div>
+					<div class="grid gap-2">
+						<Input type="date" name="startsAt" required />
+					</div>
+					<div class="flex justify-end">
+						<Button type="submit" size="sm">{copy.setSupervisorBtn}</Button>
+					</div>
+				</form>
+			</Card.Content>
+		</Card.Root>
+
+		<Card.Root>
+			<Card.Header class="space-y-1 py-3">
+				<Card.Title class="text-sm">{copy.assignProgramChair}</Card.Title>
+				<Card.Description class="text-xs">{copy.assignProgramChairDesc}</Card.Description>
+			</Card.Header>
+			<Card.Content class="pt-0">
+				<form method="POST" action="?/assignProgramChair" use:enhance class="grid gap-2">
+					<div class="grid gap-2 sm:grid-cols-2">
+						<select
+							name="programId"
+							required
+							class="border-input bg-background ring-offset-background focus-visible:ring-ring inline-flex h-9 rounded-md border px-3 py-1 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+						>
+							<option value="">{copy.selectProgram}</option>
+							{#each data.programs as program, i (program.id)}
+								<option value={program.id}>{program.code} - {program.name}</option>
+							{/each}
+						</select>
+						<select
+							name="employeeId"
+							required
+							class="border-input bg-background ring-offset-background focus-visible:ring-ring inline-flex h-9 rounded-md border px-3 py-1 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+						>
+							<option value="">{copy.selectEmployee}</option>
+							{#each data.employees as employee, i (employee.id)}
+								<option value={employee.id}>{employee.fullName}</option>
+							{/each}
+						</select>
+					</div>
+					<div class="grid gap-2">
+						<Input type="date" name="startsAt" required />
+					</div>
+					<div class="flex justify-end">
+						<Button type="submit" size="sm">{copy.assignProgramChairBtn}</Button>
+					</div>
+				</form>
+			</Card.Content>
+		</Card.Root>
+	</div>
+</div>
+

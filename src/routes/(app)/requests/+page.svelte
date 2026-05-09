@@ -12,10 +12,12 @@
 	import equipmentCardImage from "$lib/assets/equipment-borrowing/card-borrow.jpg";
 	import type { Component } from "svelte";
 	import type { FacultyRequestKind } from "$lib/requests/request-schema.js";
-	import { requestCenterKinds, requestKindMeta } from "$lib/requests/request-meta.js";
-import { requestsPageCopy } from "$lib/content/page-copy.js";
+	import { requestCenterKinds, getRequestKindMeta } from "$lib/requests/request-meta.js";
+	import { getRequestsPageCopy } from "$lib/content/page-copy.js";
 
 	let { data } = $props();
+	const copy = $derived(getRequestsPageCopy(data.locale));
+	const requestKindMeta = $derived(getRequestKindMeta(data.locale));
 
 	const kindIcons: Record<FacultyRequestKind, Component> = {
 		leave: CalendarDaysIcon,
@@ -31,14 +33,14 @@ import { requestsPageCopy } from "$lib/content/page-copy.js";
 </script>
 
 <svelte:head>
-	<title>{requestsPageCopy.title}</title>
+	<title>{copy.title}</title>
 </svelte:head>
 
 <div class="space-y-8">
 	<section class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
 		<div class="space-y-2">
-			<h1 class="text-3xl font-bold tracking-tight md:text-4xl">{requestsPageCopy.heading}</h1>
-			<p class="text-muted-foreground max-w-2xl text-base">{requestsPageCopy.description}</p>
+			<h1 class="text-3xl font-bold tracking-tight md:text-4xl">{copy.heading}</h1>
+			<p class="text-muted-foreground max-w-2xl text-base">{copy.description}</p>
 		</div>
 	</section>
 
@@ -69,7 +71,7 @@ import { requestsPageCopy } from "$lib/content/page-copy.js";
 				</Card.Header>
 				<Card.Content class="relative z-10">
 					<Button href={`/requests/new?kind=${kind}`} class="w-full sm:w-auto">
-						{requestsPageCopy.startRequestCta}
+						{copy.startRequestCta}
 						<ArrowRightIcon class="size-4" />
 					</Button>
 				</Card.Content>
@@ -82,20 +84,19 @@ import { requestsPageCopy } from "$lib/content/page-copy.js";
 			<Card.Header>
 				<Card.Title class="flex items-center gap-2 text-lg">
 					<InboxIcon class="text-muted-foreground size-5" />
-					{requestsPageCopy.yourRequestsHeading}
+					{copy.yourRequestsHeading}
 				</Card.Title>
 				<Card.Description>
-					Track drafts and submitted items here after the shared requests table is wired.
+					{copy.yourRequestsDescription}
 				</Card.Description>
 			</Card.Header>
 			<Card.Content>
 				{#if data.items.length === 0}
 					<div class="text-muted-foreground flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed py-14 text-center text-sm">
 						<InboxIcon class="size-8 opacity-50" />
-						<p>No saved requests yet.</p>
+						<p>{copy.noSavedRequests}</p>
 						<p class="max-w-md">
-							Use the cards above to validate intake. Saving and approvals arrive with the next Supabase
-							migration.
+							{copy.noSavedRequestsHint}
 						</p>
 					</div>
 				{:else}

@@ -8,6 +8,25 @@
 	import LockIcon from "@lucide/svelte/icons/lock";
 
 	let { data, form } = $props();
+	const copy = $derived.by(() =>
+		data.locale === "th"
+			? {
+					pageTitle: "ล็อกอยู่ - ONE-IL",
+					password: "รหัสผ่าน",
+					passwordPlaceholder: "กรอกรหัสผ่านเพื่อปลดล็อก",
+					unlock: "ปลดล็อก",
+					notYou: "ไม่ใช่คุณ?",
+					signOut: "ออกจากระบบ",
+				}
+			: {
+					pageTitle: "Locked - ONE-IL",
+					password: "Password",
+					passwordPlaceholder: "Enter your password to unlock",
+					unlock: "Unlock",
+					notYou: "Not you?",
+					signOut: "Sign out",
+				}
+	);
 
 	function getInitials(name: string) {
 		return name
@@ -20,7 +39,7 @@
 </script>
 
 <svelte:head>
-	<title>Locked - ONE-IL</title>
+	<title>{copy.pageTitle}</title>
 </svelte:head>
 
 <div class="bg-background flex min-h-screen items-center justify-center p-4">
@@ -44,26 +63,26 @@
 			{/if}
 			<form method="POST" use:enhance class="space-y-4">
 				<div class="space-y-2">
-					<Label for="password">Password</Label>
+					<Label for="password">{copy.password}</Label>
 					<Input
 						id="password"
 						name="password"
 						type="password"
-						placeholder="Enter your password to unlock"
+						placeholder={copy.passwordPlaceholder}
 						required
 						autocomplete="current-password"
 					/>
 				</div>
 				<Button type="submit" class="w-full">
 					<LockIcon class="mr-2 size-4" />
-					Unlock
+					{copy.unlock}
 				</Button>
 			</form>
 		</Card.Content>
 		<Card.Footer class="justify-center">
 			<p class="text-muted-foreground text-sm">
-				Not you?
-				<a href="/logout" class="text-primary underline-offset-4 hover:underline">Sign out</a>
+				{copy.notYou}
+				<a href="/logout" class="text-primary underline-offset-4 hover:underline">{copy.signOut}</a>
 			</p>
 		</Card.Footer>
 	</Card.Root>

@@ -19,6 +19,61 @@
 	import { exportToCSV, exportToJSON } from "$lib/utils/export.js";
 
 	let { data, form } = $props();
+	const copy = $derived.by(() =>
+		data.locale === "th"
+			? {
+					done: "เสร็จสิ้น",
+					pageTitle: "เนื้อหา - ONE-IL",
+					title: "เนื้อหา",
+					description: "สร้างและจัดการเนื้อหาในแพลตฟอร์ม",
+					newPage: "สร้างหน้าใหม่",
+					searchPages: "ค้นหาหน้า...",
+					pages: "หน้า",
+					delete: "ลบ",
+					export: "ส่งออก",
+					exportCsv: "ส่งออกเป็น CSV",
+					exportJson: "ส่งออกเป็น JSON",
+					columns: {
+						title: "ชื่อเรื่อง",
+						slug: "สลัก",
+						status: "สถานะ",
+						template: "เทมเพลต",
+						author: "ผู้เขียน",
+						updated: "อัปเดต",
+						actions: "การกระทำ",
+					},
+					unknown: "ไม่ทราบ",
+					noSearchMatch: "ไม่พบหน้าที่ตรงกับคำค้น",
+					noPages: "ยังไม่มีหน้า",
+					deletePage: "ลบหน้า",
+				}
+			: {
+					done: "Done",
+					pageTitle: "Content - ONE-IL",
+					title: "Content",
+					description: "Create and manage your platform content.",
+					newPage: "New Page",
+					searchPages: "Search pages...",
+					pages: "page",
+					delete: "Delete",
+					export: "Export",
+					exportCsv: "Export as CSV",
+					exportJson: "Export as JSON",
+					columns: {
+						title: "Title",
+						slug: "Slug",
+						status: "Status",
+						template: "Template",
+						author: "Author",
+						updated: "Updated",
+						actions: "Actions",
+					},
+					unknown: "Unknown",
+					noSearchMatch: "No pages match your search.",
+					noPages: "No pages yet.",
+					deletePage: "page",
+				}
+	);
 
 	let search = $state("");
 	let deleteOpen = $state(false);
@@ -58,7 +113,7 @@
 	$effect(() => {
 		if (form?.message) toast.error(form.message);
 		if (form?.success) {
-			toast.success("Done");
+			toast.success(copy.done);
 			selectedIds = new Set();
 		}
 	});
@@ -105,7 +160,11 @@
 
 	function formatDate(date: Date | null) {
 		if (!date) return "—";
-		return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" }).format(new Date(date));
+		return new Intl.DateTimeFormat(data.locale === "th" ? "th-TH" : "en-US", {
+			month: "short",
+			day: "numeric",
+			year: "numeric",
+		}).format(new Date(date));
 	}
 
 	function openDelete(id: string) {
@@ -119,37 +178,37 @@
 			slug: p.slug,
 			status: p.status,
 			template: p.template,
-			author: p.authorName ?? "Unknown",
+			author: p.authorName ?? copy.unknown,
 			updated: formatDate(p.updatedAt),
 		}));
 		if (format === "csv") exportToCSV(exportData, "content");
 		else exportToJSON(exportData, "content");
 	}
 
-	const columns = [
-		{ key: "title", label: "Title" },
-		{ key: "slug", label: "Slug" },
-		{ key: "status", label: "Status" },
-		{ key: "template", label: "Template" },
-		{ key: "authorName", label: "Author" },
-		{ key: "updatedAt", label: "Updated" },
-	];
+	const columns = $derived.by(() => [
+		{ key: "title", label: copy.columns.title },
+		{ key: "slug", label: copy.columns.slug },
+		{ key: "status", label: copy.columns.status },
+		{ key: "template", label: copy.columns.template },
+		{ key: "authorName", label: copy.columns.author },
+		{ key: "updatedAt", label: copy.columns.updated },
+	]);
 </script>
 
 <svelte:head>
-	<title>Content - ONE-IL</title>
+	<title>{copy.pageTitle}</title>
 </svelte:head>
 
 <div class="space-y-6">
 	<div class="flex items-center justify-between">
 		<div>
-			<h1 class="text-3xl font-bold tracking-tight">Content</h1>
-			<p class="text-muted-foreground">Create and manage your platform content.</p>
+			<h1 class="text-3xl font-bold tracking-tight">{copy.title}</h1>
+			<p class="text-muted-foreground">{copy.description}</p>
 		</div>
 		{#if data.canManageContent}
 			<Button href="/content/new">
 				<PlusIcon class="mr-2 size-4" />
-				New Page
+				{copy.newPage}
 			</Button>
 		{/if}
 	</div>
@@ -158,16 +217,16 @@
 	<div class="flex items-center gap-2">
 		<div class="relative max-w-sm flex-1">
 			<SearchIcon class="text-muted-foreground absolute left-3 top-1/2 size-4 -translate-y-1/2" />
-			<Input placeholder="Search pages..." class="pl-9" bind:value={search} />
+			<Input placeholder={copy.searchPages} class="pl-9" bind:value={search} />
 		</div>
-		<p class="text-muted-foreground text-sm">{filtered.length} page{filtered.length !== 1 ? "s" : ""}</p>
+		<p class="text-muted-foreground text-sm">{filtered.length} {copy.pages}{filtered.length !== 1 && data.locale !== "th" ? "s" : ""}</p>
 		<div class="ml-auto flex items-center gap-2">
 			{#if data.canManageContent && selectedIds.size > 0}
 				<form method="POST" action="?/bulkDelete" use:enhance>
 					<input type="hidden" name="ids" value={[...selectedIds].join(",")} />
 					<Button variant="destructive" size="sm" type="submit">
 						<TrashIcon class="mr-2 size-4" />
-						Delete {selectedIds.size}
+						{copy.delete} {selectedIds.size}
 					</Button>
 				</form>
 			{/if}
@@ -176,13 +235,13 @@
 					{#snippet child({ props })}
 						<Button variant="outline" size="sm" {...props}>
 							<DownloadIcon class="mr-2 size-4" />
-							Export
+							{copy.export}
 						</Button>
 					{/snippet}
 				</DropdownMenu.Trigger>
 				<DropdownMenu.Content>
-					<DropdownMenu.Item onclick={() => handleExport("csv")}>Export as CSV</DropdownMenu.Item>
-					<DropdownMenu.Item onclick={() => handleExport("json")}>Export as JSON</DropdownMenu.Item>
+					<DropdownMenu.Item onclick={() => handleExport("csv")}>{copy.exportCsv}</DropdownMenu.Item>
+					<DropdownMenu.Item onclick={() => handleExport("json")}>{copy.exportJson}</DropdownMenu.Item>
 				</DropdownMenu.Content>
 			</DropdownMenu.Root>
 		</div>
@@ -213,7 +272,7 @@
 						</Table.Head>
 					{/each}
 					{#if data.canManageContent}
-						<Table.Head class="w-[100px]">Actions</Table.Head>
+						<Table.Head class="w-[100px]">{copy.columns.actions}</Table.Head>
 					{/if}
 				</Table.Row>
 			</Table.Header>
@@ -236,7 +295,7 @@
 							<Badge variant="outline" class={statusColor(p.status)}>{p.status}</Badge>
 						</Table.Cell>
 						<Table.Cell class="text-muted-foreground capitalize">{p.template}</Table.Cell>
-						<Table.Cell class="text-muted-foreground">{p.authorName ?? "Unknown"}</Table.Cell>
+						<Table.Cell class="text-muted-foreground">{p.authorName ?? copy.unknown}</Table.Cell>
 						<Table.Cell class="text-muted-foreground">{formatDate(p.updatedAt)}</Table.Cell>
 						{#if data.canManageContent}
 							<Table.Cell>
@@ -254,14 +313,25 @@
 				{:else}
 					<Table.Row>
 						<Table.Cell colspan={data.canManageContent ? 8 : 6} class="h-24 text-center">
-							{search ? "No pages match your search." : "No pages yet."}
+							{search ? copy.noSearchMatch : copy.noPages}
 						</Table.Cell>
 					</Table.Row>
 				{/each}
 			</Table.Body>
 		</Table.Root>
-		<DataTablePagination totalItems={filtered.length} bind:pageSize bind:currentPage />
+		<DataTablePagination
+			totalItems={filtered.length}
+			locale={data.locale}
+			bind:pageSize
+			bind:currentPage
+		/>
 	</div>
 </div>
 
-<DeleteConfirmDialog bind:open={deleteOpen} action="?/delete" id={deleteId} itemName="page" />
+<DeleteConfirmDialog
+	bind:open={deleteOpen}
+	action="?/delete"
+	id={deleteId}
+	itemName={copy.deletePage}
+	locale={data.locale}
+/>

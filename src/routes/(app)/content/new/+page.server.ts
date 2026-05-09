@@ -6,7 +6,7 @@ import type { Actions, PageServerLoad } from "./$types.js";
 
 export const load: PageServerLoad = async ({ locals }) => {
 	assertPermission(locals.user, "content:manage");
-	return {};
+	return { locale: locals.locale };
 };
 
 function slugify(text: string): string {
@@ -20,6 +20,24 @@ function slugify(text: string): string {
 
 export const actions: Actions = {
 	default: async ({ request, locals }) => {
+		const t =
+			locals.locale === "th"
+				? {
+						titleRequired: "ต้องระบุชื่อเรื่อง (1-200 ตัวอักษร)",
+						invalidSlug: "ไม่สามารถสร้าง slug ที่ถูกต้องได้",
+						contentRequired: "ต้องระบุเนื้อหา",
+						invalidTemplate: "เทมเพลตไม่ถูกต้อง",
+						invalidStatus: "สถานะไม่ถูกต้อง",
+						slugExists: "มีหน้าอื่นใช้ slug นี้อยู่แล้ว",
+					}
+				: {
+						titleRequired: "Title is required (1-200 characters)",
+						invalidSlug: "Could not generate a valid slug",
+						contentRequired: "Content is required",
+						invalidTemplate: "Invalid template",
+						invalidStatus: "Invalid status",
+						slugExists: "A page with this slug already exists",
+					};
 		assertPermission(locals.user, "content:manage");
 		const formData = await request.formData();
 		const title = formData.get("title");
@@ -29,22 +47,22 @@ export const actions: Actions = {
 		const status = formData.get("status");
 
 		if (typeof title !== "string" || title.length < 1 || title.length > 200) {
-			return fail(400, { message: "Title is required (1-200 characters)" });
+			return fail(400, { message: t.titleRequired });
 		}
 
 		const finalSlug = typeof slug === "string" && slug.length > 0 ? slugify(slug) : slugify(title);
 		if (!finalSlug) {
-			return fail(400, { message: "Could not generate a valid slug" });
+			return fail(400, { message: t.invalidSlug });
 		}
 
 		if (typeof content !== "string") {
-			return fail(400, { message: "Content is required" });
+			return fail(400, { message: t.contentRequired });
 		}
 		if (typeof template !== "string" || !["default", "landing", "blog"].includes(template)) {
-			return fail(400, { message: "Invalid template" });
+			return fail(400, { message: t.invalidTemplate });
 		}
 		if (typeof status !== "string" || !["draft", "published", "archived"].includes(status)) {
-			return fail(400, { message: "Invalid status" });
+			return fail(400, { message: t.invalidStatus });
 		}
 
 		const id = generateId(10);
@@ -61,7 +79,7 @@ export const actions: Actions = {
 			published_at: status === "published" ? new Date().toISOString() : null,
 		});
 		if (error) {
-			return fail(400, { message: "A page with this slug already exists" });
+			return fail(400, { message: t.slugExists });
 		}
 
 		redirect(302, "/content");

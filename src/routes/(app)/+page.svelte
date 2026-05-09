@@ -24,32 +24,46 @@
 	import AlertTriangleIcon from "@lucide/svelte/icons/alert-triangle";
 	import CircleAlertIcon from "@lucide/svelte/icons/circle-alert";
 	import CheckCircleIcon from "@lucide/svelte/icons/check-circle";
-	import { dashboardPageCopy } from "$lib/content/page-copy.js";
+	import { getDashboardPageCopy } from "$lib/content/page-copy.js";
 
 	let { data } = $props();
+	const copy = $derived(getDashboardPageCopy(data.locale));
+	const localeTag = $derived(data.locale === "th" ? "th-TH" : "en-US");
 
 	// --- Chart configs ---
 
-	const signupChartConfig = {
-		signups: { label: "Signups", color: "var(--chart-1)" },
-	} satisfies Chart.ChartConfig;
+	const signupChartConfig = $derived.by(
+		() =>
+			({
+				signups: { label: copy.charts.signups, color: "var(--chart-1)" },
+			}) satisfies Chart.ChartConfig
+	);
 
-	const roleChartConfig = {
-		admin: { label: "Admin", color: "var(--chart-1)" },
-		editor: { label: "Editor", color: "var(--chart-3)" },
-		viewer: { label: "Viewer", color: "var(--chart-2)" },
-	} satisfies Chart.ChartConfig;
+	const roleChartConfig = $derived.by(
+		() =>
+			({
+				admin: { label: copy.charts.admin, color: "var(--chart-1)" },
+				editor: { label: copy.charts.editor, color: "var(--chart-3)" },
+				viewer: { label: copy.charts.viewer, color: "var(--chart-2)" },
+			}) satisfies Chart.ChartConfig
+	);
 
-	const contentTrendConfig = {
-		published: { label: "Published", color: "var(--chart-5)" },
-		draft: { label: "Draft", color: "var(--chart-2)" },
-	} satisfies Chart.ChartConfig;
+	const contentTrendConfig = $derived.by(
+		() =>
+			({
+				published: { label: copy.charts.published, color: "var(--chart-5)" },
+				draft: { label: copy.charts.draft, color: "var(--chart-2)" },
+			}) satisfies Chart.ChartConfig
+	);
 
-	const pageStatusConfig = {
-		published: { label: "Published", color: "var(--chart-5)" },
-		draft: { label: "Draft", color: "var(--chart-2)" },
-		archived: { label: "Archived", color: "var(--chart-4)" },
-	} satisfies Chart.ChartConfig;
+	const pageStatusConfig = $derived.by(
+		() =>
+			({
+				published: { label: copy.charts.published, color: "var(--chart-5)" },
+				draft: { label: copy.charts.draft, color: "var(--chart-2)" },
+				archived: { label: copy.charts.archived, color: "var(--chart-4)" },
+			}) satisfies Chart.ChartConfig
+	);
 
 	// --- Derived data ---
 
@@ -109,25 +123,25 @@
 
 	const stats = $derived([
 		{
-			title: "Total Users",
+			title: copy.stats.totalUsers,
 			rawValue: data.stats.totalUsers,
 			icon: UsersIcon,
 			trend: data.trends.users,
 		},
 		{
-			title: "Active Sessions",
+			title: copy.stats.activeSessions,
 			rawValue: data.stats.activeSessions,
 			icon: ActivityIcon,
 			trend: null,
 		},
 		{
-			title: "Total Pages",
+			title: copy.stats.totalPages,
 			rawValue: data.stats.totalPages,
 			icon: FileTextIcon,
 			trend: data.trends.pages,
 		},
 		{
-			title: "Unread Notifications",
+			title: copy.stats.unreadNotifications,
 			rawValue: data.stats.unreadNotifications,
 			icon: BellIcon,
 			trend: null,
@@ -139,12 +153,12 @@
 	function timeAgo(isoString: string) {
 		const diff = Date.now() - new Date(isoString).getTime();
 		const minutes = Math.floor(diff / 60000);
-		if (minutes < 1) return "just now";
-		if (minutes < 60) return `${minutes}m ago`;
+		if (minutes < 1) return copy.time.justNow;
+		if (minutes < 60) return copy.time.minAgo(minutes);
 		const hours = Math.floor(minutes / 60);
-		if (hours < 24) return `${hours}h ago`;
+		if (hours < 24) return copy.time.hourAgo(hours);
 		const days = Math.floor(hours / 24);
-		return `${days}d ago`;
+		return copy.time.dayAgo(days);
 	}
 
 	function getInitials(name: string) {
@@ -176,18 +190,18 @@
 </script>
 
 <svelte:head>
-	<title>{dashboardPageCopy.title}</title>
+	<title>{copy.title}</title>
 </svelte:head>
 
 <div class="space-y-6">
 	<!-- Header with date -->
 	<div class="flex items-end justify-between">
 		<div>
-			<h1 class="text-3xl font-bold tracking-tight">{dashboardPageCopy.heading}</h1>
-			<p class="text-muted-foreground">{dashboardPageCopy.description}</p>
+			<h1 class="text-3xl font-bold tracking-tight">{copy.heading}</h1>
+			<p class="text-muted-foreground">{copy.description}</p>
 		</div>
 		<p class="text-muted-foreground hidden text-sm sm:block">
-			{new Date().toLocaleDateString("en-US", {
+			{new Date().toLocaleDateString(localeTag, {
 				weekday: "long",
 				year: "numeric",
 				month: "long",
@@ -220,10 +234,10 @@
 								</span>
 							{:else}
 								<span class="bg-muted text-muted-foreground inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium">
-									No change
+									{copy.stats.noChange}
 								</span>
 							{/if}
-							<span class="text-muted-foreground text-[10px]">vs last month</span>
+							<span class="text-muted-foreground text-[10px]">{copy.stats.vsLastMonth}</span>
 						</div>
 					{/if}
 				</Card.Content>
@@ -235,8 +249,8 @@
 	<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
 		<Card.Root class="lg:col-span-4">
 			<Card.Header>
-				<Card.Title>User Signups</Card.Title>
-				<Card.Description>New user registrations over time</Card.Description>
+				<Card.Title>{copy.charts.userSignups}</Card.Title>
+				<Card.Description>{copy.charts.userSignupsDesc}</Card.Description>
 			</Card.Header>
 			<Card.Content>
 				{#key mode.current}
@@ -256,7 +270,7 @@
 								props={{
 									xAxis: {
 										format: (d: Date) =>
-											d.toLocaleDateString("en-US", { month: "short" }),
+											d.toLocaleDateString(localeTag, { month: "short" }),
 									},
 									area: { opacity: 0.15 },
 									line: { class: "stroke-2" },
@@ -284,8 +298,8 @@
 
 		<Card.Root class="lg:col-span-3">
 			<Card.Header>
-				<Card.Title>Content Production</Card.Title>
-				<Card.Description>Pages created by month and status</Card.Description>
+				<Card.Title>{copy.charts.contentProduction}</Card.Title>
+				<Card.Description>{copy.charts.contentProductionDesc}</Card.Description>
 			</Card.Header>
 			<Card.Content>
 				{#key mode.current}
@@ -313,7 +327,7 @@
 									xAxis: {
 										format: (d: string) => {
 											const date = new Date(d);
-											return date.toLocaleDateString("en-US", { month: "short" });
+											return date.toLocaleDateString(localeTag, { month: "short" });
 										},
 									},
 									bars: { radius: 4 },
@@ -343,8 +357,8 @@
 	<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
 		<Card.Root class="lg:col-span-3">
 			<Card.Header>
-				<Card.Title>User Roles</Card.Title>
-				<Card.Description>Distribution of user roles</Card.Description>
+				<Card.Title>{copy.charts.userRoles}</Card.Title>
+				<Card.Description>{copy.charts.userRolesDesc}</Card.Description>
 			</Card.Header>
 			<Card.Content>
 				{#key mode.current}
@@ -376,8 +390,8 @@
 
 		<Card.Root class="lg:col-span-2">
 			<Card.Header>
-				<Card.Title>Page Status</Card.Title>
-				<Card.Description>Content by status</Card.Description>
+				<Card.Title>{copy.charts.pageStatus}</Card.Title>
+				<Card.Description>{copy.charts.pageStatusDesc}</Card.Description>
 			</Card.Header>
 			<Card.Content>
 				{#key mode.current}
@@ -409,13 +423,13 @@
 
 		<Card.Root class="lg:col-span-2">
 			<Card.Header>
-				<Card.Title class="text-sm">System Overview</Card.Title>
+				<Card.Title class="text-sm">{copy.system.overview}</Card.Title>
 			</Card.Header>
 			<Card.Content class="space-y-4">
 				<div class="flex items-center justify-between">
 					<div class="flex items-center gap-2">
 						<BookOpenIcon class="text-muted-foreground size-4" />
-						<span class="text-muted-foreground text-sm">Published</span>
+						<span class="text-muted-foreground text-sm">{copy.system.published}</span>
 					</div>
 					<span class="text-sm font-bold">{data.quickStats.publishedPages}</span>
 				</div>
@@ -423,7 +437,7 @@
 				<div class="flex items-center justify-between">
 					<div class="flex items-center gap-2">
 						<PenToolIcon class="text-muted-foreground size-4" />
-						<span class="text-muted-foreground text-sm">Active Editors</span>
+						<span class="text-muted-foreground text-sm">{copy.system.activeEditors}</span>
 					</div>
 					<span class="text-sm font-bold">{data.quickStats.activeEditors}</span>
 				</div>
@@ -431,19 +445,19 @@
 				<div class="flex items-center justify-between">
 					<div class="flex items-center gap-2">
 						<ServerIcon class="text-muted-foreground size-4" />
-						<span class="text-muted-foreground text-sm">System</span>
+						<span class="text-muted-foreground text-sm">{copy.system.system}</span>
 					</div>
 					{#if data.systemStatus.maintenanceMode}
-						<Badge variant="outline" class="border-yellow-500 text-yellow-600 dark:text-yellow-400">Maintenance</Badge>
+						<Badge variant="outline" class="border-yellow-500 text-yellow-600 dark:text-yellow-400">{copy.system.maintenance}</Badge>
 					{:else}
-						<Badge variant="outline" class="border-green-500 text-green-600 dark:text-green-400">Operational</Badge>
+						<Badge variant="outline" class="border-green-500 text-green-600 dark:text-green-400">{copy.system.operational}</Badge>
 					{/if}
 				</div>
 				<Separator />
 				<div class="flex items-center justify-between">
 					<div class="flex items-center gap-2">
 						<UsersIcon class="text-muted-foreground size-4" />
-						<span class="text-muted-foreground text-sm">Total Users</span>
+						<span class="text-muted-foreground text-sm">{copy.stats.totalUsers}</span>
 					</div>
 					<span class="text-sm font-bold">{data.stats.totalUsers}</span>
 				</div>
@@ -455,8 +469,8 @@
 	<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
 		<Card.Root class="lg:col-span-4">
 			<Card.Header>
-				<Card.Title>Recent Activity</Card.Title>
-				<Card.Description>Latest actions across the platform</Card.Description>
+				<Card.Title>{copy.activity.title}</Card.Title>
+				<Card.Description>{copy.activity.description}</Card.Description>
 			</Card.Header>
 			<Card.Content>
 				{#if data.recentActivity.length > 0}
@@ -475,7 +489,7 @@
 						{/each}
 					</div>
 				{:else}
-					<p class="text-muted-foreground text-sm">No recent activity</p>
+					<p class="text-muted-foreground text-sm">{copy.activity.none}</p>
 				{/if}
 			</Card.Content>
 		</Card.Root>
@@ -483,10 +497,10 @@
 		<Card.Root class="lg:col-span-3">
 			<Card.Header class="flex flex-row items-center justify-between">
 				<div>
-					<Card.Title>Notifications</Card.Title>
-					<Card.Description>Recent alerts and updates</Card.Description>
+					<Card.Title>{copy.notifications.title}</Card.Title>
+					<Card.Description>{copy.notifications.description}</Card.Description>
 				</div>
-				<a href={resolve("/notifications")} class="text-primary text-xs font-medium hover:underline">View all</a>
+				<a href={resolve("/notifications")} class="text-primary text-xs font-medium hover:underline">{copy.notifications.viewAll}</a>
 			</Card.Header>
 			<Card.Content>
 				{#if data.recentNotifications.length > 0}
@@ -502,7 +516,7 @@
 										<div class="flex items-center gap-2">
 											<p class="truncate text-sm font-medium">{notif.title}</p>
 											{#if !notif.read}
-												<Badge variant="default" class="shrink-0 text-[9px]">New</Badge>
+												<Badge variant="default" class="shrink-0 text-[9px]">{copy.notifications.new}</Badge>
 											{/if}
 										</div>
 										<p class="text-muted-foreground truncate text-xs">{notif.message}</p>
@@ -513,7 +527,7 @@
 					</ScrollArea>
 				{:else}
 					<div class="flex h-[100px] items-center justify-center">
-						<p class="text-muted-foreground text-sm">No notifications</p>
+						<p class="text-muted-foreground text-sm">{copy.notifications.none}</p>
 					</div>
 				{/if}
 			</Card.Content>

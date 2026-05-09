@@ -6,24 +6,80 @@
 	import { mode } from "mode-watcher";
 
 	let { data } = $props();
+const copy = $derived.by(() =>
+	data.locale === "th"
+		? {
+				pageTitle: "วิเคราะห์ข้อมูล - ONE-IL",
+				title: "วิเคราะห์ข้อมูล",
+				description: "ติดตามตัวชี้วัดและประสิทธิภาพของแพลตฟอร์ม",
+				signupsLabel: "ผู้ใช้ใหม่",
+				pagesLabel: "หน้าที่สร้าง",
+				published: "เผยแพร่",
+				draft: "ฉบับร่าง",
+				archived: "เก็บถาวร",
+				topPages: "หน้า",
+				signupsOverTime: "แนวโน้มผู้ใช้ใหม่",
+				signupsOverTimeDesc: "จำนวนการสมัครใหม่รายเดือน",
+				contentOverTime: "แนวโน้มการสร้างเนื้อหา",
+				contentOverTimeDesc: "จำนวนหน้าที่สร้างรายเดือน",
+				pagesByStatus: "หน้าแยกตามสถานะ",
+				pagesByStatusDesc: "สัดส่วนสถานะของเนื้อหา",
+				topAuthors: "ผู้เขียนสูงสุด",
+				topAuthorsDesc: "ผู้ใช้ที่มีจำนวนหน้าเนื้อหามากที่สุด",
+				noData: "ยังไม่มีข้อมูล",
+			}
+		: {
+				pageTitle: "Analytics - ONE-IL",
+				title: "Analytics",
+				description: "Monitor your platform metrics and performance.",
+				signupsLabel: "User Signups",
+				pagesLabel: "Pages Created",
+				published: "Published",
+				draft: "Draft",
+				archived: "Archived",
+				topPages: "Pages",
+				signupsOverTime: "User Signups Over Time",
+				signupsOverTimeDesc: "New registrations by month",
+				contentOverTime: "Content Creation Over Time",
+				contentOverTimeDesc: "Pages created by month",
+				pagesByStatus: "Pages by Status",
+				pagesByStatusDesc: "Distribution of content statuses",
+				topAuthors: "Top Authors",
+				topAuthorsDesc: "Users with the most content pages",
+				noData: "No data yet",
+			}
+);
+const localeTag = $derived(data.locale === "th" ? "th-TH" : "en-US");
 
-	const signupConfig = {
-		signups: { label: "User Signups", color: "var(--chart-1)" },
-	} satisfies Chart.ChartConfig;
+const signupConfig = $derived.by(
+	() =>
+		({
+			signups: { label: copy.signupsLabel, color: "var(--chart-1)" },
+		}) satisfies Chart.ChartConfig
+);
 
-	const contentConfig = {
-		pages: { label: "Pages Created", color: "var(--chart-3)" },
-	} satisfies Chart.ChartConfig;
+const contentConfig = $derived.by(
+	() =>
+		({
+			pages: { label: copy.pagesLabel, color: "var(--chart-3)" },
+		}) satisfies Chart.ChartConfig
+);
 
-	const statusConfig = {
-		published: { label: "Published", color: "var(--chart-1)" },
-		draft: { label: "Draft", color: "var(--chart-2)" },
-		archived: { label: "Archived", color: "var(--chart-4)" },
-	} satisfies Chart.ChartConfig;
+const statusConfig = $derived.by(
+	() =>
+		({
+			published: { label: copy.published, color: "var(--chart-1)" },
+			draft: { label: copy.draft, color: "var(--chart-2)" },
+			archived: { label: copy.archived, color: "var(--chart-4)" },
+		}) satisfies Chart.ChartConfig
+);
 
-	const authorsConfig = {
-		pageCount: { label: "Pages", color: "var(--chart-5)" },
-	} satisfies Chart.ChartConfig;
+const authorsConfig = $derived.by(
+	() =>
+		({
+			pageCount: { label: copy.topPages, color: "var(--chart-5)" },
+		}) satisfies Chart.ChartConfig
+);
 
 	const signupData = $derived(
 		data.signupsPerMonth.map((d) => ({
@@ -59,20 +115,20 @@
 </script>
 
 <svelte:head>
-	<title>Analytics - ONE-IL</title>
+	<title>{copy.pageTitle}</title>
 </svelte:head>
 
 <div class="space-y-6">
 	<div>
-		<h1 class="text-3xl font-bold tracking-tight">Analytics</h1>
-		<p class="text-muted-foreground">Monitor your platform metrics and performance.</p>
+		<h1 class="text-3xl font-bold tracking-tight">{copy.title}</h1>
+		<p class="text-muted-foreground">{copy.description}</p>
 	</div>
 
 	<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
 		<Card.Root class="col-span-4">
 			<Card.Header>
-				<Card.Title>User Signups Over Time</Card.Title>
-				<Card.Description>New registrations by month</Card.Description>
+				<Card.Title>{copy.signupsOverTime}</Card.Title>
+				<Card.Description>{copy.signupsOverTimeDesc}</Card.Description>
 			</Card.Header>
 			<Card.Content>
 				{#key mode.current}
@@ -92,7 +148,7 @@
 								props={{
 									xAxis: {
 										format: (d: Date) =>
-											d.toLocaleDateString("en-US", { month: "short" }),
+											d.toLocaleDateString(localeTag, { month: "short" }),
 									},
 								}}
 							>
@@ -103,7 +159,7 @@
 						</Chart.Container>
 					{:else}
 						<div class="flex h-[300px] items-center justify-center">
-							<p class="text-muted-foreground text-sm">No data yet</p>
+							<p class="text-muted-foreground text-sm">{copy.noData}</p>
 						</div>
 					{/if}
 				{/key}
@@ -112,8 +168,8 @@
 
 		<Card.Root class="col-span-3">
 			<Card.Header>
-				<Card.Title>Content Creation Over Time</Card.Title>
-				<Card.Description>Pages created by month</Card.Description>
+				<Card.Title>{copy.contentOverTime}</Card.Title>
+				<Card.Description>{copy.contentOverTimeDesc}</Card.Description>
 			</Card.Header>
 			<Card.Content>
 				{#key mode.current}
@@ -133,7 +189,7 @@
 								props={{
 									xAxis: {
 										format: (d: Date) =>
-											d.toLocaleDateString("en-US", { month: "short" }),
+											d.toLocaleDateString(localeTag, { month: "short" }),
 									},
 								}}
 							>
@@ -144,7 +200,7 @@
 						</Chart.Container>
 					{:else}
 						<div class="flex h-[300px] items-center justify-center">
-							<p class="text-muted-foreground text-sm">No data yet</p>
+							<p class="text-muted-foreground text-sm">{copy.noData}</p>
 						</div>
 					{/if}
 				{/key}
@@ -155,8 +211,8 @@
 	<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
 		<Card.Root class="col-span-3">
 			<Card.Header>
-				<Card.Title>Pages by Status</Card.Title>
-				<Card.Description>Distribution of content statuses</Card.Description>
+				<Card.Title>{copy.pagesByStatus}</Card.Title>
+				<Card.Description>{copy.pagesByStatusDesc}</Card.Description>
 			</Card.Header>
 			<Card.Content>
 				{#key mode.current}
@@ -177,7 +233,7 @@
 						</Chart.Container>
 					{:else}
 						<div class="flex h-[300px] items-center justify-center">
-							<p class="text-muted-foreground text-sm">No data yet</p>
+							<p class="text-muted-foreground text-sm">{copy.noData}</p>
 						</div>
 					{/if}
 				{/key}
@@ -186,8 +242,8 @@
 
 		<Card.Root class="col-span-4">
 			<Card.Header>
-				<Card.Title>Top Authors</Card.Title>
-				<Card.Description>Users with the most content pages</Card.Description>
+				<Card.Title>{copy.topAuthors}</Card.Title>
+				<Card.Description>{copy.topAuthorsDesc}</Card.Description>
 			</Card.Header>
 			<Card.Content>
 				{#key mode.current}
@@ -212,7 +268,7 @@
 						</Chart.Container>
 					{:else}
 						<div class="flex h-[300px] items-center justify-center">
-							<p class="text-muted-foreground text-sm">No data yet</p>
+							<p class="text-muted-foreground text-sm">{copy.noData}</p>
 						</div>
 					{/if}
 				{/key}

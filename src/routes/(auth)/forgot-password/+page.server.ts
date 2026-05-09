@@ -4,9 +4,9 @@ import type { Actions, PageServerLoad } from "./$types.js";
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (locals.user) {
-		return { alreadyLoggedIn: true };
+		return { alreadyLoggedIn: true, locale: locals.locale };
 	}
-	return {};
+	return { locale: locals.locale };
 };
 
 export const actions: Actions = {
@@ -15,7 +15,12 @@ export const actions: Actions = {
 		const email = formData.get("email");
 
 		if (typeof email !== "string" || !email.includes("@")) {
-			return fail(400, { message: "Please enter a valid email address" });
+			return fail(400, {
+				message:
+					locals.locale === "th"
+						? "กรุณากรอกอีเมลให้ถูกต้อง"
+						: "Please enter a valid email address",
+			});
 		}
 
 		const origin = env.ORIGIN ?? "http://localhost:5173";

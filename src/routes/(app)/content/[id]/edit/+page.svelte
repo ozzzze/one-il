@@ -10,6 +10,49 @@
 	import ArrowLeftIcon from "@lucide/svelte/icons/arrow-left";
 
 	let { data, form } = $props();
+const copy = $derived.by(() =>
+	data.locale === "th"
+		? {
+				pageTitle: `แก้ไข: ${data.page.title} - ONE-IL`,
+				title: "แก้ไขหน้า",
+				editing: "กำลังแก้ไข:",
+				titleLabel: "ชื่อเรื่อง",
+				titlePlaceholder: "ชื่อหน้า",
+				slug: "สลัก",
+				content: "เนื้อหา",
+				contentPlaceholder: "เขียนเนื้อหาหน้าของคุณที่นี่...",
+				template: "เทมเพลต",
+				status: "สถานะ",
+				default: "ค่าเริ่มต้น",
+				landing: "หน้า Landing",
+				blog: "บล็อก",
+				draft: "ฉบับร่าง",
+				published: "เผยแพร่",
+				archived: "เก็บถาวร",
+				cancel: "ยกเลิก",
+				saveChanges: "บันทึกการเปลี่ยนแปลง",
+			}
+		: {
+				pageTitle: `Edit: ${data.page.title} - ONE-IL`,
+				title: "Edit Page",
+				editing: "Editing:",
+				titleLabel: "Title",
+				titlePlaceholder: "Page title",
+				slug: "Slug",
+				content: "Content",
+				contentPlaceholder: "Write your page content here...",
+				template: "Template",
+				status: "Status",
+				default: "Default",
+				landing: "Landing",
+				blog: "Blog",
+				draft: "Draft",
+				published: "Published",
+				archived: "Archived",
+				cancel: "Cancel",
+				saveChanges: "Save Changes",
+			}
+);
 
 	let title = $state("");
 	let slug = $state("");
@@ -33,7 +76,7 @@
 </script>
 
 <svelte:head>
-	<title>Edit: {data.page.title} - ONE-IL</title>
+	<title>{copy.pageTitle}</title>
 </svelte:head>
 
 <div class="mx-auto max-w-3xl space-y-6">
@@ -42,8 +85,8 @@
 			<ArrowLeftIcon class="size-4" />
 		</Button>
 		<div>
-			<h1 class="text-3xl font-bold tracking-tight">Edit Page</h1>
-			<p class="text-muted-foreground">Editing: {data.page.title}</p>
+			<h1 class="text-3xl font-bold tracking-tight">{copy.title}</h1>
+			<p class="text-muted-foreground">{copy.editing} {data.page.title}</p>
 		</div>
 	</div>
 
@@ -51,11 +94,11 @@
 		<Card.Content class="pt-6">
 			<form method="POST" use:enhance class="space-y-6">
 				<div class="grid gap-2">
-					<Label for="title">Title</Label>
+					<Label for="title">{copy.titleLabel}</Label>
 					<Input
 						id="title"
 						name="title"
-						placeholder="Page title"
+						placeholder={copy.titlePlaceholder}
 						value={title}
 						oninput={handleTitleInput}
 						required
@@ -63,7 +106,7 @@
 				</div>
 
 				<div class="grid gap-2">
-					<Label for="slug">Slug</Label>
+					<Label for="slug">{copy.slug}</Label>
 					<div class="flex items-center gap-2">
 						<span class="text-muted-foreground text-sm">/</span>
 						<Input
@@ -78,11 +121,11 @@
 				</div>
 
 				<div class="grid gap-2">
-					<Label for="content">Content</Label>
+					<Label for="content">{copy.content}</Label>
 					<Textarea
 						id="content"
 						name="content"
-						placeholder="Write your page content here..."
+						placeholder={copy.contentPlaceholder}
 						rows={12}
 						value={data.page.content}
 					/>
@@ -90,37 +133,37 @@
 
 				<div class="grid grid-cols-2 gap-4">
 					<div class="grid gap-2">
-						<Label>Template</Label>
+						<Label>{copy.template}</Label>
 						<Select.Root name="template" type="single" value={data.page.template}>
 							<Select.Trigger>
 								<span class="capitalize">{data.page.template}</span>
 							</Select.Trigger>
 							<Select.Content>
-								<Select.Item value="default">Default</Select.Item>
-								<Select.Item value="landing">Landing</Select.Item>
-								<Select.Item value="blog">Blog</Select.Item>
+								<Select.Item value="default">{copy.default}</Select.Item>
+								<Select.Item value="landing">{copy.landing}</Select.Item>
+								<Select.Item value="blog">{copy.blog}</Select.Item>
 							</Select.Content>
 						</Select.Root>
 					</div>
 
 					<div class="grid gap-2">
-						<Label>Status</Label>
+						<Label>{copy.status}</Label>
 						<Select.Root name="status" type="single" value={data.page.status}>
 							<Select.Trigger>
 								<span class="capitalize">{data.page.status}</span>
 							</Select.Trigger>
 							<Select.Content>
-								<Select.Item value="draft">Draft</Select.Item>
-								<Select.Item value="published">Published</Select.Item>
-								<Select.Item value="archived">Archived</Select.Item>
+								<Select.Item value="draft">{copy.draft}</Select.Item>
+								<Select.Item value="published">{copy.published}</Select.Item>
+								<Select.Item value="archived">{copy.archived}</Select.Item>
 							</Select.Content>
 						</Select.Root>
 					</div>
 				</div>
 
 				<div class="flex justify-end gap-2">
-					<Button variant="outline" href="/content">Cancel</Button>
-					<Button type="submit">Save Changes</Button>
+					<Button variant="outline" href="/content">{copy.cancel}</Button>
+					<Button type="submit">{copy.saveChanges}</Button>
 				</div>
 			</form>
 		</Card.Content>

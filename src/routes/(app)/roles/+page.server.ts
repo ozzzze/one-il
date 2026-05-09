@@ -17,11 +17,23 @@ export const load: PageServerLoad = async ({ locals }) => {
 		count: (allUsers ?? []).filter((u) => parseRole(u.role) === role.name).length,
 	}));
 
-	return { roles };
+	return { roles, locale: locals.locale };
 };
 
 export const actions: Actions = {
 	changeRole: async ({ request, locals }) => {
+		const t =
+			locals.locale === "th"
+				? {
+						userIdRequired: "ต้องระบุรหัสผู้ใช้",
+						invalidRole: "บทบาทไม่ถูกต้อง",
+						lastAdmin: "ไม่สามารถลดสิทธิ์แอดมินคนสุดท้ายได้",
+					}
+				: {
+						userIdRequired: "User ID is required",
+						invalidRole: "Invalid role",
+						lastAdmin: "Cannot demote the last admin",
+					};
 		assertPermission(locals.user, "roles:manage");
 		const admin = getServiceRoleClient();
 		const formData = await request.formData();
@@ -29,10 +41,10 @@ export const actions: Actions = {
 		const newRole = formData.get("newRole");
 
 		if (typeof userId !== "string") {
-			return fail(400, { message: "User ID is required" });
+			return fail(400, { message: t.userIdRequired });
 		}
 		if (!isRole(newRole)) {
-			return fail(400, { message: "Invalid role" });
+			return fail(400, { message: t.invalidRole });
 		}
 
 		// Prevent demotion of last admin
@@ -43,7 +55,7 @@ export const actions: Actions = {
 				.select("id", { count: "exact", head: true })
 				.eq("role", "admin");
 			if ((adminCount ?? 0) <= 1) {
-				return fail(400, { message: "Cannot demote the last admin" });
+				return fail(400, { message: t.lastAdmin });
 			}
 		}
 

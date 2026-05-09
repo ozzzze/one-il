@@ -6,11 +6,36 @@
 	import { Label } from "$lib/components/ui/label/index.js";
 	import MailIcon from "@lucide/svelte/icons/mail";
 
-	let { form } = $props();
+	let { form, data } = $props();
+	const copy = $derived.by(() =>
+		data.locale === "th"
+			? {
+					pageTitle: "ลืมรหัสผ่าน - ONE-IL",
+					title: "ลืมรหัสผ่าน?",
+					desc: "กรอกอีเมล แล้วเราจะส่งลิงก์รีเซ็ตรหัสผ่านให้",
+					success:
+						"หากมีบัญชีที่ใช้อีเมลนี้ ระบบได้ส่งลิงก์รีเซ็ตรหัสผ่านแล้ว (ในโหมดพัฒนาให้ตรวจสอบ console logs)",
+					email: "อีเมล",
+					sendLink: "ส่งลิงก์รีเซ็ต",
+					remember: "จำรหัสผ่านได้แล้ว?",
+					signIn: "เข้าสู่ระบบ",
+				}
+			: {
+					pageTitle: "Forgot Password - ONE-IL",
+					title: "Forgot password?",
+					desc: "Enter your email and we'll send you a reset link",
+					success:
+						"If an account exists with that email, a reset link has been sent. Check your console logs in development.",
+					email: "Email",
+					sendLink: "Send reset link",
+					remember: "Remember your password?",
+					signIn: "Sign in",
+				}
+	);
 </script>
 
 <svelte:head>
-	<title>Forgot Password - ONE-IL</title>
+	<title>{copy.pageTitle}</title>
 </svelte:head>
 
 <div class="bg-background flex min-h-screen items-center justify-center p-4">
@@ -21,8 +46,8 @@
 					<MailIcon class="size-6" />
 				</div>
 			</div>
-			<Card.Title class="text-2xl font-bold">Forgot password?</Card.Title>
-			<Card.Description>Enter your email and we'll send you a reset link</Card.Description>
+			<Card.Title class="text-2xl font-bold">{copy.title}</Card.Title>
+			<Card.Description>{copy.desc}</Card.Description>
 		</Card.Header>
 		<Card.Content>
 			{#if form?.message}
@@ -32,29 +57,29 @@
 			{/if}
 			{#if form?.success}
 				<div class="bg-green-500/10 text-green-700 dark:text-green-400 mb-4 rounded-md p-3 text-sm">
-					If an account exists with that email, a reset link has been sent. Check your console logs in development.
+					{copy.success}
 				</div>
 			{:else}
 				<form method="POST" use:enhance class="space-y-4">
 					<div class="space-y-2">
-						<Label for="email">Email</Label>
+						<Label for="email">{copy.email}</Label>
 						<Input
 							id="email"
 							name="email"
 							type="email"
-							placeholder="you@example.com"
+							placeholder={data.locale === "th" ? "you@example.com" : "you@example.com"}
 							required
 							autocomplete="email"
 						/>
 					</div>
-					<Button type="submit" class="w-full">Send reset link</Button>
+					<Button type="submit" class="w-full">{copy.sendLink}</Button>
 				</form>
 			{/if}
 		</Card.Content>
 		<Card.Footer class="justify-center">
 			<p class="text-muted-foreground text-sm">
-				Remember your password?
-				<a href="/login" class="text-primary underline-offset-4 hover:underline">Sign in</a>
+				{copy.remember}
+				<a href="/login" class="text-primary underline-offset-4 hover:underline">{copy.signIn}</a>
 			</p>
 		</Card.Footer>
 	</Card.Root>

@@ -72,15 +72,27 @@ export const load: PageServerLoad = async ({ locals }) => {
 export const actions: Actions = {
 	updateProfile: async ({ request, locals }) => {
 		const admin = getServiceRoleClient();
+		const t =
+			locals.locale === "th"
+				? {
+						nameRequired: "ต้องระบุชื่อ (1-100 ตัวอักษร)",
+						emailRequired: "ต้องระบุอีเมลที่ถูกต้อง",
+						emailTaken: "อีเมลนี้ถูกใช้งานแล้ว",
+					}
+				: {
+						nameRequired: "Name is required (1-100 characters)",
+						emailRequired: "Valid email is required",
+						emailTaken: "Email already taken",
+					};
 		const formData = await request.formData();
 		const name = formData.get("name");
 		const email = formData.get("email");
 
 		if (typeof name !== "string" || name.length < 1 || name.length > 100) {
-			return fail(400, { message: "Name is required (1-100 characters)" });
+			return fail(400, { message: t.nameRequired });
 		}
 		if (typeof email !== "string" || !email.includes("@") || email.length > 255) {
-			return fail(400, { message: "Valid email is required" });
+			return fail(400, { message: t.emailRequired });
 		}
 
 		const lower = email.toLowerCase();
@@ -93,25 +105,39 @@ export const actions: Actions = {
 			.from("users")
 			.update({ name, email: lower, updated_at: new Date().toISOString() })
 			.eq("id", locals.user!.id);
-		if (updateError) return fail(400, { message: "Email already taken" });
+		if (updateError) return fail(400, { message: t.emailTaken });
 
 		return { success: true, action: "profile" };
 	},
 
 	changePassword: async ({ request, locals }) => {
+		const t =
+			locals.locale === "th"
+				? {
+						currentRequired: "ต้องระบุรหัสผ่านปัจจุบัน",
+						newLength: "รหัสผ่านใหม่ต้องมี 6-255 ตัวอักษร",
+						mismatch: "รหัสผ่านไม่ตรงกัน",
+						incorrectCurrent: "รหัสผ่านปัจจุบันไม่ถูกต้อง",
+					}
+				: {
+						currentRequired: "Current password is required",
+						newLength: "New password must be 6-255 characters",
+						mismatch: "Passwords do not match",
+						incorrectCurrent: "Current password is incorrect",
+					};
 		const formData = await request.formData();
 		const currentPassword = formData.get("currentPassword");
 		const newPassword = formData.get("newPassword");
 		const confirmPassword = formData.get("confirmPassword");
 
 		if (typeof currentPassword !== "string" || currentPassword.length < 1) {
-			return fail(400, { message: "Current password is required" });
+			return fail(400, { message: t.currentRequired });
 		}
 		if (typeof newPassword !== "string" || newPassword.length < 6 || newPassword.length > 255) {
-			return fail(400, { message: "New password must be 6-255 characters" });
+			return fail(400, { message: t.newLength });
 		}
 		if (newPassword !== confirmPassword) {
-			return fail(400, { message: "Passwords do not match" });
+			return fail(400, { message: t.mismatch });
 		}
 
 		const profile = locals.user!;
@@ -120,7 +146,7 @@ export const actions: Actions = {
 			password: currentPassword,
 		});
 		if (verifyErr) {
-			return fail(400, { message: "Current password is incorrect" });
+			return fail(400, { message: t.incorrectCurrent });
 		}
 
 		const { error: updErr } = await locals.supabase.auth.updateUser({ password: newPassword });
@@ -133,8 +159,9 @@ export const actions: Actions = {
 
 	updateSettings: async ({ request, locals }) => {
 		const admin = getServiceRoleClient();
+		const adminError = locals.locale === "th" ? "ต้องใช้สิทธิ์ผู้ดูแลระบบ" : "Admin access required";
 		if (!hasPermission(locals.user!.role, "settings:manage")) {
-			return fail(403, { message: "Admin access required" });
+			return fail(403, { message: adminError });
 		}
 
 		const formData = await request.formData();
@@ -160,15 +187,23 @@ export const actions: Actions = {
 		return { success: true, action: "settings" };
 	},
 
-	revokeSession: async () => {
+	revokeSession: async ({ locals }) => {
+		const message =
+			locals.locale === "th"
+				? "การยกเลิกเซสชันรายอุปกรณ์จัดการผ่าน Supabase Auth; หากจำเป็นให้ลงชื่อออกจากทุกอุปกรณ์ผ่าน Supabase dashboard"
+				: "Per-session revoke is handled by Supabase Auth; sign out everywhere from the Supabase dashboard if needed.";
 		return fail(400, {
-			message: "Per-session revoke is handled by Supabase Auth; sign out everywhere from the Supabase dashboard if needed.",
+			message,
 		});
 	},
 
-	revokeAllOtherSessions: async () => {
+	revokeAllOtherSessions: async ({ locals }) => {
+		const message =
+			locals.locale === "th"
+				? "การยกเลิกเซสชันอื่นจัดการผ่าน Supabase Auth"
+				: "Revoking other sessions is handled by Supabase Auth.";
 		return fail(400, {
-			message: "Revoking other sessions is handled by Supabase Auth.",
+			message,
 		});
 	},
 

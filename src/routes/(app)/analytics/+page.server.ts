@@ -13,6 +13,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	]);
 	if (userRowsRes.error || pageRowsRes.error || notificationRowsRes.error || topAuthorsRes.error) {
 		return {
+			locale: locals.locale,
 			signupsPerMonth: [],
 			pagesPerMonth: [],
 			pagesByStatus: [],
@@ -52,11 +53,15 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 	const usersById = new Map((topAuthorsRes.data ?? []).map((u) => [u.id, u.name]));
 	const topAuthors = [...authorPageCount.entries()]
-		.map(([id, pageCount]) => ({ name: usersById.get(id) ?? "Unknown", pageCount }))
+		.map(([id, pageCount]) => ({
+			name: usersById.get(id) ?? (locals.locale === "th" ? "ไม่ทราบ" : "Unknown"),
+			pageCount,
+		}))
 		.sort((a, b) => b.pageCount - a.pageCount)
 		.slice(0, 10);
 
 	return {
+		locale: locals.locale,
 		signupsPerMonth,
 		pagesPerMonth,
 		pagesByStatus,

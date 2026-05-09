@@ -21,7 +21,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		notificationsCountRes.error ||
 		settingsCountRes.error
 	) {
-		error(500, "Cannot load database information");
+		error(500, locals.locale === "th" ? "ไม่สามารถโหลดข้อมูลฐานข้อมูลได้" : "Cannot load database information");
 	}
 
 	const tables = [
@@ -33,6 +33,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	];
 
 	return {
+		locale: locals.locale,
 		dbSize: 0,
 		journalMode: "postgresql",
 		tables,

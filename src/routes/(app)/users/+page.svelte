@@ -21,6 +21,55 @@
 	import type { Role } from "$lib/auth/roles.js";
 
 	let { data, form } = $props();
+	const copy = $derived.by(() =>
+		data.locale === "th"
+			? {
+					userUpdated: "อัปเดตผู้ใช้สำเร็จ",
+					pageTitle: "ผู้ใช้ - ONE-IL",
+					title: "ผู้ใช้",
+					description: "จัดการบัญชีผู้ใช้และสิทธิ์การเข้าถึง",
+					addUser: "เพิ่มผู้ใช้",
+					searchUsers: "ค้นหาผู้ใช้...",
+					user: "ผู้ใช้",
+					delete: "ลบ",
+					export: "ส่งออก",
+					exportCsv: "ส่งออกเป็น CSV",
+					exportJson: "ส่งออกเป็น JSON",
+					columns: {
+						name: "ชื่อ",
+						username: "ชื่อผู้ใช้",
+						email: "อีเมล",
+						role: "บทบาท",
+						joined: "วันที่เข้าร่วม",
+						actions: "การกระทำ",
+					},
+					noSearch: "ไม่พบผู้ใช้ที่ตรงกับคำค้น",
+					noUsers: "ไม่พบผู้ใช้",
+				}
+			: {
+					userUpdated: "User updated successfully",
+					pageTitle: "Users - ONE-IL",
+					title: "Users",
+					description: "Manage user accounts and permissions.",
+					addUser: "Add User",
+					searchUsers: "Search users...",
+					user: "user",
+					delete: "Delete",
+					export: "Export",
+					exportCsv: "Export as CSV",
+					exportJson: "Export as JSON",
+					columns: {
+						name: "Name",
+						username: "Username",
+						email: "Email",
+						role: "Role",
+						joined: "Joined",
+						actions: "Actions",
+					},
+					noSearch: "No users match your search.",
+					noUsers: "No users found.",
+				}
+	);
 
 	let search = $state("");
 	let createOpen = $state(false);
@@ -66,7 +115,7 @@
 	$effect(() => {
 		if (form?.message) toast.error(form.message);
 		if (form?.success) {
-			toast.success("User updated successfully");
+			toast.success(copy.userUpdated);
 			selectedIds = new Set();
 		}
 	});
@@ -111,7 +160,11 @@
 
 	function formatDate(date: Date | null) {
 		if (!date) return "—";
-		return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" }).format(new Date(date));
+		return new Intl.DateTimeFormat(data.locale === "th" ? "th-TH" : "en-US", {
+			month: "short",
+			day: "numeric",
+			year: "numeric",
+		}).format(new Date(date));
 	}
 
 	function openEdit(user: typeof data.users[0]) {
@@ -136,28 +189,28 @@
 		else exportToJSON(exportData, "users");
 	}
 
-	const columns = [
-		{ key: "name", label: "Name" },
-		{ key: "username", label: "Username" },
-		{ key: "email", label: "Email" },
-		{ key: "role", label: "Role" },
-		{ key: "createdAt", label: "Joined" },
-	];
+	const columns = $derived.by(() => [
+		{ key: "name", label: copy.columns.name },
+		{ key: "username", label: copy.columns.username },
+		{ key: "email", label: copy.columns.email },
+		{ key: "role", label: copy.columns.role },
+		{ key: "createdAt", label: copy.columns.joined },
+	]);
 </script>
 
 <svelte:head>
-	<title>Users - ONE-IL</title>
+	<title>{copy.pageTitle}</title>
 </svelte:head>
 
 <div class="space-y-6">
 	<div class="flex items-center justify-between">
 		<div>
-			<h1 class="text-3xl font-bold tracking-tight">Users</h1>
-			<p class="text-muted-foreground">Manage user accounts and permissions.</p>
+			<h1 class="text-3xl font-bold tracking-tight">{copy.title}</h1>
+			<p class="text-muted-foreground">{copy.description}</p>
 		</div>
 		<Button onclick={() => (createOpen = true)}>
 			<PlusIcon class="mr-2 size-4" />
-			Add User
+			{copy.addUser}
 		</Button>
 	</div>
 
@@ -165,16 +218,18 @@
 	<div class="flex items-center gap-2">
 		<div class="relative max-w-sm flex-1">
 			<SearchIcon class="text-muted-foreground absolute left-3 top-1/2 size-4 -translate-y-1/2" />
-			<Input placeholder="Search users..." class="pl-9" bind:value={search} />
+			<Input placeholder={copy.searchUsers} class="pl-9" bind:value={search} />
 		</div>
-		<p class="text-muted-foreground text-sm">{filtered.length} user{filtered.length !== 1 ? "s" : ""}</p>
+		<p class="text-muted-foreground text-sm">
+			{filtered.length} {copy.user}{filtered.length !== 1 && data.locale !== "th" ? "s" : ""}
+		</p>
 		<div class="ml-auto flex items-center gap-2">
 			{#if selectedIds.size > 0}
 				<form method="POST" action="?/bulkDelete" use:enhance>
 					<input type="hidden" name="ids" value={[...selectedIds].join(",")} />
 					<Button variant="destructive" size="sm" type="submit">
 						<TrashIcon class="mr-2 size-4" />
-						Delete {selectedIds.size}
+						{copy.delete} {selectedIds.size}
 					</Button>
 				</form>
 			{/if}
@@ -183,13 +238,13 @@
 					{#snippet child({ props })}
 						<Button variant="outline" size="sm" {...props}>
 							<DownloadIcon class="mr-2 size-4" />
-							Export
+							{copy.export}
 						</Button>
 					{/snippet}
 				</DropdownMenu.Trigger>
 				<DropdownMenu.Content>
-					<DropdownMenu.Item onclick={() => handleExport("csv")}>Export as CSV</DropdownMenu.Item>
-					<DropdownMenu.Item onclick={() => handleExport("json")}>Export as JSON</DropdownMenu.Item>
+					<DropdownMenu.Item onclick={() => handleExport("csv")}>{copy.exportCsv}</DropdownMenu.Item>
+					<DropdownMenu.Item onclick={() => handleExport("json")}>{copy.exportJson}</DropdownMenu.Item>
 				</DropdownMenu.Content>
 			</DropdownMenu.Root>
 		</div>
@@ -217,7 +272,7 @@
 							</button>
 						</Table.Head>
 					{/each}
-					<Table.Head class="w-[100px]">Actions</Table.Head>
+					<Table.Head class="w-[100px]">{copy.columns.actions}</Table.Head>
 				</Table.Row>
 			</Table.Header>
 			<Table.Body>
@@ -254,16 +309,21 @@
 				{:else}
 					<Table.Row>
 						<Table.Cell colspan={7} class="h-24 text-center">
-							{search ? "No users match your search." : "No users found."}
+							{search ? copy.noSearch : copy.noUsers}
 						</Table.Cell>
 					</Table.Row>
 				{/each}
 			</Table.Body>
 		</Table.Root>
-		<DataTablePagination totalItems={filtered.length} bind:pageSize bind:currentPage />
+		<DataTablePagination
+			totalItems={filtered.length}
+			locale={data.locale}
+			bind:pageSize
+			bind:currentPage
+		/>
 	</div>
 </div>
 
-<UserFormDialog bind:open={createOpen} mode="create" />
-<UserFormDialog bind:open={editOpen} mode="edit" user={editUser} />
-<DeleteConfirmDialog bind:open={deleteOpen} action="?/delete" id={deleteId} itemName="user" />
+<UserFormDialog bind:open={createOpen} mode="create" locale={data.locale} />
+<UserFormDialog bind:open={editOpen} mode="edit" user={editUser} locale={data.locale} />
+<DeleteConfirmDialog bind:open={deleteOpen} action="?/delete" id={deleteId} itemName={copy.user} locale={data.locale} />

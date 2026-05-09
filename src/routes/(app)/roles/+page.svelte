@@ -12,13 +12,36 @@
 	import type { Role } from "$lib/auth/roles.js";
 
 	let { data, form } = $props();
+	const copy = $derived.by(() =>
+		data.locale === "th"
+			? {
+					roleUpdated: "อัปเดตบทบาทแล้ว",
+					pageTitle: "บทบาท - ONE-IL",
+					title: "บทบาท",
+					description: "กำหนดบทบาทและนโยบายการควบคุมสิทธิ์การเข้าถึง",
+					user: "ผู้ใช้",
+					permissions: "สิทธิ์",
+					users: "ผู้ใช้",
+					change: "เปลี่ยน",
+				}
+			: {
+					roleUpdated: "Role updated",
+					pageTitle: "Roles - ONE-IL",
+					title: "Roles",
+					description: "Configure roles and access control policies.",
+					user: "user",
+					permissions: "Permissions",
+					users: "Users",
+					change: "Change",
+				}
+	);
 
 	let roleChangeOpen = $state(false);
 	let roleChangeUser = $state<{ id: string; name: string; role: Role }>({ id: "", name: "", role: "user" });
 
 	$effect(() => {
 		if (form?.message) toast.error(form.message);
-		if (form?.success) toast.success("Role updated");
+		if (form?.success) toast.success(copy.roleUpdated);
 	});
 
 	function getInitials(name: string) {
@@ -50,13 +73,13 @@
 </script>
 
 <svelte:head>
-	<title>Roles - ONE-IL</title>
+	<title>{copy.pageTitle}</title>
 </svelte:head>
 
 <div class="space-y-6">
 	<div>
-		<h1 class="text-3xl font-bold tracking-tight">Roles</h1>
-		<p class="text-muted-foreground">Configure roles and access control policies.</p>
+		<h1 class="text-3xl font-bold tracking-tight">{copy.title}</h1>
+		<p class="text-muted-foreground">{copy.description}</p>
 	</div>
 
 	<div class="grid gap-6">
@@ -75,13 +98,13 @@
 						</div>
 						<Badge variant="secondary" class="gap-1">
 							<UsersIcon class="size-3" />
-							{role.count} user{role.count !== 1 ? "s" : ""}
+							{role.count} {copy.user}{role.count !== 1 && data.locale !== "th" ? "s" : ""}
 						</Badge>
 					</div>
 				</Card.Header>
 				<Card.Content class="space-y-4">
 					<div>
-						<p class="text-muted-foreground mb-2 text-xs font-medium uppercase tracking-wider">Permissions</p>
+						<p class="text-muted-foreground mb-2 text-xs font-medium uppercase tracking-wider">{copy.permissions}</p>
 						<div class="flex flex-wrap gap-2">
 							{#each role.permissions as perm, i (perm)}
 								<Badge variant="outline" class="gap-1">
@@ -94,7 +117,7 @@
 
 					{#if role.users.length > 0}
 						<div>
-							<p class="text-muted-foreground mb-2 text-xs font-medium uppercase tracking-wider">Users</p>
+							<p class="text-muted-foreground mb-2 text-xs font-medium uppercase tracking-wider">{copy.users}</p>
 							<div class="space-y-2">
 								{#each role.users as user (user.id)}
 									<div class="flex items-center justify-between rounded-lg border p-3">
@@ -113,7 +136,7 @@
 											onclick={() => openRoleChange({ id: user.id, name: user.name, role: role.name })}
 										>
 											<PencilIcon class="mr-1 size-3" />
-											Change
+											{copy.change}
 										</Button>
 									</div>
 								{/each}
@@ -131,4 +154,5 @@
 	userId={roleChangeUser.id}
 	userName={roleChangeUser.name}
 	currentRole={roleChangeUser.role}
+	locale={data.locale}
 />

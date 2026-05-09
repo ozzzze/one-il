@@ -16,11 +16,15 @@ export const load: PageServerLoad = async ({ locals }) => {
 export const actions: Actions = {
 	markRead: async ({ request, locals }) => {
 		const admin = getServiceRoleClient();
+		const t =
+			locals.locale === "th"
+				? { missingId: "ต้องระบุรหัสการแจ้งเตือน" }
+				: { missingId: "Notification ID is required" };
 		const formData = await request.formData();
 		const id = formData.get("id");
 
 		if (typeof id !== "string") {
-			return fail(400, { message: "Notification ID is required" });
+			return fail(400, { message: t.missingId });
 		}
 
 		await admin
@@ -45,11 +49,15 @@ export const actions: Actions = {
 
 	delete: async ({ request, locals }) => {
 		const admin = getServiceRoleClient();
+		const t =
+			locals.locale === "th"
+				? { missingId: "ต้องระบุรหัสการแจ้งเตือน" }
+				: { missingId: "Notification ID is required" };
 		const formData = await request.formData();
 		const id = formData.get("id");
 
 		if (typeof id !== "string") {
-			return fail(400, { message: "Notification ID is required" });
+			return fail(400, { message: t.missingId });
 		}
 
 		await admin

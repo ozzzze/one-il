@@ -14,6 +14,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 	return {
 		canManageContent: hasPermission(locals.user.role, "content:manage"),
+		locale: locals.locale,
 		pages:
 			allPages?.map((page) => ({
 				id: page.id,
@@ -21,7 +22,12 @@ export const load: PageServerLoad = async ({ locals }) => {
 				slug: page.slug,
 				template: page.template,
 				status: page.status,
-				authorName: Array.isArray(page.users) ? (page.users[0]?.name ?? "Unknown") : "Unknown",
+				authorName:
+					Array.isArray(page.users)
+						? (page.users[0]?.name ?? (locals.locale === "th" ? "ไม่ทราบ" : "Unknown"))
+						: locals.locale === "th"
+							? "ไม่ทราบ"
+							: "Unknown",
 				createdAt: page.created_at,
 				updatedAt: page.updated_at,
 				publishedAt: page.published_at,
@@ -33,11 +39,15 @@ export const actions: Actions = {
 	delete: async ({ request, locals }) => {
 		assertPermission(locals.user, "content:manage");
 		const admin = getServiceRoleClient();
+		const t =
+			locals.locale === "th"
+				? { missingId: "ต้องระบุรหัสหน้า" }
+				: { missingId: "Page ID is required" };
 		const formData = await request.formData();
 		const id = formData.get("id");
 
 		if (typeof id !== "string") {
-			return fail(400, { message: "Page ID is required" });
+			return fail(400, { message: t.missingId });
 		}
 
 		await admin.from("pages").delete().eq("id", id);
@@ -48,11 +58,15 @@ export const actions: Actions = {
 	bulkDelete: async ({ request, locals }) => {
 		assertPermission(locals.user, "content:manage");
 		const admin = getServiceRoleClient();
+		const t =
+			locals.locale === "th"
+				? { noneSelected: "ยังไม่ได้เลือกหน้า" }
+				: { noneSelected: "No pages selected" };
 		const formData = await request.formData();
 		const idsRaw = formData.get("ids");
 
 		if (typeof idsRaw !== "string" || !idsRaw.trim()) {
-			return fail(400, { message: "No pages selected" });
+			return fail(400, { message: t.noneSelected });
 		}
 
 		const ids = idsRaw.split(",").filter(Boolean);

@@ -5,27 +5,39 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const {
 		data: { session },
 	} = await locals.supabase.auth.getSession();
-	return { canReset: !!session };
+	return { canReset: !!session, locale: locals.locale };
 };
 
 export const actions: Actions = {
 	default: async ({ request, locals }) => {
+		const t =
+			locals.locale === "th"
+				? {
+						passwordRule: "รหัสผ่านต้องมี 6-255 ตัวอักษร",
+						passwordMismatch: "รหัสผ่านไม่ตรงกัน",
+						sessionExpired: "เซสชันรีเซ็ตรหัสผ่านหมดอายุแล้ว กรุณาขอลิงก์ใหม่",
+					}
+				: {
+						passwordRule: "Password must be 6-255 characters",
+						passwordMismatch: "Passwords do not match",
+						sessionExpired: "Your reset session expired. Request a new link.",
+					};
 		const formData = await request.formData();
 		const password = formData.get("password");
 		const confirmPassword = formData.get("confirmPassword");
 
 		if (typeof password !== "string" || password.length < 6 || password.length > 255) {
-			return fail(400, { message: "Password must be 6-255 characters" });
+			return fail(400, { message: t.passwordRule });
 		}
 		if (password !== confirmPassword) {
-			return fail(400, { message: "Passwords do not match" });
+			return fail(400, { message: t.passwordMismatch });
 		}
 
 		const {
 			data: { session },
 		} = await locals.supabase.auth.getSession();
 		if (!session) {
-			return fail(401, { message: "Your reset session expired. Request a new link." });
+			return fail(401, { message: t.sessionExpired });
 		}
 
 		const { error } = await locals.supabase.auth.updateUser({ password });
