@@ -16,6 +16,7 @@
 	import * as Avatar from "$lib/components/ui/avatar/index.js";
 	import { Badge } from "$lib/components/ui/badge/index.js";
 	import { resolve } from "$app/paths";
+	import type { Pathname } from "$app/types";
 	import type { Role } from "$lib/auth/roles.js";
 	import { getUiLabels } from "$lib/content/labels.js";
 	import type { Locale } from "$lib/i18n/locales.js";
@@ -28,6 +29,7 @@
 			email: string;
 			username: string;
 			role: Role;
+			avatarUrl: string | null;
 		};
 		allowedMenuIds: string[];
 		locale: Locale;
@@ -39,6 +41,7 @@
 	function getInitials(name: string) {
 		return name
 			.split(" ")
+			.filter(Boolean)
 			.map((n) => n[0])
 			.join("")
 			.toUpperCase()
@@ -89,7 +92,7 @@
 							<Sidebar.MenuItem>
 								<Sidebar.MenuButton>
 									{#snippet child({ props })}
-										<a href={item.href} {...props}>
+										<a href={resolve(item.href as "/")} {...props}>
 											<Icon class="size-4" />
 											<span>{item.label}</span>
 										</a>
@@ -133,6 +136,9 @@
 								{...props}
 							>
 								<Avatar.Root class="size-8 rounded-lg">
+									{#if user.avatarUrl}
+										<Avatar.Image src={user.avatarUrl} alt="" class="rounded-lg object-cover" />
+									{/if}
 									<Avatar.Fallback class="rounded-lg">{getInitials(user.name)}</Avatar.Fallback>
 								</Avatar.Root>
 								<div class="grid flex-1 text-left text-sm leading-tight">

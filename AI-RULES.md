@@ -118,6 +118,14 @@ Client Request
 - **Submit Form** → Server Actions ใน `+page.server.ts`
 - **ห้าม** fetch ข้อมูล Supabase ตรงจาก `.svelte` ฝั่ง client (ยกเว้น Realtime)
 
+### 5.1 Forms — Progressive enhancement (`use:enhance`)
+
+เมื่อใช้ `use:enhance` กับ `<form>` **ต้องอ่านและทำตาม** skill ของโปรเจกต์นี้เพื่อป้องกันอาการบันทึกแล้ว UI reset (checkbox/select ว่างจนกว่าจะ refresh) และฟอร์ม POST ข้าม route:
+
+- **Skill:** [.cursor/skills/sveltekit-forms-enhance/SKILL.md](.cursor/skills/sveltekit-forms-enhance/SKILL.md)
+
+หัวข้อหลักใน skill: `update({ reset: false })`, `applyAction` สำหรับ action ไม่ใช่หน้าปัจจุบัน, และรูปแบบ state ของ checkbox group
+
 ```ts
 // ✅ +page.server.ts
 import type { PageServerLoad } from "./$types";
@@ -207,3 +215,4 @@ PUBLIC_SUPABASE_ANON_KEY=eyJ...
 | Validation | Zod schema                     | Manual if-check   |
 | Styling    | shadcn-svelte + Tailwind class | Custom CSS file   |
 | Template   | `{#snippet}` + `{@render}`     | `<slot>`          |
+| Form PE    | Skill [`sveltekit-forms-enhance`](.cursor/skills/sveltekit-forms-enhance/SKILL.md) | `update()` default → reset form หลัง save |

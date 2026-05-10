@@ -58,7 +58,7 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 			id: employee.id,
 			title: `${employee.first_name} ${employee.last_name}`,
 			subtitle: employee.employee_no ?? employee.email ?? ui.employeeFallback,
-			href: "/employees",
+			href: `/employees/${employee.id}`,
 		})),
 		...pageResults.map((p) => ({
 			type: "page" as const,

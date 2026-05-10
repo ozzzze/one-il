@@ -1,8 +1,17 @@
-import { fail } from "@sveltejs/kit";
+import { fail, redirect } from "@sveltejs/kit";
 import { z } from "zod";
 import { getServiceRoleClient } from "$lib/server/supabase-admin.js";
 import { assertPermission } from "$lib/server/guards.js";
 import { isRole } from "$lib/auth/roles.js";
+import { employeeEmbeddedSelect, mapEmployeeRowToView, type EmployeeRow } from "$lib/server/employees-load.js";
+import {
+	assignmentSchema,
+	mutateAssignPrimary,
+	mutateAssignProgramChair,
+	mutateSetSupervisor,
+	programChairSchema,
+	supervisorSchema,
+} from "$lib/server/employee-org-mutations.js";
 import type { Actions, PageServerLoad } from "./$types.js";
 
 const appRoleSchema = z.enum(["admin", "editor", "viewer", "user"]);
@@ -25,129 +34,8 @@ const linkEmployeeUserSchema = z.object({
 	userId: z.string().uuid(),
 });
 
-const assignmentSchema = z.object({
-	employeeId: z.string().uuid(),
-	positionId: z.string().uuid(),
-	orgUnitId: z.string().uuid(),
-	startsAt: z.string().date(),
-	isPrimary: z.enum(["true", "false"]).default("true"),
-});
-
-const supervisorSchema = z.object({
-	employeeId: z.string().uuid(),
-	supervisorEmployeeId: z.string().uuid(),
-	startsAt: z.string().date(),
-});
-
-const programChairSchema = z.object({
-	programId: z.string().uuid(),
-	employeeId: z.string().uuid(),
-	startsAt: z.string().date(),
-});
-
 function toText(value: FormDataEntryValue | null): string {
 	return typeof value === "string" ? value : "";
-}
-
-function firstRelation<T>(value: T[] | T | null | undefined): T | null {
-	if (Array.isArray(value)) return value[0] ?? null;
-	return value ?? null;
-}
-
-/** Nested FK embeds may return one object or a single-element array from PostgREST */
-function embedOne<T>(value: T | T[] | null | undefined): T | null {
-	if (value == null) return null;
-	return Array.isArray(value) ? (value[0] ?? null) : value;
-}
-
-type LinkedUserRow = { id: string; email: string; name: string };
-
-type HrLookupEmbed = { id: string; code: string; label_th: string };
-
-type EmployeeRow = {
-	id: string;
-	employee_no: string | null;
-	first_name: string;
-	last_name: string;
-	email: string | null;
-	user_id: string | null;
-	app_role: string | null;
-	status: string;
-	created_at: string | null;
-	updated_at: string | null;
-	person_title_th: string | null;
-	academic_title_th: string | null;
-	person_title_en: string | null;
-	academic_title_en: string | null;
-	first_name_en: string | null;
-	last_name_en: string | null;
-	nickname: string | null;
-	address: string | null;
-	gender: string | null;
-	duty_kind: string | null;
-	professional_teacher_license: boolean;
-	professional_recognition_status: string | null;
-	birth_date: string | null;
-	employment_started_at: string | null;
-	employment_ended_at: string | null;
-	photo_object_key: string | null;
-	employment_contract_types: HrLookupEmbed | HrLookupEmbed[] | null;
-	personnel_categories: HrLookupEmbed | HrLookupEmbed[] | null;
-	hr_employment_statuses: HrLookupEmbed | HrLookupEmbed[] | null;
-	employee_emergency_contacts:
-		| {
-				slot: number;
-				contact_name: string | null;
-				relationship: string | null;
-				phone: string | null;
-		  }[]
-		| null;
-	employee_deductions:
-		| {
-				deduction_type_id: string;
-				deduction_types: HrLookupEmbed | HrLookupEmbed[] | null;
-		  }[]
-		| null;
-	users: LinkedUserRow | LinkedUserRow[] | null;
-	employee_assignments:
-		| {
-				id: string;
-				starts_at: string;
-				ends_at: string | null;
-				is_primary: boolean;
-				positions:
-					| { id: string; name: string; name_en: string | null; code: string }[]
-					| { id: string; name: string; name_en: string | null; code: string }
-					| null;
-				org_units:
-					| { id: string; name: string; name_en: string | null; code: string }[]
-					| { id: string; name: string; name_en: string | null; code: string }
-					| null;
-		  }[]
-		| null;
-	employee_supervisors:
-		| {
-				id: string;
-				starts_at: string;
-				ends_at: string | null;
-				supervisor: { id: string; first_name: string; last_name: string } | null;
-		  }[]
-		| null;
-};
-
-function firstLinkedUser(users: LinkedUserRow | LinkedUserRow[] | null): LinkedUserRow | null {
-	if (users == null) return null;
-	return Array.isArray(users) ? users[0] ?? null : users;
-}
-
-function mapLookupEmbed(value: HrLookupEmbed | HrLookupEmbed[] | null): {
-	id: string;
-	code: string;
-	labelTh: string;
-} | null {
-	const row = embedOne(value);
-	if (!row) return null;
-	return { id: row.id, code: row.code, labelTh: row.label_th };
 }
 
 export const load: PageServerLoad = async ({ locals }) => {
@@ -165,36 +53,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		hrEmploymentStatusesRes,
 		deductionTypesRes,
 	] = await Promise.all([
-		admin
-			.from("employees")
-			.select(
-				`
-				id, employee_no, first_name, last_name, email, user_id, app_role, status, created_at, updated_at,
-				person_title_th, academic_title_th, person_title_en, academic_title_en,
-				first_name_en, last_name_en, nickname, address, gender, duty_kind,
-				professional_teacher_license, professional_recognition_status, birth_date,
-				employment_started_at, employment_ended_at, photo_object_key,
-				employment_contract_types(id, code, label_th),
-				personnel_categories(id, code, label_th),
-				hr_employment_statuses(id, code, label_th),
-				employee_emergency_contacts(slot, contact_name, relationship, phone),
-				employee_deductions(
-					deduction_type_id,
-					deduction_types(id, code, label_th)
-				),
-				users:user_id ( id, email, name ),
-				employee_assignments(
-					id, starts_at, ends_at, is_primary,
-					positions(id, name, name_en, code),
-					org_units(id, name, name_en, code)
-				),
-				employee_supervisors!employee_supervisors_employee_id_fkey(
-					id, starts_at, ends_at,
-					supervisor:employees!employee_supervisors_supervisor_employee_id_fkey(id, first_name, last_name)
-				)
-			`
-			)
-			.order("created_at", { ascending: true }),
+		admin.from("employees").select(employeeEmbeddedSelect).order("created_at", { ascending: true }),
 		admin.from("positions").select("id,code,name,name_en,role_level").order("role_level", { ascending: true }),
 		admin.from("org_units").select("id,code,name,name_en,unit_type,sort_order").order("sort_order", { ascending: true }),
 		admin.from("programs").select("id,code,name,is_active").order("name", { ascending: true }),
@@ -214,74 +73,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 	return {
 		locale: locals.locale,
-		employees: employees.map((row) => {
-			const activeAssignment =
-				row.employee_assignments?.find((assignment) => assignment.is_primary && assignment.ends_at === null) ?? null;
-			const linkedUser = firstLinkedUser(row.users);
-			return {
-				id: row.id,
-				employeeNo: row.employee_no,
-				firstName: row.first_name,
-				lastName: row.last_name,
-				fullName: `${row.first_name} ${row.last_name}`,
-				email: row.email,
-				userId: row.user_id,
-				appRole: row.app_role,
-				linkedAccountEmail: linkedUser?.email ?? null,
-				linkedAccountName: linkedUser?.name ?? null,
-				status: row.status,
-				createdAt: row.created_at,
-				updatedAt: row.updated_at,
-				hrProfile: {
-					personTitleTh: row.person_title_th,
-					academicTitleTh: row.academic_title_th,
-					personTitleEn: row.person_title_en,
-					academicTitleEn: row.academic_title_en,
-					firstNameEn: row.first_name_en,
-					lastNameEn: row.last_name_en,
-					nickname: row.nickname,
-					address: row.address,
-					gender: row.gender,
-					dutyKind: row.duty_kind,
-					professionalTeacherLicense: row.professional_teacher_license,
-					professionalRecognitionStatus: row.professional_recognition_status,
-					birthDate: row.birth_date,
-					employmentStartedAt: row.employment_started_at,
-					employmentEndedAt: row.employment_ended_at,
-					photoObjectKey: row.photo_object_key,
-					employmentContractType: mapLookupEmbed(row.employment_contract_types),
-					personnelCategory: mapLookupEmbed(row.personnel_categories),
-					hrEmploymentStatus: mapLookupEmbed(row.hr_employment_statuses),
-					emergencyContacts: [...(row.employee_emergency_contacts ?? [])]
-						.sort((a, b) => a.slot - b.slot)
-						.map((c) => ({
-							slot: c.slot,
-							contactName: c.contact_name,
-							relationship: c.relationship,
-							phone: c.phone,
-						})),
-					deductions: (row.employee_deductions ?? [])
-						.map((d) => {
-							const dt = embedOne(d.deduction_types);
-							return {
-								deductionTypeId: d.deduction_type_id,
-								code: dt?.code ?? "",
-								labelTh: dt?.label_th ?? "",
-							};
-						})
-						.sort((a, b) => a.code.localeCompare(b.code)),
-				},
-				primaryAssignment: activeAssignment
-					? {
-							...activeAssignment,
-							positions: firstRelation(activeAssignment.positions),
-							org_units: firstRelation(activeAssignment.org_units),
-						}
-					: null,
-				activeSupervisor:
-					row.employee_supervisors?.find((supervisor) => supervisor.ends_at === null && supervisor.supervisor) ?? null,
-			};
-		}),
+		employees: employees.map((row) => mapEmployeeRowToView(row)),
 		positions: positionsRes.data ?? [],
 		orgUnits: orgUnitsRes.data ?? [],
 		programs: programsRes.data ?? [],
@@ -326,15 +118,20 @@ export const actions: Actions = {
 				? parsed.data.appRole
 				: null;
 
-		const { error } = await admin.from("employees").insert({
-			first_name: parsed.data.firstName,
-			last_name: parsed.data.lastName,
-			email: parsed.data.email || null,
-			employee_no: parsed.data.employeeNo || null,
-			app_role: appRole,
-		});
+		const { data: inserted, error } = await admin
+			.from("employees")
+			.insert({
+				first_name: parsed.data.firstName,
+				last_name: parsed.data.lastName,
+				email: parsed.data.email || null,
+				employee_no: parsed.data.employeeNo || null,
+				app_role: appRole,
+			})
+			.select("id")
+			.single();
 		if (error) return fail(400, { message: error.message });
-		return { success: true, action: "createEmployee" };
+		if (!inserted?.id) return fail(400, { message: invalidMsg });
+		throw redirect(303, `/employees/${inserted.id}`);
 	},
 
 	assignPrimary: async ({ request, locals }) => {
@@ -351,14 +148,8 @@ export const actions: Actions = {
 		});
 		if (!parsed.success) return fail(400, { message: invalidMsg });
 
-		const { error } = await admin.from("employee_assignments").insert({
-			employee_id: parsed.data.employeeId,
-			position_id: parsed.data.positionId,
-			org_unit_id: parsed.data.orgUnitId,
-			starts_at: parsed.data.startsAt,
-			is_primary: parsed.data.isPrimary === "true",
-		});
-		if (error) return fail(400, { message: error.message });
+		const result = await mutateAssignPrimary(admin, parsed.data);
+		if (!result.ok) return fail(400, { message: result.message });
 		return { success: true, action: "assignPrimary" };
 	},
 
@@ -374,13 +165,8 @@ export const actions: Actions = {
 		});
 		if (!parsed.success) return fail(400, { message: invalidMsg });
 
-		const { error } = await admin.from("employee_supervisors").insert({
-			employee_id: parsed.data.employeeId,
-			supervisor_employee_id: parsed.data.supervisorEmployeeId,
-			starts_at: parsed.data.startsAt,
-			relation_type: "LINE",
-		});
-		if (error) return fail(400, { message: error.message });
+		const supResult = await mutateSetSupervisor(admin, parsed.data);
+		if (!supResult.ok) return fail(400, { message: supResult.message });
 		return { success: true, action: "setSupervisor" };
 	},
 
@@ -397,12 +183,8 @@ export const actions: Actions = {
 		});
 		if (!parsed.success) return fail(400, { message: invalidMsg });
 
-		const { error } = await admin.from("program_chairs").insert({
-			program_id: parsed.data.programId,
-			employee_id: parsed.data.employeeId,
-			starts_at: parsed.data.startsAt,
-		});
-		if (error) return fail(400, { message: error.message });
+		const chairResult = await mutateAssignProgramChair(admin, parsed.data);
+		if (!chairResult.ok) return fail(400, { message: chairResult.message });
 		return { success: true, action: "assignProgramChair" };
 	},
 
@@ -517,4 +299,3 @@ export const actions: Actions = {
 		return { success: true, action: "linkEmployeeUser" };
 	},
 };
-

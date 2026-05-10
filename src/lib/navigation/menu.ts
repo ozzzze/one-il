@@ -1,4 +1,5 @@
 import type { PermissionKey, Role } from "$lib/auth/roles.js";
+import type { Pathname } from "$app/types";
 import { hasEveryPermission } from "$lib/auth/roles.js";
 import { getMenuGroupLabels, getMenuItemLabels } from "$lib/content/labels.js";
 import { DEFAULT_LOCALE, type Locale } from "$lib/i18n/locales.js";
@@ -25,7 +26,7 @@ export type IconKey =
 export type MenuItem = {
 	id: string;
 	label: string;
-	href: string;
+	href: Pathname;
 	iconKey: IconKey;
 	keywords?: string[];
 	requiredPermissions?: PermissionKey[];
