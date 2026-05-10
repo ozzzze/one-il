@@ -75,7 +75,7 @@
 		}
 	}
 
-	function formatDate(date: Date | null) {
+	function formatDate(date: Date | string | null) {
 		if (!date) return "";
 		return new Intl.DateTimeFormat(data.locale === "th" ? "th-TH" : "en-US", {
 			month: "short",
@@ -137,7 +137,7 @@
 									</p>
 									<p class="text-muted-foreground mt-1 text-sm">{notification.message}</p>
 								</div>
-								<span class="text-muted-foreground shrink-0 text-xs">{formatDate(notification.createdAt)}</span>
+								<span class="text-muted-foreground shrink-0 text-xs">{formatDate(notification.created_at)}</span>
 							</div>
 						</div>
 						<div class="flex shrink-0 gap-1">

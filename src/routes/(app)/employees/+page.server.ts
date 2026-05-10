@@ -54,7 +54,15 @@ function firstRelation<T>(value: T[] | T | null | undefined): T | null {
 	return value ?? null;
 }
 
+/** Nested FK embeds may return one object or a single-element array from PostgREST */
+function embedOne<T>(value: T | T[] | null | undefined): T | null {
+	if (value == null) return null;
+	return Array.isArray(value) ? (value[0] ?? null) : value;
+}
+
 type LinkedUserRow = { id: string; email: string; name: string };
+
+type HrLookupEmbed = { id: string; code: string; label_th: string };
 
 type EmployeeRow = {
 	id: string;
@@ -66,6 +74,40 @@ type EmployeeRow = {
 	app_role: string | null;
 	status: string;
 	created_at: string | null;
+	updated_at: string | null;
+	person_title_th: string | null;
+	academic_title_th: string | null;
+	person_title_en: string | null;
+	academic_title_en: string | null;
+	first_name_en: string | null;
+	last_name_en: string | null;
+	nickname: string | null;
+	address: string | null;
+	gender: string | null;
+	duty_kind: string | null;
+	professional_teacher_license: boolean;
+	professional_recognition_status: string | null;
+	birth_date: string | null;
+	employment_started_at: string | null;
+	employment_ended_at: string | null;
+	photo_object_key: string | null;
+	employment_contract_types: HrLookupEmbed | HrLookupEmbed[] | null;
+	personnel_categories: HrLookupEmbed | HrLookupEmbed[] | null;
+	hr_employment_statuses: HrLookupEmbed | HrLookupEmbed[] | null;
+	employee_emergency_contacts:
+		| {
+				slot: number;
+				contact_name: string | null;
+				relationship: string | null;
+				phone: string | null;
+		  }[]
+		| null;
+	employee_deductions:
+		| {
+				deduction_type_id: string;
+				deduction_types: HrLookupEmbed | HrLookupEmbed[] | null;
+		  }[]
+		| null;
 	users: LinkedUserRow | LinkedUserRow[] | null;
 	employee_assignments:
 		| {
@@ -98,16 +140,48 @@ function firstLinkedUser(users: LinkedUserRow | LinkedUserRow[] | null): LinkedU
 	return Array.isArray(users) ? users[0] ?? null : users;
 }
 
+function mapLookupEmbed(value: HrLookupEmbed | HrLookupEmbed[] | null): {
+	id: string;
+	code: string;
+	labelTh: string;
+} | null {
+	const row = embedOne(value);
+	if (!row) return null;
+	return { id: row.id, code: row.code, labelTh: row.label_th };
+}
+
 export const load: PageServerLoad = async ({ locals }) => {
 	assertPermission(locals.user, "employees:manage");
 	const admin = getServiceRoleClient();
 
-	const [employeesRes, positionsRes, orgUnitsRes, programsRes, usersRes] = await Promise.all([
+	const [
+		employeesRes,
+		positionsRes,
+		orgUnitsRes,
+		programsRes,
+		usersRes,
+		employmentContractTypesRes,
+		personnelCategoriesRes,
+		hrEmploymentStatusesRes,
+		deductionTypesRes,
+	] = await Promise.all([
 		admin
 			.from("employees")
 			.select(
 				`
-				id, employee_no, first_name, last_name, email, user_id, app_role, status, created_at,
+				id, employee_no, first_name, last_name, email, user_id, app_role, status, created_at, updated_at,
+				person_title_th, academic_title_th, person_title_en, academic_title_en,
+				first_name_en, last_name_en, nickname, address, gender, duty_kind,
+				professional_teacher_license, professional_recognition_status, birth_date,
+				employment_started_at, employment_ended_at, photo_object_key,
+				employment_contract_types(id, code, label_th),
+				personnel_categories(id, code, label_th),
+				hr_employment_statuses(id, code, label_th),
+				employee_emergency_contacts(slot, contact_name, relationship, phone),
+				employee_deductions(
+					deduction_type_id,
+					deduction_types(id, code, label_th)
+				),
 				users:user_id ( id, email, name ),
 				employee_assignments(
 					id, starts_at, ends_at, is_primary,
@@ -125,6 +199,10 @@ export const load: PageServerLoad = async ({ locals }) => {
 		admin.from("org_units").select("id,code,name,name_en,unit_type,sort_order").order("sort_order", { ascending: true }),
 		admin.from("programs").select("id,code,name,is_active").order("name", { ascending: true }),
 		admin.from("users").select("id,email,name,username").order("email", { ascending: true }),
+		admin.from("employment_contract_types").select("id,code,label_th,sort_order").order("sort_order", { ascending: true }),
+		admin.from("personnel_categories").select("id,code,label_th,sort_order").order("sort_order", { ascending: true }),
+		admin.from("hr_employment_statuses").select("id,code,label_th,sort_order").order("sort_order", { ascending: true }),
+		admin.from("deduction_types").select("id,code,label_th,sort_order").order("sort_order", { ascending: true }),
 	]);
 
 	const employees = (employeesRes.data ?? []) as unknown as EmployeeRow[];
@@ -153,6 +231,46 @@ export const load: PageServerLoad = async ({ locals }) => {
 				linkedAccountName: linkedUser?.name ?? null,
 				status: row.status,
 				createdAt: row.created_at,
+				updatedAt: row.updated_at,
+				hrProfile: {
+					personTitleTh: row.person_title_th,
+					academicTitleTh: row.academic_title_th,
+					personTitleEn: row.person_title_en,
+					academicTitleEn: row.academic_title_en,
+					firstNameEn: row.first_name_en,
+					lastNameEn: row.last_name_en,
+					nickname: row.nickname,
+					address: row.address,
+					gender: row.gender,
+					dutyKind: row.duty_kind,
+					professionalTeacherLicense: row.professional_teacher_license,
+					professionalRecognitionStatus: row.professional_recognition_status,
+					birthDate: row.birth_date,
+					employmentStartedAt: row.employment_started_at,
+					employmentEndedAt: row.employment_ended_at,
+					photoObjectKey: row.photo_object_key,
+					employmentContractType: mapLookupEmbed(row.employment_contract_types),
+					personnelCategory: mapLookupEmbed(row.personnel_categories),
+					hrEmploymentStatus: mapLookupEmbed(row.hr_employment_statuses),
+					emergencyContacts: [...(row.employee_emergency_contacts ?? [])]
+						.sort((a, b) => a.slot - b.slot)
+						.map((c) => ({
+							slot: c.slot,
+							contactName: c.contact_name,
+							relationship: c.relationship,
+							phone: c.phone,
+						})),
+					deductions: (row.employee_deductions ?? [])
+						.map((d) => {
+							const dt = embedOne(d.deduction_types);
+							return {
+								deductionTypeId: d.deduction_type_id,
+								code: dt?.code ?? "",
+								labelTh: dt?.label_th ?? "",
+							};
+						})
+						.sort((a, b) => a.code.localeCompare(b.code)),
+				},
 				primaryAssignment: activeAssignment
 					? {
 							...activeAssignment,
@@ -168,12 +286,22 @@ export const load: PageServerLoad = async ({ locals }) => {
 		orgUnits: orgUnitsRes.data ?? [],
 		programs: programsRes.data ?? [],
 		usersAvailableForLink,
+		hrLookups: {
+			employmentContractTypes: employmentContractTypesRes.data ?? [],
+			personnelCategories: personnelCategoriesRes.data ?? [],
+			hrEmploymentStatuses: hrEmploymentStatusesRes.data ?? [],
+			deductionTypes: deductionTypesRes.data ?? [],
+		},
 		errors: {
 			employees: employeesRes.error?.message ?? null,
 			positions: positionsRes.error?.message ?? null,
 			orgUnits: orgUnitsRes.error?.message ?? null,
 			programs: programsRes.error?.message ?? null,
 			users: usersRes.error?.message ?? null,
+			employmentContractTypes: employmentContractTypesRes.error?.message ?? null,
+			personnelCategories: personnelCategoriesRes.error?.message ?? null,
+			hrEmploymentStatuses: hrEmploymentStatusesRes.error?.message ?? null,
+			deductionTypes: deductionTypesRes.error?.message ?? null,
 		},
 	};
 };

@@ -13,7 +13,7 @@
 		title: string;
 		message: string;
 		type: string;
-		createdAt: Date | null;
+		createdAt: string | Date | null;
 	};
 
 let {
@@ -72,7 +72,7 @@ const copy = $derived.by(() =>
 		}
 	}
 
-	function timeAgo(date: Date | null) {
+	function timeAgo(date: string | Date | null) {
 		if (!date) return "";
 		const now = new Date();
 		const diff = now.getTime() - new Date(date).getTime();

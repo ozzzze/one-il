@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { PUBLIC_SUPABASE_URL } from "$env/static/public";
 import { env } from "$env/dynamic/private";
+import type { Database } from "$lib/database.types.js";
 
 /** Client สำหรับ Auth Admin API — ใช้เฉพาะใน server routes/actions */
 export function getServiceRoleClient() {
@@ -8,7 +9,7 @@ export function getServiceRoleClient() {
 	if (!key) {
 		throw new Error("SUPABASE_SERVICE_ROLE_KEY is missing from environment");
 	}
-	return createClient(PUBLIC_SUPABASE_URL, key, {
+	return createClient<Database>(PUBLIC_SUPABASE_URL, key, {
 		auth: {
 			autoRefreshToken: false,
 			persistSession: false,

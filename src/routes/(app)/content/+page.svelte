@@ -158,7 +158,7 @@
 		}
 	}
 
-	function formatDate(date: Date | null) {
+	function formatDate(date: Date | string | null) {
 		if (!date) return "—";
 		return new Intl.DateTimeFormat(data.locale === "th" ? "th-TH" : "en-US", {
 			month: "short",

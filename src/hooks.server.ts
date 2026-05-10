@@ -1,12 +1,13 @@
 import { createServerClient } from "@supabase/ssr";
 import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_PUBLISHABLE_KEY } from "$env/static/public";
+import type { Database } from "$lib/database.types.js";
 import { redirect, type Handle } from "@sveltejs/kit";
 import { sequence } from "@sveltejs/kit/hooks";
 import { loadSessionUser } from "$lib/server/auth.js";
 import { LOCALE_COOKIE, isLocale, resolveRequestLocale } from "$lib/i18n/locales.js";
 
 const supabaseHandle: Handle = async ({ event, resolve }) => {
-	event.locals.supabase = createServerClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_PUBLISHABLE_KEY, {
+	event.locals.supabase = createServerClient<Database>(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_PUBLISHABLE_KEY, {
 		cookies: {
 			getAll: () => event.cookies.getAll(),
 			setAll: (cookiesToSet) => {
