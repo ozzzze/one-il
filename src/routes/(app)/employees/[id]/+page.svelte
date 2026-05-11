@@ -13,6 +13,7 @@
 	import * as Avatar from "$lib/components/ui/avatar/index.js";
 	import { toast } from "svelte-sonner";
 	import { getRoleOptions } from "$lib/auth/roles.js";
+	import { localizedDualField, localizedLookupLabel } from "$lib/i18n/display.js";
 	import type { ActionData, PageData } from "./$types.js";
 
 	let { data, form }: { data: PageData; form?: ActionData } = $props();
@@ -33,7 +34,24 @@
 	let savePhoto = $state(false);
 	let saveClearPhoto = $state(false);
 
+	/** Bound selects/dates so values survive reactivity and match DB after `invalidateAll`. */
+	let assignPrimaryPositionId = $state("");
+	let assignPrimaryOrgUnitId = $state("");
+	let assignPrimaryStartsAt = $state("");
+	let supervisorEmployeeId = $state("");
+	let supervisorStartsAt = $state("");
+
 	const emp = $derived(data.employee);
+
+	$effect(() => {
+		assignPrimaryPositionId = emp.primaryAssignment?.positions?.id ?? "";
+		assignPrimaryOrgUnitId = emp.primaryAssignment?.org_units?.id ?? "";
+		assignPrimaryStartsAt = emp.primaryAssignment?.starts_at?.slice(0, 10) ?? "";
+	});
+	$effect(() => {
+		supervisorEmployeeId = emp.activeSupervisor?.supervisor?.id ?? "";
+		supervisorStartsAt = emp.activeSupervisor?.starts_at?.slice(0, 10) ?? "";
+	});
 
 	function deductionPickFromEmployee(d: PageData): Record<string, boolean> {
 		const ids = new Set(d.employee.hrProfile.deductions.map((x) => x.deductionTypeId));
@@ -231,12 +249,6 @@
 		}
 	});
 
-	function localizedDisplayName(name: string, nameEn: string | null | undefined): string {
-		if (data.locale === "th") return name;
-		const en = nameEn?.trim();
-		return en && en.length > 0 ? en : name;
-	}
-
 	function nameInitials(fullName: string): string {
 		return fullName
 			.split(" ")
@@ -251,14 +263,14 @@
 		const a = emp.primaryAssignment;
 		if (!a?.positions) return copy.none;
 		const p = a.positions;
-		return `${p.code} — ${localizedDisplayName(p.name, p.name_en)}`;
+		return `${p.code} — ${localizedDualField(data.locale, p.name, p.name_en)}`;
 	}
 
 	function orgUnitLabel(): string {
 		const a = emp.primaryAssignment;
 		if (!a?.org_units) return copy.none;
 		const u = a.org_units;
-		return `${u.code} — ${localizedDisplayName(u.name, u.name_en)}`;
+		return `${u.code} — ${localizedDualField(data.locale, u.name, u.name_en)}`;
 	}
 
 	function supervisorName(): string {
@@ -288,7 +300,13 @@
 			<div class="flex flex-wrap items-center gap-2">
 				<Badge variant={emp.status.toUpperCase() === "ACTIVE" ? "default" : "secondary"}>{emp.status.toUpperCase()}</Badge>
 				{#if emp.hrProfile.hrEmploymentStatus}
-					<Badge variant="outline">{emp.hrProfile.hrEmploymentStatus.labelTh}</Badge>
+					<Badge variant="outline">
+						{localizedDualField(
+							data.locale,
+							emp.hrProfile.hrEmploymentStatus.labelTh,
+							emp.hrProfile.hrEmploymentStatus.labelEn,
+						)}
+					</Badge>
 				{/if}
 				{#if emp.employeeNo}
 					<span class="text-muted-foreground text-sm">{emp.employeeNo}</span>
@@ -479,7 +497,7 @@
 									<option value="">—</option>
 									{#each data.hrLookups.employmentContractTypes as row, i (row.id)}
 										<option value={row.id} selected={emp.hrProfile.employmentContractTypeId === row.id}>
-											{row.label_th}
+											{localizedLookupLabel(data.locale, row)}
 										</option>
 									{/each}
 								</select>
@@ -489,7 +507,9 @@
 								<select name="personnelCategoryId" class="border-input bg-background h-9 rounded-md border px-3 text-sm">
 									<option value="">—</option>
 									{#each data.hrLookups.personnelCategories as row, i (row.id)}
-										<option value={row.id} selected={emp.hrProfile.personnelCategoryId === row.id}>{row.label_th}</option>
+										<option value={row.id} selected={emp.hrProfile.personnelCategoryId === row.id}>
+											{localizedLookupLabel(data.locale, row)}
+										</option>
 									{/each}
 								</select>
 							</div>
@@ -499,7 +519,9 @@
 							<select name="hrEmploymentStatusId" class="border-input bg-background h-9 rounded-md border px-3 text-sm">
 								<option value="">—</option>
 								{#each data.hrLookups.hrEmploymentStatuses as row, i (row.id)}
-									<option value={row.id} selected={emp.hrProfile.hrEmploymentStatusId === row.id}>{row.label_th}</option>
+									<option value={row.id} selected={emp.hrProfile.hrEmploymentStatusId === row.id}>
+										{localizedLookupLabel(data.locale, row)}
+									</option>
 								{/each}
 							</select>
 						</div>
@@ -607,7 +629,7 @@
 										}}
 										class="size-4 rounded border"
 									/>
-									{dt.label_th}
+									{localizedLookupLabel(data.locale, dt)}
 									<span class="text-muted-foreground text-xs">({dt.code})</span>
 								</label>
 							{/each}
@@ -656,20 +678,34 @@
 						<input type="hidden" name="employeeId" value={emp.id} />
 						<input type="hidden" name="isPrimary" value="true" />
 						<div class="grid gap-2 sm:grid-cols-2">
-							<select name="positionId" required class="border-input bg-background h-9 rounded-md border px-3 text-sm">
+							<select
+								name="positionId"
+								required
+								bind:value={assignPrimaryPositionId}
+								class="border-input bg-background h-9 rounded-md border px-3 text-sm"
+							>
 								<option value="">{copy.selectPosition}</option>
 								{#each data.positions as position, i (position.id)}
-									<option value={position.id}>{localizedDisplayName(position.name, position.name_en)}</option>
+									<option value={position.id}>
+										{localizedDualField(data.locale, position.name, position.name_en)}
+									</option>
 								{/each}
 							</select>
-							<select name="orgUnitId" required class="border-input bg-background h-9 rounded-md border px-3 text-sm">
+							<select
+								name="orgUnitId"
+								required
+								bind:value={assignPrimaryOrgUnitId}
+								class="border-input bg-background h-9 rounded-md border px-3 text-sm"
+							>
 								<option value="">{copy.selectOrgUnit}</option>
 								{#each data.orgUnits as orgUnit, i (orgUnit.id)}
-									<option value={orgUnit.id}>{localizedDisplayName(orgUnit.name, orgUnit.name_en)}</option>
+									<option value={orgUnit.id}>
+										{localizedDualField(data.locale, orgUnit.name, orgUnit.name_en)}
+									</option>
 								{/each}
 							</select>
 						</div>
-						<Input type="date" name="startsAt" required />
+						<Input type="date" name="startsAt" required bind:value={assignPrimaryStartsAt} />
 						<div class="flex justify-end">
 							<SaveSubmitButton
 								size="sm"
@@ -694,7 +730,12 @@
 						class="grid gap-2"
 					>
 						<input type="hidden" name="employeeId" value={emp.id} />
-						<select name="supervisorEmployeeId" required class="border-input bg-background h-9 rounded-md border px-3 text-sm">
+						<select
+							name="supervisorEmployeeId"
+							required
+							bind:value={supervisorEmployeeId}
+							class="border-input bg-background h-9 rounded-md border px-3 text-sm"
+						>
 							<option value="">{copy.selectSupervisor}</option>
 							{#each data.allEmployeesMinimal as row, i (row.id)}
 								{#if row.id !== emp.id}
@@ -702,7 +743,7 @@
 								{/if}
 							{/each}
 						</select>
-						<Input type="date" name="startsAt" required />
+						<Input type="date" name="startsAt" required bind:value={supervisorStartsAt} />
 						<div class="flex justify-end">
 							<SaveSubmitButton
 								size="sm"

@@ -164,70 +164,30 @@ export function getGatewayPageCopy(locale: Locale) {
 	return locale === "th"
 		? {
 				title: `${menu.modules} - ${app.shortName}`,
-				heroBadge: "แผนที่โมดูล",
-				heroHeading: "ทุกโมดูลในพอร์ทัลคณะเดียว",
-				heroDescription:
-					"ใช้หน้านี้เพื่อสำรวจโมดูล ONE-IL ทั้งด้านสำนักงาน วิชาการ บริการ รายงาน และแอดมิน หากต้องการยื่นคำขอลา ให้ไปที่ คำขอ -> ลา โดยตรง",
-				createLeaveRequestCta: "สร้างคำขอลา",
-				manageAccessCta: "จัดการสิทธิ์",
-				navigationRuleHeading: "แนวทางการนำทาง",
-				navigationRuleDescription:
-					"คงเวิร์กโฟลว์การดำเนินการไว้ในหน้า คำขอ และใช้หน้า โมดูล เพื่อภาพรวม การค้นหา และการมองเห็นตามบทบาท",
 				moduleMapHeading: "แผนที่โมดูล",
 				moduleMapDescription:
-					"แนวทางเริ่มต้นที่ใช้งานได้จริงสำหรับทีมเล็ก: ให้ Requests เป็นเวิร์กโฟลว์หลัก แล้วค่อยเปิดแต่ละโดเมนทีละส่วน",
-				openAction: "เปิดรายการ",
+					"จัดกลุ่มตามเจตนาการใช้งาน เพื่อให้สแกนภาพรวมเร็วและเริ่มจากกลุ่มหลักก่อน",
+				coreModulesHeading: "Core modules",
+				coreModulesDescription:
+					"กลุ่มที่พร้อมใช้งานหรืออยู่ลำดับถัดไป แสดงก่อนเพื่อให้ทีมเริ่มทำงานได้ทันที",
+				futureModulesHeading: "Future modules",
+				futureModulesDescription:
+					"กลุ่มที่วางแผนไว้ล่วงหน้า แสดงถัดจากกลุ่มหลักเพื่อให้เห็นภาพรวมได้ทันที",
 				viewModulePath: "ดูเส้นทางโมดูล",
 				smallTeamFriendly: "เหมาะกับทีมขนาดเล็ก",
-				recommendedBuildOrder: "ลำดับการพัฒนาที่แนะนำ",
-				recommendedBuildOrderDesc: "เริ่มจากโครงพื้นฐานร่วมก่อนเพิ่มหน้าของแต่ละโมดูลจำนวนมาก",
-				steps: [
-					"ทำส่วนจัดการผู้ใช้ บทบาท และการตรวจสอบสิทธิ์ให้สมบูรณ์",
-					"สร้างศูนย์คำขอกลางสำหรับลา จองห้อง ยืมอุปกรณ์ และบริการวิชาการ",
-					"เพิ่มบันทึกตรวจสอบและรายงาน หลังเวิร์กโฟลว์หลักนิ่งแล้ว",
-				],
-				ssoTitle: "ทิศทาง SSO / ticket",
-				ssoDescription:
-					"ใช้ Supabase session เดียวเป็นตั๋วผ่านโมดูลทั้งหมด และเพิ่ม OAuth จาก Google หรือ Microsoft ภายหลังได้หากคณะมี identity provider อยู่แล้ว",
-				session: "เซสชัน",
-				sessionDesc: "ล็อกอินครั้งเดียวและใช้เซสชันเดิมในทั้งแอป",
-				roles: "บทบาท",
-				rolesDesc: "บุคลากร อาจารย์ นักศึกษา แอดมิน ผู้บริหาร",
-				permissions: "สิทธิ์",
-				permissionsDesc: "ควบคุมแต่ละโมดูลด้วย permission claims ที่ชัดเจน",
 			}
 		: {
 				title: `${menu.modules} - ${app.shortName}`,
-				heroBadge: "Module map",
-				heroHeading: "All modules in one faculty portal.",
-				heroDescription:
-					"Use this page to browse ONE-IL modules across Office, Academic, Services, Reports, and Admin. For leave requests, go directly to Requests -> Leave.",
-				createLeaveRequestCta: "Create Leave Request",
-				manageAccessCta: "Manage access",
-				navigationRuleHeading: "Navigation rule",
-				navigationRuleDescription:
-					"Keep action workflows in Requests. Use Modules for overview, discovery, and role-based module visibility.",
 				moduleMapHeading: "Module Map",
 				moduleMapDescription:
-					"A practical first cut for building alone: keep Requests as the main workflow, then turn each domain on gradually.",
-				openAction: "Open action",
+					"Group modules by user intent so people can scan fast and start from the core domains first.",
+				coreModulesHeading: "Core modules",
+				coreModulesDescription:
+					"Ready and Next groups are shown first so teams can focus on near-term execution.",
+				futureModulesHeading: "Future modules",
+				futureModulesDescription:
+					"Planned groups are shown alongside core groups so teams can see the full roadmap at a glance.",
 				viewModulePath: "View module path",
 				smallTeamFriendly: "Small-team friendly",
-				recommendedBuildOrder: "Recommended build order",
-				recommendedBuildOrderDesc: "Start with the shared foundation before adding many module screens.",
-				steps: [
-					"Finish user management, roles, and permission checks.",
-					"Create a shared request center for leave, booking, equipment borrowing, and academic service.",
-					"Add audit logs and reports after the core workflows are stable.",
-				],
-				ssoTitle: "SSO / ticket direction",
-				ssoDescription:
-					"Use one Supabase session as the access ticket across modules. Add Google or Microsoft OAuth later if the faculty already has an identity provider.",
-				session: "Session",
-				sessionDesc: "Login once, reuse the same app session.",
-				roles: "Roles",
-				rolesDesc: "Staff, lecturer, student, admin, executive.",
-				permissions: "Permissions",
-				permissionsDesc: "Gate each module by explicit permission claims.",
 			};
 }

@@ -7,13 +7,13 @@ export const employeeEmbeddedSelect = `
 	professional_teacher_license, professional_recognition_status, birth_date,
 	employment_started_at, employment_ended_at, photo_object_key,
 	employment_contract_type_id, personnel_category_id, hr_employment_status_id,
-	employment_contract_types(id, code, label_th),
-	personnel_categories(id, code, label_th),
-	hr_employment_statuses(id, code, label_th),
+	employment_contract_types(id, code, label_th, label_en),
+	personnel_categories(id, code, label_th, label_en),
+	hr_employment_statuses(id, code, label_th, label_en),
 	employee_emergency_contacts(slot, contact_name, relationship, phone),
 	employee_deductions(
 		deduction_type_id,
-		deduction_types(id, code, label_th)
+		deduction_types(id, code, label_th, label_en)
 	),
 	users:user_id ( id, email, name ),
 	employee_assignments(
@@ -29,7 +29,7 @@ export const employeeEmbeddedSelect = `
 
 export type LinkedUserRow = { id: string; email: string; name: string };
 
-export type HrLookupEmbed = { id: string; code: string; label_th: string };
+export type HrLookupEmbed = { id: string; code: string; label_th: string; label_en: string };
 
 export type EmployeeRow = {
 	id: string;
@@ -139,16 +139,16 @@ export type EmployeeView = {
 		employmentContractTypeId: string | null;
 		personnelCategoryId: string | null;
 		hrEmploymentStatusId: string | null;
-		employmentContractType: { id: string; code: string; labelTh: string } | null;
-		personnelCategory: { id: string; code: string; labelTh: string } | null;
-		hrEmploymentStatus: { id: string; code: string; labelTh: string } | null;
+		employmentContractType: { id: string; code: string; labelTh: string; labelEn: string } | null;
+		personnelCategory: { id: string; code: string; labelTh: string; labelEn: string } | null;
+		hrEmploymentStatus: { id: string; code: string; labelTh: string; labelEn: string } | null;
 		emergencyContacts: {
 			slot: number;
 			contactName: string | null;
 			relationship: string | null;
 			phone: string | null;
 		}[];
-		deductions: { deductionTypeId: string; code: string; labelTh: string }[];
+		deductions: { deductionTypeId: string; code: string; labelTh: string; labelEn: string }[];
 	};
 	primaryAssignment: {
 		id: string;
@@ -185,15 +185,16 @@ export function mapLookupEmbed(value: HrLookupEmbed | HrLookupEmbed[] | null): {
 	id: string;
 	code: string;
 	labelTh: string;
+	labelEn: string;
 } | null {
 	const row = embedOne(value);
 	if (!row) return null;
-	return { id: row.id, code: row.code, labelTh: row.label_th };
+	return { id: row.id, code: row.code, labelTh: row.label_th, labelEn: row.label_en };
 }
 
 export function mapEmployeeRowToView(row: EmployeeRow): EmployeeView {
 	const activeAssignment =
-		row.employee_assignments?.find((assignment) => assignment.is_primary && assignment.ends_at === null) ?? null;
+		row.employee_assignments?.find((assignment) => assignment.is_primary && assignment.ends_at == null) ?? null;
 	const linkedUser = firstLinkedUser(row.users);
 	return {
 		id: row.id,
@@ -247,6 +248,7 @@ export function mapEmployeeRowToView(row: EmployeeRow): EmployeeView {
 						deductionTypeId: d.deduction_type_id,
 						code: dt?.code ?? "",
 						labelTh: dt?.label_th ?? "",
+						labelEn: dt?.label_en ?? "",
 					};
 				})
 				.sort((a, b) => a.code.localeCompare(b.code)),
@@ -262,6 +264,6 @@ export function mapEmployeeRowToView(row: EmployeeRow): EmployeeView {
 				}
 			: null,
 		activeSupervisor:
-			row.employee_supervisors?.find((supervisor) => supervisor.ends_at === null && supervisor.supervisor) ?? null,
+			row.employee_supervisors?.find((supervisor) => supervisor.ends_at == null && supervisor.supervisor) ?? null,
 	};
 }

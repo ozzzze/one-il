@@ -1,0 +1,23 @@
+---
+description: Thai/English UI tied to language switcher (locale cookie + data.locale)
+alwaysApply: true
+---
+
+# Bilingual UI (TH / EN)
+
+Locale comes from `hooks.server.ts`: `?lang=en|th` sets the `locale` cookie and redirects; `event.locals.locale` flows into layouts as `data.locale`. The header language switcher drives this — **do not hardcode one language for user-visible strings that have both Thai and English source fields.**
+
+## Database pairs
+
+| Pattern | Thai field | English field | Helper |
+|--------|------------|---------------|--------|
+| Org units, positions | `name` | `name_en` | `localizedDualField(locale, name, name_en)` |
+| HR lookups (`*_types`, statuses) | `label_th` | `label_en` | `localizedLookupLabel(locale, row)` |
+
+Import from `$lib/i18n/display.js`.
+
+## Rules
+
+1. **Lists, badges, `<option>` labels**: Always choose text with `localizedDualField` / `localizedLookupLabel` using **`data.locale`** (or the page’s locale prop), never raw `label_th` alone when `label_en` exists or will exist.
+2. **New lookup tables**: If the product needs two languages, add **`label_th` + `label_en`** (or `name` + `name_en`) in Postgres, seed both, select both in `+page.server.ts`, and map both into view types.
+3. **Static UI copy** (buttons, headings): Keep using `getUiLabels` / locale branches in `copy` objects — that is separate from bilingual **data** fields.

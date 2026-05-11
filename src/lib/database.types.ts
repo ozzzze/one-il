@@ -19,6 +19,7 @@ export type Database = {
 					id: string;
 					code: string;
 					label_th: string;
+					label_en: string;
 					sort_order: number;
 					created_at: string;
 					updated_at: string;
@@ -27,6 +28,7 @@ export type Database = {
 					id?: string;
 					code: string;
 					label_th: string;
+					label_en: string;
 					sort_order?: number;
 					created_at?: string;
 					updated_at?: string;
@@ -261,6 +263,7 @@ export type Database = {
 					id: string;
 					code: string;
 					label_th: string;
+					label_en: string;
 					sort_order: number;
 					created_at: string;
 					updated_at: string;
@@ -269,6 +272,7 @@ export type Database = {
 					id?: string;
 					code: string;
 					label_th: string;
+					label_en: string;
 					sort_order?: number;
 					created_at?: string;
 					updated_at?: string;
@@ -281,6 +285,7 @@ export type Database = {
 					id: string;
 					code: string;
 					label_th: string;
+					label_en: string;
 					sort_order: number;
 					created_at: string;
 					updated_at: string;
@@ -289,6 +294,7 @@ export type Database = {
 					id?: string;
 					code: string;
 					label_th: string;
+					label_en: string;
 					sort_order?: number;
 					created_at?: string;
 					updated_at?: string;
@@ -403,6 +409,7 @@ export type Database = {
 					id: string;
 					code: string;
 					label_th: string;
+					label_en: string;
 					sort_order: number;
 					created_at: string;
 					updated_at: string;
@@ -411,6 +418,7 @@ export type Database = {
 					id?: string;
 					code: string;
 					label_th: string;
+					label_en: string;
 					sort_order?: number;
 					created_at?: string;
 					updated_at?: string;

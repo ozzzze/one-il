@@ -10,9 +10,12 @@
 	import { Input } from "$lib/components/ui/input/index.js";
 	import { Label } from "$lib/components/ui/label/index.js";
 	import * as Table from "$lib/components/ui/table/index.js";
+	import DataTablePagination from "$lib/components/data-table-pagination.svelte";
 	import PlusIcon from "@lucide/svelte/icons/plus";
+	import SearchIcon from "@lucide/svelte/icons/search";
 	import { toast } from "svelte-sonner";
 	import { getRoleOptions } from "$lib/auth/roles.js";
+	import { localizedDualField, localizedLookupLabel } from "$lib/i18n/display.js";
 	import type { ActionData, PageData } from "./$types.js";
 
 	let { data, form }: { data: PageData; form?: ActionData } = $props();
@@ -33,12 +36,13 @@
 	}
 
 	type Employee = PageData["employees"][number];
-	type StatusFilter = "ALL" | "ACTIVE" | "INACTIVE";
 
 	let search = $state("");
-	let statusFilter = $state<StatusFilter>("ALL");
+	let orgUnitFilter = $state<string>("ALL");
 	let hrStatusFilter = $state<string>("ALL");
 	let contractFilter = $state<string>("ALL");
+	let pageSize = $state(10);
+	let currentPage = $state(1);
 
 	const copy = $derived.by(() =>
 		data.locale === "th"
@@ -49,7 +53,7 @@
 						"ค้นหาและกรองรายชื่อ เปิดแถวเพื่อแก้ไขโปรไฟล์ HR ตำแหน่ง หัวหน้า และบัญชี",
 					loadError: "ข้อมูลอ้างอิงบางส่วนโหลดไม่สำเร็จ กรุณารีเฟรชแล้วลองใหม่",
 					searchPlaceholder: "ค้นหารหัสพนักงาน ชื่อ หรืออีเมล",
-					allStatuses: "ทุกสถานะแอป",
+					allOrgUnits: "ทุกหน่วยงาน",
 					allHrStatuses: "ทุกสถานะ HR",
 					allContracts: "ทุกประเภทสัญญา",
 					employee: "บุคลากร",
@@ -78,7 +82,7 @@
 					description: "Search and filter the directory. Open a row to edit HR profile, org, supervisor, and account.",
 					loadError: "Some employee reference data failed to load. Please refresh and try again.",
 					searchPlaceholder: "Search employee no, name, or email",
-					allStatuses: "All app statuses",
+					allOrgUnits: "All org units",
 					allHrStatuses: "All HR statuses",
 					allContracts: "All contract types",
 					employee: "employee",
@@ -109,19 +113,37 @@
 			const fullName = employee.fullName.toLowerCase();
 			const employeeNo = (employee.employeeNo ?? "").toLowerCase();
 			const email = (employee.email ?? "").toLowerCase();
-			const status = employee.status.toUpperCase();
 			const matchesSearch =
 				normalizedSearch.length === 0 ||
 				fullName.includes(normalizedSearch) ||
 				employeeNo.includes(normalizedSearch) ||
 				email.includes(normalizedSearch);
-			const matchesStatus = statusFilter === "ALL" || status === statusFilter;
+			const primaryOrgId = employee.primaryAssignment?.org_units?.id ?? "";
+			const matchesOrgUnit =
+				orgUnitFilter === "ALL" || (primaryOrgId.length > 0 && primaryOrgId === orgUnitFilter);
 			const hrId = employee.hrProfile.hrEmploymentStatus?.id ?? "";
 			const matchesHr = hrStatusFilter === "ALL" || hrId === hrStatusFilter;
 			const contractId = employee.hrProfile.employmentContractType?.id ?? "";
 			const matchesContract = contractFilter === "ALL" || contractId === contractFilter;
-			return matchesSearch && matchesStatus && matchesHr && matchesContract;
+			return matchesSearch && matchesOrgUnit && matchesHr && matchesContract;
 		});
+	});
+
+	const paginatedEmployees = $derived(
+		filteredEmployees.slice((currentPage - 1) * pageSize, currentPage * pageSize),
+	);
+
+	$effect(() => {
+		search;
+		orgUnitFilter;
+		hrStatusFilter;
+		contractFilter;
+		currentPage = 1;
+	});
+
+	$effect(() => {
+		const totalPages = Math.max(1, Math.ceil(filteredEmployees.length / pageSize));
+		if (currentPage > totalPages) currentPage = totalPages;
 	});
 
 	$effect(() => {
@@ -135,16 +157,10 @@
 		return status.toUpperCase() === "ACTIVE" ? "default" : "secondary";
 	}
 
-	function localizedDisplayName(name: string, nameEn: string | null | undefined): string {
-		if (data.locale === "th") return name;
-		const en = nameEn?.trim();
-		return en && en.length > 0 ? en : name;
-	}
-
 	function positionLabel(assignment: Employee["primaryAssignment"]): string {
 		if (!assignment?.positions) return "—";
 		const p = assignment.positions;
-		return `${p.code} — ${localizedDisplayName(p.name, p.name_en)}`;
+		return `${p.code} — ${localizedDualField(data.locale, p.name, p.name_en)}`;
 	}
 
 	function openRow(employeeId: string) {
@@ -178,16 +194,18 @@
 	{/if}
 
 	<div class="flex flex-wrap items-center gap-2">
-		<div class="min-w-[200px] flex-1">
-			<Input placeholder={copy.searchPlaceholder} bind:value={search} />
+		<div class="relative min-w-[200px] max-w-sm flex-1">
+			<SearchIcon class="text-muted-foreground absolute left-3 top-1/2 size-4 -translate-y-1/2" />
+			<Input placeholder={copy.searchPlaceholder} class="pl-9" bind:value={search} />
 		</div>
 		<select
-			class="border-input bg-background ring-offset-background focus-visible:ring-ring inline-flex h-9 min-w-[140px] rounded-md border px-2 py-1 text-xs focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
-			bind:value={statusFilter}
+			class="border-input bg-background ring-offset-background focus-visible:ring-ring inline-flex h-9 min-w-[160px] max-w-[240px] rounded-md border px-2 py-1 text-xs focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+			bind:value={orgUnitFilter}
 		>
-			<option value="ALL">{copy.allStatuses}</option>
-			<option value="ACTIVE">ACTIVE</option>
-			<option value="INACTIVE">INACTIVE</option>
+			<option value="ALL">{copy.allOrgUnits}</option>
+			{#each data.orgUnits as unit, i (unit.id)}
+				<option value={unit.id}>{localizedDualField(data.locale, unit.name, unit.name_en)}</option>
+			{/each}
 		</select>
 		<select
 			class="border-input bg-background ring-offset-background focus-visible:ring-ring inline-flex h-9 min-w-[140px] rounded-md border px-2 py-1 text-xs focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
@@ -195,7 +213,7 @@
 		>
 			<option value="ALL">{copy.allHrStatuses}</option>
 			{#each data.hrLookups.hrEmploymentStatuses as hs, i (hs.id)}
-				<option value={hs.id}>{hs.label_th}</option>
+				<option value={hs.id}>{localizedLookupLabel(data.locale, hs)}</option>
 			{/each}
 		</select>
 		<select
@@ -204,14 +222,14 @@
 		>
 			<option value="ALL">{copy.allContracts}</option>
 			{#each data.hrLookups.employmentContractTypes as ct, i (ct.id)}
-				<option value={ct.id}>{ct.label_th}</option>
+				<option value={ct.id}>{localizedLookupLabel(data.locale, ct)}</option>
 			{/each}
 		</select>
 		<Button type="button" onclick={openCreateEmployeeDialog}>
 			<PlusIcon class="mr-2 size-4" />
 			{copy.newEmployee}
 		</Button>
-		<p class="text-muted-foreground text-xs">
+		<p class="text-muted-foreground text-sm">
 			{filteredEmployees.length}
 			{copy.employee}{filteredEmployees.length !== 1 && data.locale !== "th" ? "s" : ""}
 		</p>
@@ -220,61 +238,79 @@
 	<div class="rounded-md border">
 		<Table.Root>
 			<Table.Header>
-				<Table.Row class="h-9">
-					<Table.Head class="h-9 px-3 text-xs">{copy.colNo}</Table.Head>
-					<Table.Head class="h-9 px-3 text-xs">{copy.colName}</Table.Head>
-					<Table.Head class="h-9 px-3 text-xs">{copy.colEmail}</Table.Head>
-					<Table.Head class="h-9 px-3 text-xs">{copy.colHrStatus}</Table.Head>
-					<Table.Head class="h-9 px-3 text-xs">{copy.colContract}</Table.Head>
-					<Table.Head class="h-9 px-3 text-xs">{copy.colAppStatus}</Table.Head>
-					<Table.Head class="h-9 px-3 text-xs">{copy.colPosition}</Table.Head>
+				<Table.Row>
+					<Table.Head>{copy.colNo}</Table.Head>
+					<Table.Head>{copy.colName}</Table.Head>
+					<Table.Head>{copy.colEmail}</Table.Head>
+					<Table.Head>{copy.colHrStatus}</Table.Head>
+					<Table.Head>{copy.colContract}</Table.Head>
+					<Table.Head>{copy.colAppStatus}</Table.Head>
+					<Table.Head>{copy.colPosition}</Table.Head>
 				</Table.Row>
 			</Table.Header>
 			<Table.Body>
-				{#each filteredEmployees as employee, i (employee.id)}
+				{#each paginatedEmployees as employee, i (employee.id)}
 					<Table.Row
-						class="hover:bg-muted/50 h-9 cursor-pointer"
+						class="hover:bg-muted/50 cursor-pointer"
 						tabindex={0}
 						role="button"
 						onclick={() => openRow(employee.id)}
 						onkeydown={(e) => rowKeydown(e, employee.id)}
 					>
-						<Table.Cell class="px-3 py-1.5 text-xs">{employee.employeeNo ?? "—"}</Table.Cell>
-						<Table.Cell class="px-3 py-1.5 text-xs font-medium">
+						<Table.Cell>{employee.employeeNo ?? "—"}</Table.Cell>
+						<Table.Cell class="font-medium">
 							<span class="text-primary underline-offset-2 hover:underline">{employee.fullName}</span>
 							{#if employee.linkedAccountEmail}
-								<Badge variant="secondary" class="ml-1 align-middle text-[10px]">{copy.linkedShort}</Badge>
+								<Badge variant="secondary" class="ml-1 align-middle">{copy.linkedShort}</Badge>
 							{/if}
 						</Table.Cell>
-						<Table.Cell class="text-muted-foreground px-3 py-1.5 text-xs">{employee.email ?? "—"}</Table.Cell>
-						<Table.Cell class="px-3 py-1.5 text-xs">
+						<Table.Cell class="text-muted-foreground">{employee.email ?? "—"}</Table.Cell>
+						<Table.Cell>
 							{#if employee.hrProfile.hrEmploymentStatus}
-								<Badge variant="outline" class="text-[10px]">{employee.hrProfile.hrEmploymentStatus.labelTh}</Badge>
+								<Badge variant="outline">
+									{localizedDualField(
+										data.locale,
+										employee.hrProfile.hrEmploymentStatus.labelTh,
+										employee.hrProfile.hrEmploymentStatus.labelEn,
+									)}
+								</Badge>
 							{:else}
 								<span class="text-muted-foreground">—</span>
 							{/if}
 						</Table.Cell>
-						<Table.Cell class="px-3 py-1.5 text-xs">
+						<Table.Cell>
 							{#if employee.hrProfile.employmentContractType}
-								<span class="text-muted-foreground">{employee.hrProfile.employmentContractType.labelTh}</span>
+								<span class="text-muted-foreground">
+									{localizedDualField(
+										data.locale,
+										employee.hrProfile.employmentContractType.labelTh,
+										employee.hrProfile.employmentContractType.labelEn,
+									)}
+								</span>
 							{:else}
 								<span class="text-muted-foreground">—</span>
 							{/if}
 						</Table.Cell>
-						<Table.Cell class="px-3 py-1.5 text-xs">
+						<Table.Cell>
 							<Badge variant={statusBadgeVariant(employee.status)}>{employee.status.toUpperCase()}</Badge>
 						</Table.Cell>
-						<Table.Cell class="text-muted-foreground px-3 py-1.5 text-xs">{positionLabel(employee.primaryAssignment)}</Table.Cell>
+						<Table.Cell class="text-muted-foreground">{positionLabel(employee.primaryAssignment)}</Table.Cell>
 					</Table.Row>
 				{:else}
 					<Table.Row>
-						<Table.Cell colspan={7} class="h-16 text-center text-sm">
+						<Table.Cell colspan={7} class="h-24 text-center">
 							{copy.noMatch}
 						</Table.Cell>
 					</Table.Row>
 				{/each}
 			</Table.Body>
 		</Table.Root>
+		<DataTablePagination
+			totalItems={filteredEmployees.length}
+			locale={data.locale}
+			bind:pageSize
+			bind:currentPage
+		/>
 	</div>
 </div>
 

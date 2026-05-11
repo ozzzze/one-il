@@ -24,20 +24,24 @@
 			th: buildHref("th"),
 		};
 	});
+
+	const trackHeight = $derived(compact ? "h-8" : "h-9");
+	const segmentHeight = $derived(compact ? "h-7" : "h-8");
+	const segmentMinWidth = $derived(compact ? "min-w-8" : "min-w-9");
 </script>
 
-<nav aria-label={labels.switchLanguage} class="inline-flex items-center gap-1">
+<div role="group" aria-label={labels.switchLanguage} class="inline-flex items-center rounded-md border border-border bg-muted/40 p-0.5 shadow-xs {trackHeight}">
 	<span class="sr-only">{labels.language}</span>
 	<a
 		href={links.en}
 		data-sveltekit-reload
 		aria-label={`${labels.switchLanguage}: ${labels.english}`}
 		aria-current={locale === "en" ? "page" : undefined}
-		class={`rounded-md border px-2 py-1 text-xs font-medium transition-colors ${
+		class={`focus-visible:ring-ring flex shrink-0 items-center justify-center rounded-sm px-2 text-xs font-medium transition-colors focus-visible:z-10 focus-visible:ring-[3px] focus-visible:outline-none ${segmentHeight} ${segmentMinWidth} ${
 			locale === "en"
-				? "bg-primary text-primary-foreground border-primary"
-				: "hover:bg-muted text-muted-foreground border-border"
-		} ${compact ? "h-7 min-w-8" : "h-8 min-w-9"}`}
+				? "bg-background text-foreground shadow-sm dark:bg-accent dark:text-accent-foreground"
+				: "text-muted-foreground hover:bg-muted/80 hover:text-foreground"
+		}`}
 	>
 		EN
 	</a>
@@ -46,12 +50,12 @@
 		data-sveltekit-reload
 		aria-label={`${labels.switchLanguage}: ${labels.thai}`}
 		aria-current={locale === "th" ? "page" : undefined}
-		class={`rounded-md border px-2 py-1 text-xs font-medium transition-colors ${
+		class={`focus-visible:ring-ring flex shrink-0 items-center justify-center rounded-sm px-2 text-xs font-medium transition-colors focus-visible:z-10 focus-visible:ring-[3px] focus-visible:outline-none ${segmentHeight} ${segmentMinWidth} ${
 			locale === "th"
-				? "bg-primary text-primary-foreground border-primary"
-				: "hover:bg-muted text-muted-foreground border-border"
-		} ${compact ? "h-7 min-w-8" : "h-8 min-w-9"}`}
+				? "bg-background text-foreground shadow-sm dark:bg-accent dark:text-accent-foreground"
+				: "text-muted-foreground hover:bg-muted/80 hover:text-foreground"
+		}`}
 	>
 		TH
 	</a>
-</nav>
+</div>

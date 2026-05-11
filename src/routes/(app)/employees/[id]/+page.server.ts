@@ -132,10 +132,10 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		admin.from("org_units").select("id,code,name,name_en,unit_type,sort_order").order("sort_order", { ascending: true }),
 		admin.from("programs").select("id,code,name,is_active").order("name", { ascending: true }),
 		admin.from("users").select("id,email,name,username").order("email", { ascending: true }),
-		admin.from("employment_contract_types").select("id,code,label_th,sort_order").order("sort_order", { ascending: true }),
-		admin.from("personnel_categories").select("id,code,label_th,sort_order").order("sort_order", { ascending: true }),
-		admin.from("hr_employment_statuses").select("id,code,label_th,sort_order").order("sort_order", { ascending: true }),
-		admin.from("deduction_types").select("id,code,label_th,sort_order").order("sort_order", { ascending: true }),
+		admin.from("employment_contract_types").select("id,code,label_th,label_en,sort_order").order("sort_order", { ascending: true }),
+		admin.from("personnel_categories").select("id,code,label_th,label_en,sort_order").order("sort_order", { ascending: true }),
+		admin.from("hr_employment_statuses").select("id,code,label_th,label_en,sort_order").order("sort_order", { ascending: true }),
+		admin.from("deduction_types").select("id,code,label_th,label_en,sort_order").order("sort_order", { ascending: true }),
 	]);
 
 	if (empRes.error || !empRes.data) error(404, "Not found");

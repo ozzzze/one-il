@@ -39,11 +39,7 @@
 	<Card.Root class="w-full max-w-md">
 		<Card.Header class="space-y-1 text-center">
 			<div class="flex justify-center">
-				<div
-					class="bg-primary text-primary-foreground flex size-12 items-center justify-center rounded-xl"
-				>
-					<img src={ilLogo} alt="Innovative Learning logo" class="size-6 object-contain" />
-				</div>
+				<img src={ilLogo} alt="Innovative Learning logo" class="size-12 object-contain" />
 			</div>
 			<Card.Title class="text-2xl font-bold">{copy.title}</Card.Title>
 			<Card.Description>{copy.desc}</Card.Description>

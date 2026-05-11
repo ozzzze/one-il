@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from "$app/state";
-	import { Button } from "$lib/components/ui/button/index.js";
+	import { cn } from "$lib/utils.js";
 	import type { LayoutData } from "./$types.js";
 	import type { Snippet } from "svelte";
 
@@ -52,11 +52,27 @@
 		<p class="text-muted-foreground text-sm">{copy.description}</p>
 	</div>
 
-	<nav class="flex flex-wrap gap-2" aria-label={copy.title}>
+	<!-- Same chrome as employee detail Tabs.List + Tabs.Trigger (route links, not bits-ui tabs). -->
+	<nav
+		class={cn(
+			"bg-muted text-muted-foreground inline-flex h-auto w-fit flex-wrap gap-1 items-center justify-center rounded-lg p-[3px]",
+		)}
+		aria-label={copy.title}
+	>
 		{#each tabs as tab, i (tab.href)}
-			<Button variant={tabActive(tab.href) ? "default" : "outline"} size="sm" href={tab.href}>
+			<a
+				href={tab.href}
+				aria-current={tabActive(tab.href) ? "page" : undefined}
+				class={cn(
+					"inline-flex items-center justify-center gap-1.5 rounded-md border px-2 py-1 text-xs font-medium whitespace-nowrap transition-[color,box-shadow]",
+					"focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:outline-ring focus-visible:ring-[3px] focus-visible:outline-1 outline-none",
+					tabActive(tab.href)
+						? "border-transparent bg-background text-foreground shadow-sm dark:border-input dark:bg-input/30 dark:text-foreground"
+						: "border-transparent text-foreground dark:text-muted-foreground",
+				)}
+			>
 				{tab.label}
-			</Button>
+			</a>
 		{/each}
 	</nav>
 

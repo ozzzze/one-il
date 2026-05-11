@@ -143,8 +143,9 @@
 								<Avatar.Root class="size-8 border-0">
 									{#if data.user.avatarUrl}
 										<Avatar.Image src={data.user.avatarUrl} alt="" />
+									{:else}
+										<Avatar.Fallback class="text-xs font-medium">{userInitials(data.user.name)}</Avatar.Fallback>
 									{/if}
-									<Avatar.Fallback class="text-xs font-medium">{userInitials(data.user.name)}</Avatar.Fallback>
 								</Avatar.Root>
 							</button>
 						{/snippet}

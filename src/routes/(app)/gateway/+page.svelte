@@ -1,215 +1,204 @@
 <script lang="ts">
 	import * as Card from "$lib/components/ui/card/index.js";
 	import { Badge } from "$lib/components/ui/badge/index.js";
-	import { Button } from "$lib/components/ui/button/index.js";
-	import { Separator } from "$lib/components/ui/separator/index.js";
 	import { resolve } from "$app/paths";
 	import ArrowRightIcon from "@lucide/svelte/icons/arrow-right";
 	import Building2Icon from "@lucide/svelte/icons/building-2";
-	import CalendarCheckIcon from "@lucide/svelte/icons/calendar-check";
-	import ClipboardCheckIcon from "@lucide/svelte/icons/clipboard-check";
 	import GraduationCapIcon from "@lucide/svelte/icons/graduation-cap";
 	import HandshakeIcon from "@lucide/svelte/icons/handshake";
 	import LayoutDashboardIcon from "@lucide/svelte/icons/layout-dashboard";
-	import LibraryBigIcon from "@lucide/svelte/icons/library-big";
-	import SearchIcon from "@lucide/svelte/icons/search";
-	import ShieldCheckIcon from "@lucide/svelte/icons/shield-check";
-	import SparklesIcon from "@lucide/svelte/icons/sparkles";
-	import TicketCheckIcon from "@lucide/svelte/icons/ticket-check";
 	import type { Component } from "svelte";
 	import { getGatewayPageCopy } from "$lib/content/page-copy.js";
 
 	let { data } = $props();
 	const copy = $derived(getGatewayPageCopy(data.locale));
 
-	type Module = {
-		title: string;
-		description: string;
-		group: string;
-		icon: Component;
-		status: "Ready" | "Next" | "Planned";
-		href: string;
-		features: string[];
+	type ModuleStatus = "Ready" | "Next" | "Planned";
+	type StatusFilterValue = "All" | ModuleStatus;
+	type ModuleRoute = "/gateway" | "/roles" | "/analytics";
+
+	type ModuleCapability = {
+		id: string;
+		label: string;
+		status: ModuleStatus;
+		requiresAccess?: boolean;
 	};
 
-	type QuickAction = {
+	type ModuleGroup = {
+		id: string;
 		title: string;
 		description: string;
 		icon: Component;
-		href: string;
+		primaryStatus: ModuleStatus;
+		href: ModuleRoute;
+		priority: number;
+		isCore: boolean;
+		capabilities: ModuleCapability[];
 	};
+
+	const CAPABILITY_PREVIEW_COUNT = 3;
 
 	const gatewayUi = $derived.by(() =>
 		data.locale === "th"
 			? {
-					primaryMenu: "เมนูหลัก",
-					primaryMenuValue: "5-6 รายการ",
-					moduleAccess: "การเข้าถึงโมดูล",
-					moduleAccessValue: "การ์ด + ค้นหา",
-					loginModel: "รูปแบบการล็อกอิน",
-					loginModelValue: "เซสชันเดียว",
-					quickActions: [
+					statusFilters: [
+						{ label: "ทั้งหมด", value: "All" },
+						{ label: "พร้อมใช้", value: "Ready" },
+						{ label: "ลำดับถัดไป", value: "Next" },
+						{ label: "วางแผน", value: "Planned" },
+					] as { label: string; value: StatusFilterValue }[],
+					moduleGroups: [
 						{
-							title: "คำขอลา",
-							description: "สร้างคำขอลาโดยตรงจากเวิร์กโฟลว์หลัก",
-							icon: TicketCheckIcon,
-							href: "/requests/new?kind=leave",
-						},
-						{
-							title: "คำขอ",
-							description: "เริ่มคำขอจอง ยืมอุปกรณ์ หรือบริการวิชาการได้จากที่เดียว",
-							icon: ClipboardCheckIcon,
-							href: "/requests",
-						},
-						{
-							title: "จองห้อง",
-							description: "จองห้องประชุม ห้องเรียน และพื้นที่ใช้งานร่วม",
-							icon: CalendarCheckIcon,
-							href: "/requests/new?kind=room_booking",
-						},
-					] as QuickAction[],
-					modules: [
-						{
-							title: "สำนักงาน",
+							id: "operations",
+							title: "Operations",
 							description:
-								"งานปฏิบัติการของคณะสำหรับ HR, ลา, สวัสดิการ, พัสดุ, ทรัพย์สิน, งานแผ่น และแดชบอร์ดผู้บริหาร",
-							group: "สำนักงาน",
+								"งานปฏิบัติการหลักของคณะ ตั้งแต่ HR จนถึงการดูแลทรัพย์สินและงานภายใน",
 							icon: Building2Icon,
-							status: "Next",
+							primaryStatus: "Next",
 							href: "/gateway",
-							features: ["ทรัพยากรบุคคล", "ลา", "สวัสดิการ", "พัสดุ", "ทรัพย์สิน", "งานแผ่น"],
+							priority: 1,
+							isCore: true,
+							capabilities: [
+								{ id: "hr", label: "ทรัพยากรบุคคล", status: "Next" },
+								{ id: "leave", label: "ลา", status: "Next" },
+								{ id: "welfare", label: "สวัสดิการ", status: "Planned" },
+								{ id: "supply", label: "พัสดุ", status: "Planned" },
+								{ id: "asset", label: "ทรัพย์สิน", status: "Planned" },
+								{ id: "worksheet", label: "งานแผ่น", status: "Planned" },
+							],
 						},
 						{
-							title: "วิชาการ",
-							description: "เวิร์กโฟลว์นักศึกษา อาจารย์ที่ปรึกษา งานวิจัย และสต็อกห้องปฏิบัติการ",
-							group: "วิชาการ",
-							icon: GraduationCapIcon,
-							status: "Planned",
-							href: "/gateway",
-							features: ["นักศึกษา/อาจารย์ที่ปรึกษา", "วิจัย", "สต็อกห้องปฏิบัติการ"],
-						},
-						{
-							title: "บริการส่วนกลาง",
+							id: "sharedServices",
+							title: "Shared Services",
 							description: "บริการข้ามหน่วยงานที่ทั้งทีมสำนักงานและวิชาการใช้ร่วมกัน",
-							group: "บริการ",
 							icon: HandshakeIcon,
-							status: "Planned",
+							primaryStatus: "Next",
 							href: "/gateway",
-							features: ["บริการวิชาการ", "ยืมอุปกรณ์", "จองห้อง"],
+							priority: 2,
+							isCore: true,
+							capabilities: [
+								{ id: "roomBooking", label: "จองห้อง", status: "Next" },
+								{ id: "academicService", label: "บริการวิชาการ", status: "Planned" },
+								{ id: "equipmentBorrowing", label: "ยืมอุปกรณ์", status: "Planned" },
+							],
 						},
 						{
-							title: "รายงานและตรวจสอบ",
-							description: "QCDSM หลักฐานตรวจสอบ สรุปผู้บริหาร และตัวชี้วัดการดำเนินงาน",
-							group: "ธรรมาภิบาล",
+							id: "academicResearch",
+							title: "Academic & Research",
+							description: "งานนักศึกษา วิจัย ห้องปฏิบัติการ และองค์ความรู้ที่นำกลับมาใช้ซ้ำได้",
+							icon: GraduationCapIcon,
+							primaryStatus: "Planned",
+							href: "/gateway",
+							priority: 3,
+							isCore: false,
+							capabilities: [
+								{ id: "studentAdvisor", label: "นักศึกษา/อาจารย์ที่ปรึกษา", status: "Planned" },
+								{ id: "research", label: "วิจัย", status: "Planned" },
+								{ id: "labStock", label: "สต็อกห้องปฏิบัติการ", status: "Planned" },
+								{ id: "researchProducts", label: "ผลงานวิจัย", status: "Planned" },
+								{ id: "content", label: "เนื้อหา", status: "Planned" },
+							],
+						},
+						{
+							id: "governanceAccess",
+							title: "Governance & Access",
+							description: "รายงานผู้บริหาร หลักฐานตรวจสอบ และสิทธิ์การใช้งานแบบบทบาท",
 							icon: LayoutDashboardIcon,
-							status: "Planned",
-							href: "/analytics",
-							features: ["แดชบอร์ดผู้บริหาร", "บันทึกการตรวจสอบ", "ตัวชี้วัดคุณภาพ"],
-						},
-						{
-							title: "องค์ความรู้และผลงานวิจัย",
-							description: "ติดตามผลงานวิจัย ผลิตภัณฑ์ และสินทรัพย์ความรู้ที่นำกลับมาใช้ซ้ำได้",
-							group: "วิชาการ",
-							icon: LibraryBigIcon,
-							status: "Planned",
-							href: "/content",
-							features: ["ผลงานวิจัย", "เนื้อหา", "เอกสารใช้ซ้ำ"],
-						},
-						{
-							title: "ตัวตนและสิทธิ์",
-							description: "โครงพื้นฐาน SSO พร้อม RBAC สำหรับทุกโมดูล",
-							group: "ธรรมาภิบาล",
-							icon: ShieldCheckIcon,
-							status: "Ready",
+							primaryStatus: "Ready",
 							href: "/roles",
-							features: ["Supabase Auth", "บทบาท", "Permission Claims"],
+							priority: 4,
+							isCore: true,
+							capabilities: [
+								{ id: "executiveDashboard", label: "แดชบอร์ดผู้บริหาร", status: "Planned" },
+								{ id: "auditTrail", label: "บันทึกการตรวจสอบ", status: "Planned" },
+								{ id: "qualityIndicators", label: "ตัวชี้วัดคุณภาพ", status: "Planned" },
+								{ id: "auth", label: "Supabase Auth", status: "Ready", requiresAccess: true },
+								{ id: "roles", label: "บทบาท", status: "Ready", requiresAccess: true },
+								{ id: "permissionClaims", label: "Permission Claims", status: "Ready", requiresAccess: true },
+							],
 						},
-					] as Module[],
+					] as ModuleGroup[],
 				}
 			: {
-					primaryMenu: "Primary menu",
-					primaryMenuValue: "5-6 items",
-					moduleAccess: "Module access",
-					moduleAccessValue: "Cards + search",
-					loginModel: "Login model",
-					loginModelValue: "Single session",
-					quickActions: [
+					statusFilters: [
+						{ label: "All", value: "All" },
+						{ label: "Ready", value: "Ready" },
+						{ label: "Next", value: "Next" },
+						{ label: "Planned", value: "Planned" },
+					] as { label: string; value: StatusFilterValue }[],
+					moduleGroups: [
 						{
-							title: "Leave Request",
-							description: "Create a leave request directly from the main workflow.",
-							icon: TicketCheckIcon,
-							href: "/requests/new?kind=leave",
-						},
-						{
-							title: "Requests",
-							description: "Start booking, equipment borrowing, or academic service requests from one place.",
-							icon: ClipboardCheckIcon,
-							href: "/requests",
-						},
-						{
-							title: "Room Booking",
-							description: "Reserve meeting rooms, classrooms, and shared spaces.",
-							icon: CalendarCheckIcon,
-							href: "/requests/new?kind=room_booking",
-						},
-					] as QuickAction[],
-					modules: [
-						{
-							title: "Office",
+							id: "operations",
+							title: "Operations",
 							description:
-								"Faculty operations for HR, leave, welfare, supply, assets, worksheets, and executive dashboards.",
-							group: "Office",
+								"Core faculty operations from HR to assets, welfare, and daily operations management.",
 							icon: Building2Icon,
-							status: "Next",
+							primaryStatus: "Next",
 							href: "/gateway",
-							features: ["Human Resource", "Leave", "Welfare", "Supply", "Asset", "Worksheet"],
+							priority: 1,
+							isCore: true,
+							capabilities: [
+								{ id: "hr", label: "Human Resource", status: "Next" },
+								{ id: "leave", label: "Leave", status: "Next" },
+								{ id: "welfare", label: "Welfare", status: "Planned" },
+								{ id: "supply", label: "Supply", status: "Planned" },
+								{ id: "asset", label: "Asset", status: "Planned" },
+								{ id: "worksheet", label: "Worksheet", status: "Planned" },
+							],
 						},
 						{
-							title: "Academic",
-							description: "Student, advisor, research, and laboratory stock workflows for graduate programs.",
-							group: "Academic",
-							icon: GraduationCapIcon,
-							status: "Planned",
-							href: "/gateway",
-							features: ["Student/Advisor", "Research", "Laboratory Stock"],
-						},
-						{
+							id: "sharedServices",
 							title: "Shared Services",
 							description: "Cross-functional services used by both office and academic teams.",
-							group: "Services",
 							icon: HandshakeIcon,
-							status: "Planned",
+							primaryStatus: "Next",
 							href: "/gateway",
-							features: ["Academic Service", "Equipment Borrowing", "Booking Room"],
+							priority: 2,
+							isCore: true,
+							capabilities: [
+								{ id: "roomBooking", label: "Room Booking", status: "Next" },
+								{ id: "academicService", label: "Academic Service", status: "Planned" },
+								{ id: "equipmentBorrowing", label: "Equipment Borrowing", status: "Planned" },
+							],
 						},
 						{
-							title: "Reports & Audit",
-							description: "QCDSM, audit evidence, executive summaries, and operational indicators.",
-							group: "Governance",
+							id: "academicResearch",
+							title: "Academic & Research",
+							description:
+								"Student, advisor, research, laboratory, and reusable knowledge workflows for graduate programs.",
+							icon: GraduationCapIcon,
+							primaryStatus: "Planned",
+							href: "/gateway",
+							priority: 3,
+							isCore: false,
+							capabilities: [
+								{ id: "studentAdvisor", label: "Student/Advisor", status: "Planned" },
+								{ id: "research", label: "Research", status: "Planned" },
+								{ id: "labStock", label: "Laboratory Stock", status: "Planned" },
+								{ id: "researchProducts", label: "Research Products", status: "Planned" },
+								{ id: "content", label: "Reusable Content", status: "Planned" },
+							],
+						},
+						{
+							id: "governanceAccess",
+							title: "Governance & Access",
+							description:
+								"Executive reporting, audit evidence, and role-based access controls in one governance layer.",
 							icon: LayoutDashboardIcon,
-							status: "Planned",
-							href: "/analytics",
-							features: ["Executive Dashboard", "Audit Trail", "Quality Indicators"],
-						},
-						{
-							title: "Knowledge & Research Products",
-							description: "Track research outputs, products, and reusable faculty knowledge assets.",
-							group: "Academic",
-							icon: LibraryBigIcon,
-							status: "Planned",
-							href: "/content",
-							features: ["Research Products", "Content", "Reusable Documents"],
-						},
-						{
-							title: "Identity & Permissions",
-							description: "Single sign-on foundation with role-based access for every module.",
-							group: "Governance",
-							icon: ShieldCheckIcon,
-							status: "Ready",
+							primaryStatus: "Ready",
 							href: "/roles",
-							features: ["Supabase Auth", "Roles", "Permission Claims"],
+							priority: 4,
+							isCore: true,
+							capabilities: [
+								{ id: "executiveDashboard", label: "Executive Dashboard", status: "Planned" },
+								{ id: "auditTrail", label: "Audit Trail", status: "Planned" },
+								{ id: "qualityIndicators", label: "Quality Indicators", status: "Planned" },
+								{ id: "auth", label: "Supabase Auth", status: "Ready", requiresAccess: true },
+								{ id: "roles", label: "Roles", status: "Ready", requiresAccess: true },
+								{ id: "permissionClaims", label: "Permission Claims", status: "Ready", requiresAccess: true },
+							],
 						},
-					] as Module[],
+					] as ModuleGroup[],
 				}
 	);
 
@@ -217,14 +206,32 @@
 		Ready: "border-green-500 text-green-700 dark:text-green-400",
 		Next: "border-blue-500 text-blue-700 dark:text-blue-400",
 		Planned: "border-muted-foreground/30 text-muted-foreground",
-	} satisfies Record<Module["status"], string>;
+	} satisfies Record<ModuleStatus, string>;
 
-	const visibleModules = $derived(
-		data.canManageAccess
-			? gatewayUi.modules
-			: gatewayUi.modules.filter((module) => module.href !== "/roles")
+	let selectedStatus = $state<StatusFilterValue>("All");
+
+	const visibleModuleGroups = $derived(
+		gatewayUi.moduleGroups
+			.map((moduleGroup) => ({
+				...moduleGroup,
+				href: moduleGroup.id === "governanceAccess" && !data.canManageAccess ? "/analytics" : moduleGroup.href,
+				capabilities: moduleGroup.capabilities.filter(
+					(capability) => data.canManageAccess || !capability.requiresAccess
+				),
+			}))
+			.filter((moduleGroup) => moduleGroup.capabilities.length > 0)
 	);
 
+	const filteredModuleGroups = $derived(
+		[...visibleModuleGroups]
+			.sort((left, right) => left.priority - right.priority)
+			.filter((moduleGroup) =>
+				selectedStatus === "All" ? true : moduleGroup.primaryStatus === selectedStatus
+			)
+	);
+
+	const coreModuleGroups = $derived(filteredModuleGroups.filter((moduleGroup) => moduleGroup.isCore));
+	const futureModuleGroups = $derived(filteredModuleGroups.filter((moduleGroup) => !moduleGroup.isCore));
 </script>
 
 <svelte:head>
@@ -232,85 +239,8 @@
 </svelte:head>
 
 <div class="space-y-6">
-	<section class="overflow-hidden rounded-3xl border bg-[radial-gradient(circle_at_top_left,var(--muted),transparent_38%),linear-gradient(135deg,var(--background),var(--muted))] p-6 md:p-8">
-		<div class="grid gap-6 lg:grid-cols-[1.5fr_0.9fr] lg:items-end">
-			<div class="space-y-5">
-				<Badge variant="secondary" class="w-fit gap-1.5">
-					<SparklesIcon class="size-3.5" />
-					{copy.heroBadge}
-				</Badge>
-				<div class="max-w-3xl space-y-3">
-					<h1 class="text-3xl font-bold tracking-tight md:text-5xl">{copy.heroHeading}</h1>
-					<p class="text-muted-foreground text-base md:text-lg">{copy.heroDescription}</p>
-				</div>
-				<div class="flex flex-wrap gap-2">
-					<Button href="/requests/new?kind=leave">
-						{copy.createLeaveRequestCta}
-						<ArrowRightIcon class="size-4" />
-					</Button>
-					{#if data.canManageAccess}
-						<Button href={resolve("/roles")} variant="outline">
-							{copy.manageAccessCta}
-							<ShieldCheckIcon class="size-4" />
-						</Button>
-					{/if}
-				</div>
-			</div>
-
-			<Card.Root class="bg-background/80 backdrop-blur">
-				<Card.Header>
-					<Card.Title class="flex items-center gap-2 text-base">
-						<SearchIcon class="text-muted-foreground size-4" />
-						{copy.navigationRuleHeading}
-					</Card.Title>
-					<Card.Description>{copy.navigationRuleDescription}</Card.Description>
-				</Card.Header>
-				<Card.Content class="space-y-3 text-sm">
-					<div class="flex items-center justify-between">
-						<span class="text-muted-foreground">{gatewayUi.primaryMenu}</span>
-						<span class="font-medium">{gatewayUi.primaryMenuValue}</span>
-					</div>
-					<Separator />
-					<div class="flex items-center justify-between">
-						<span class="text-muted-foreground">{gatewayUi.moduleAccess}</span>
-						<span class="font-medium">{gatewayUi.moduleAccessValue}</span>
-					</div>
-					<Separator />
-					<div class="flex items-center justify-between">
-						<span class="text-muted-foreground">{gatewayUi.loginModel}</span>
-						<span class="font-medium">{gatewayUi.loginModelValue}</span>
-					</div>
-				</Card.Content>
-			</Card.Root>
-		</div>
-	</section>
-
-	<section class="grid gap-4 md:grid-cols-3">
-		{#each gatewayUi.quickActions as action (action.title)}
-			{@const Icon = action.icon}
-			<Card.Root>
-				<Card.Header>
-					<Card.Title class="flex items-center gap-2 text-base">
-						<Icon class="text-muted-foreground size-4" />
-						{action.title}
-					</Card.Title>
-					<Card.Description>{action.description}</Card.Description>
-				</Card.Header>
-				<Card.Content>
-					<a
-						href={action.href}
-						class="text-primary inline-flex items-center gap-1 text-sm font-medium hover:underline"
-					>
-						{copy.openAction}
-						<ArrowRightIcon class="size-3.5" />
-					</a>
-				</Card.Content>
-			</Card.Root>
-		{/each}
-	</section>
-
 	<section class="space-y-4">
-		<div class="flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
+		<div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
 			<div>
 				<h2 class="text-2xl font-semibold tracking-tight">{copy.moduleMapHeading}</h2>
 				<p class="text-muted-foreground text-sm">{copy.moduleMapDescription}</p>
@@ -318,84 +248,113 @@
 			<Badge variant="outline">{copy.smallTeamFriendly}</Badge>
 		</div>
 
-		<div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-			{#each visibleModules as module (module.title)}
-				{@const Icon = module.icon}
-				<Card.Root class="transition-colors hover:bg-muted/40">
-					<Card.Header class="space-y-3">
-						<div class="flex items-start justify-between gap-3">
-							<div class="bg-primary/10 text-primary flex size-10 items-center justify-center rounded-xl">
-								<Icon class="size-5" />
-							</div>
-							<Badge variant="outline" class={statusTone[module.status]}>{module.status}</Badge>
-						</div>
-						<div>
-							<Card.Title>{module.title}</Card.Title>
-							<Card.Description>{module.description}</Card.Description>
-						</div>
-					</Card.Header>
-					<Card.Content class="space-y-4">
-						<div class="flex flex-wrap gap-1.5">
-							{#each module.features as feature (feature)}
-								<Badge variant="secondary">{feature}</Badge>
-							{/each}
-						</div>
-						<a
-							href={module.href}
-							class="text-primary inline-flex items-center gap-1 text-sm font-medium hover:underline"
-						>
-						{copy.viewModulePath}
-							<ArrowRightIcon class="size-3.5" />
-						</a>
-					</Card.Content>
-				</Card.Root>
+		<div class="flex flex-wrap gap-2">
+			{#each gatewayUi.statusFilters as statusFilter (statusFilter.value)}
+				<button
+					type="button"
+					onclick={() => (selectedStatus = statusFilter.value)}
+					class={`inline-flex items-center rounded-md border px-3 py-1.5 text-sm transition-colors ${
+						selectedStatus === statusFilter.value
+							? "bg-primary text-primary-foreground border-primary"
+							: "text-muted-foreground hover:bg-muted"
+					}`}
+				>
+					{statusFilter.label}
+				</button>
 			{/each}
 		</div>
+
+		<div class="space-y-3">
+			<h3 class="text-base font-semibold">{copy.coreModulesHeading}</h3>
+			<p class="text-muted-foreground text-sm">{copy.coreModulesDescription}</p>
+			<div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+				{#each coreModuleGroups as moduleGroup (moduleGroup.id)}
+					{@const Icon = moduleGroup.icon}
+					<Card.Root class="transition-colors hover:bg-muted/40">
+						<Card.Header class="space-y-3">
+							<div class="flex items-start justify-between gap-3">
+								<div class="bg-primary/10 text-primary flex size-10 items-center justify-center rounded-xl">
+									<Icon class="size-5" />
+								</div>
+								<Badge variant="outline" class={statusTone[moduleGroup.primaryStatus]}>
+									{moduleGroup.primaryStatus}
+								</Badge>
+							</div>
+							<div>
+								<Card.Title>{moduleGroup.title}</Card.Title>
+								<Card.Description>{moduleGroup.description}</Card.Description>
+							</div>
+						</Card.Header>
+						<Card.Content class="space-y-4">
+							<div class="flex flex-wrap gap-1.5">
+								{#each moduleGroup.capabilities.slice(0, CAPABILITY_PREVIEW_COUNT) as capability (capability.id)}
+									<Badge variant="secondary">{capability.label}</Badge>
+								{/each}
+								{#if moduleGroup.capabilities.length > CAPABILITY_PREVIEW_COUNT}
+									<Badge variant="outline">
+										+{moduleGroup.capabilities.length - CAPABILITY_PREVIEW_COUNT}
+									</Badge>
+								{/if}
+							</div>
+							<a
+								href={resolve(moduleGroup.href)}
+								class="text-primary inline-flex items-center gap-1 text-sm font-medium hover:underline"
+							>
+								{copy.viewModulePath}
+								<ArrowRightIcon class="size-3.5" />
+							</a>
+						</Card.Content>
+					</Card.Root>
+				{/each}
+			</div>
+		</div>
+
+		{#if futureModuleGroups.length > 0}
+			<div class="space-y-3">
+				<h3 class="text-base font-semibold">{copy.futureModulesHeading}</h3>
+				<p class="text-muted-foreground text-sm">{copy.futureModulesDescription}</p>
+				<div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+					{#each futureModuleGroups as moduleGroup (moduleGroup.id)}
+						{@const Icon = moduleGroup.icon}
+						<Card.Root class="transition-colors hover:bg-muted/40">
+							<Card.Header class="space-y-3">
+								<div class="flex items-start justify-between gap-3">
+									<div class="bg-primary/10 text-primary flex size-10 items-center justify-center rounded-xl">
+										<Icon class="size-5" />
+									</div>
+									<Badge variant="outline" class={statusTone[moduleGroup.primaryStatus]}>
+										{moduleGroup.primaryStatus}
+									</Badge>
+								</div>
+								<div>
+									<Card.Title>{moduleGroup.title}</Card.Title>
+									<Card.Description>{moduleGroup.description}</Card.Description>
+								</div>
+							</Card.Header>
+							<Card.Content class="space-y-4">
+								<div class="flex flex-wrap gap-1.5">
+									{#each moduleGroup.capabilities.slice(0, CAPABILITY_PREVIEW_COUNT) as capability (capability.id)}
+										<Badge variant="secondary">{capability.label}</Badge>
+									{/each}
+									{#if moduleGroup.capabilities.length > CAPABILITY_PREVIEW_COUNT}
+										<Badge variant="outline">
+											+{moduleGroup.capabilities.length - CAPABILITY_PREVIEW_COUNT}
+										</Badge>
+									{/if}
+								</div>
+								<a
+									href={resolve(moduleGroup.href)}
+									class="text-primary inline-flex items-center gap-1 text-sm font-medium hover:underline"
+								>
+									{copy.viewModulePath}
+									<ArrowRightIcon class="size-3.5" />
+								</a>
+							</Card.Content>
+						</Card.Root>
+					{/each}
+				</div>
+			</div>
+		{/if}
 	</section>
 
-	<section class="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
-		<Card.Root>
-			<Card.Header>
-				<Card.Title>{copy.recommendedBuildOrder}</Card.Title>
-				<Card.Description>{copy.recommendedBuildOrderDesc}</Card.Description>
-			</Card.Header>
-			<Card.Content>
-				<ol class="space-y-3 text-sm">
-					<li class="flex gap-3">
-						<span class="bg-primary text-primary-foreground flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold">1</span>
-						<span>{copy.steps[0]}</span>
-					</li>
-					<li class="flex gap-3">
-						<span class="bg-primary text-primary-foreground flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold">2</span>
-						<span>{copy.steps[1]}</span>
-					</li>
-					<li class="flex gap-3">
-						<span class="bg-primary text-primary-foreground flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold">3</span>
-						<span>{copy.steps[2]}</span>
-					</li>
-				</ol>
-			</Card.Content>
-		</Card.Root>
-
-		<Card.Root>
-			<Card.Header>
-				<Card.Title>{copy.ssoTitle}</Card.Title>
-				<Card.Description>{copy.ssoDescription}</Card.Description>
-			</Card.Header>
-			<Card.Content class="grid gap-3 text-sm sm:grid-cols-3">
-				<div class="rounded-xl border p-3">
-					<p class="font-medium">{copy.session}</p>
-					<p class="text-muted-foreground mt-1">{copy.sessionDesc}</p>
-				</div>
-				<div class="rounded-xl border p-3">
-					<p class="font-medium">{copy.roles}</p>
-					<p class="text-muted-foreground mt-1">{copy.rolesDesc}</p>
-				</div>
-				<div class="rounded-xl border p-3">
-					<p class="font-medium">{copy.permissions}</p>
-					<p class="text-muted-foreground mt-1">{copy.permissionsDesc}</p>
-				</div>
-			</Card.Content>
-		</Card.Root>
-	</section>
 </div>

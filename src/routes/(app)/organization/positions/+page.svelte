@@ -46,11 +46,11 @@
 					position: "ตำแหน่ง",
 					columns: {
 						code: "code",
-						displayName: "ชื่อที่แสดง",
-						nameEn: "name_en",
-						roleLevel: "role_level",
-						canCommand: "can_command_staff",
-						deputyCategory: "deputy_category",
+						displayName: "ชื่อภาษาไทย",
+						nameEn: "ชื่อภาษาอังกฤษ",
+						roleLevel: "ลำดับชั้น",
+						canCommand: "ผู้บังคับบัญชา",
+						deputyCategory: "ส่วนงาน",
 						actions: "การกระทำ",
 					},
 					dialogCreateDesc: "เพิ่มตำแหน่งใหม่ในระบบ",
@@ -81,11 +81,11 @@
 					position: "position",
 					columns: {
 						code: "code",
-						displayName: "display name",
-						nameEn: "name_en",
-						roleLevel: "role_level",
-						canCommand: "can_command_staff",
-						deputyCategory: "deputy_category",
+						displayName: "Thai name",
+						nameEn: "English name",
+						roleLevel: "Role level",
+						canCommand: "Can command staff",
+						deputyCategory: "Deputy category",
 						actions: "Actions",
 					},
 					dialogCreateDesc: "Add a new position record.",
@@ -197,7 +197,7 @@
 			<PlusIcon class="mr-2 size-4" />
 			{copy.create}
 		</Button>
-		<p class="text-muted-foreground text-xs">
+		<p class="text-muted-foreground text-sm">
 			{filteredPositions.length}
 			{copy.position}{filteredPositions.length !== 1 && data.locale !== "th" ? "s" : ""}
 		</p>
@@ -206,32 +206,32 @@
 	<div class="rounded-md border">
 		<Table.Root>
 			<Table.Header>
-				<Table.Row class="h-9">
-					<Table.Head class="h-9 px-3 text-xs">{copy.columns.code}</Table.Head>
-					<Table.Head class="h-9 px-3 text-xs">{copy.columns.displayName}</Table.Head>
-					<Table.Head class="h-9 px-3 text-xs">{copy.columns.nameEn}</Table.Head>
-					<Table.Head class="h-9 px-3 text-xs">{copy.columns.roleLevel}</Table.Head>
-					<Table.Head class="h-9 px-3 text-xs">{copy.columns.canCommand}</Table.Head>
-					<Table.Head class="h-9 px-3 text-xs">{copy.columns.deputyCategory}</Table.Head>
-					<Table.Head class="h-9 px-3 w-[100px] text-xs">{copy.columns.actions}</Table.Head>
+				<Table.Row>
+					<Table.Head>{copy.columns.code}</Table.Head>
+					<Table.Head>{copy.columns.displayName}</Table.Head>
+					<Table.Head>{copy.columns.nameEn}</Table.Head>
+					<Table.Head>{copy.columns.roleLevel}</Table.Head>
+					<Table.Head>{copy.columns.canCommand}</Table.Head>
+					<Table.Head>{copy.columns.deputyCategory}</Table.Head>
+					<Table.Head class="w-[100px]">{copy.columns.actions}</Table.Head>
 				</Table.Row>
 			</Table.Header>
 			<Table.Body>
 				{#each filteredPositions as pos, i (pos.id)}
-					<Table.Row class="h-9">
-						<Table.Cell class="px-3 py-1.5 text-xs font-mono">{pos.code}</Table.Cell>
-						<Table.Cell class="px-3 py-1.5 text-xs font-medium">
+					<Table.Row>
+						<Table.Cell class="font-mono">{pos.code}</Table.Cell>
+						<Table.Cell class="font-medium">
 							{localizedDisplayName(pos.name, pos.name_en)}
 						</Table.Cell>
-						<Table.Cell class="text-muted-foreground px-3 py-1.5 text-xs">{pos.name_en ?? "—"}</Table.Cell>
-						<Table.Cell class="px-3 py-1.5 text-xs">{pos.role_level}</Table.Cell>
-						<Table.Cell class="px-3 py-1.5 text-xs">
+						<Table.Cell class="text-muted-foreground">{pos.name_en ?? "—"}</Table.Cell>
+						<Table.Cell>{pos.role_level}</Table.Cell>
+						<Table.Cell>
 							<Badge variant={pos.can_command_staff ? "default" : "secondary"}>
 								{pos.can_command_staff ? copy.yes : copy.no}
 							</Badge>
 						</Table.Cell>
-						<Table.Cell class="px-3 py-1.5 text-xs">{deputyCategoryLabel(pos.deputy_category)}</Table.Cell>
-						<Table.Cell class="px-3 py-1.5 text-xs">
+						<Table.Cell>{deputyCategoryLabel(pos.deputy_category)}</Table.Cell>
+						<Table.Cell>
 							<div class="flex items-center gap-1">
 								<Button variant="ghost" size="icon" class="size-8" type="button" onclick={() => openEdit(pos)}>
 									<PencilIcon class="size-4" />
@@ -250,7 +250,7 @@
 					</Table.Row>
 				{:else}
 					<Table.Row>
-						<Table.Cell colspan={7} class="h-16 text-center text-sm">
+						<Table.Cell colspan={7} class="h-24 text-center">
 							{copy.noMatch}
 						</Table.Cell>
 					</Table.Row>
