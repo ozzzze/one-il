@@ -1,13 +1,17 @@
 <script lang="ts">
 	import * as Card from "$lib/components/ui/card/index.js";
 	import { Badge } from "$lib/components/ui/badge/index.js";
-	import { resolve } from "$app/paths";
-	import ArrowRightIcon from "@lucide/svelte/icons/arrow-right";
+	import { Button } from "$lib/components/ui/button/index.js";
 	import Building2Icon from "@lucide/svelte/icons/building-2";
 	import GraduationCapIcon from "@lucide/svelte/icons/graduation-cap";
 	import HandshakeIcon from "@lucide/svelte/icons/handshake";
 	import LayoutDashboardIcon from "@lucide/svelte/icons/layout-dashboard";
 	import type { Component } from "svelte";
+	import { cn } from "$lib/utils.js";
+	import clockCardImage from "$lib/assets/leave/card-clock.jpg";
+	import plantCardImage from "$lib/assets/leave/card-plant.jpg";
+	import yellowCardImage from "$lib/assets/leave/card-yellow.jpg";
+	import seaCardImage from "$lib/assets/leave/card-sea.jpg";
 	import { getGatewayPageCopy } from "$lib/content/page-copy.js";
 
 	let { data } = $props();
@@ -35,8 +39,6 @@
 		isCore: boolean;
 		capabilities: ModuleCapability[];
 	};
-
-	const CAPABILITY_PREVIEW_COUNT = 3;
 
 	const gatewayUi = $derived.by(() =>
 		data.locale === "th"
@@ -232,6 +234,21 @@
 
 	const coreModuleGroups = $derived(filteredModuleGroups.filter((moduleGroup) => moduleGroup.isCore));
 	const futureModuleGroups = $derived(filteredModuleGroups.filter((moduleGroup) => !moduleGroup.isCore));
+
+	function moduleHeroImage(moduleGroupId: string) {
+		if (moduleGroupId === "operations") return clockCardImage;
+		if (moduleGroupId === "sharedServices") return plantCardImage;
+		if (moduleGroupId === "governanceAccess") return yellowCardImage;
+		if (moduleGroupId === "academicResearch") return seaCardImage;
+		return null;
+	}
+
+	function moduleHeroObjectClass(moduleGroupId: string) {
+		if (moduleGroupId === "sharedServices") return "object-[center_38%]";
+		if (moduleGroupId === "governanceAccess") return "object-left-bottom";
+		if (moduleGroupId === "academicResearch") return "object-[center_42%]";
+		return "object-center";
+	}
 </script>
 
 <svelte:head>
@@ -242,7 +259,7 @@
 	<section class="space-y-4">
 		<div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
 			<div>
-				<h2 class="text-2xl font-semibold tracking-tight">{copy.moduleMapHeading}</h2>
+				<h1 class="text-3xl font-bold tracking-tight">{copy.moduleMapHeading}</h1>
 				<p class="text-muted-foreground text-sm">{copy.moduleMapDescription}</p>
 			</div>
 			<Badge variant="outline">{copy.smallTeamFriendly}</Badge>
@@ -269,42 +286,7 @@
 			<p class="text-muted-foreground text-sm">{copy.coreModulesDescription}</p>
 			<div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
 				{#each coreModuleGroups as moduleGroup (moduleGroup.id)}
-					{@const Icon = moduleGroup.icon}
-					<Card.Root class="transition-colors hover:bg-muted/40">
-						<Card.Header class="space-y-3">
-							<div class="flex items-start justify-between gap-3">
-								<div class="bg-primary/10 text-primary flex size-10 items-center justify-center rounded-xl">
-									<Icon class="size-5" />
-								</div>
-								<Badge variant="outline" class={statusTone[moduleGroup.primaryStatus]}>
-									{moduleGroup.primaryStatus}
-								</Badge>
-							</div>
-							<div>
-								<Card.Title>{moduleGroup.title}</Card.Title>
-								<Card.Description>{moduleGroup.description}</Card.Description>
-							</div>
-						</Card.Header>
-						<Card.Content class="space-y-4">
-							<div class="flex flex-wrap gap-1.5">
-								{#each moduleGroup.capabilities.slice(0, CAPABILITY_PREVIEW_COUNT) as capability (capability.id)}
-									<Badge variant="secondary">{capability.label}</Badge>
-								{/each}
-								{#if moduleGroup.capabilities.length > CAPABILITY_PREVIEW_COUNT}
-									<Badge variant="outline">
-										+{moduleGroup.capabilities.length - CAPABILITY_PREVIEW_COUNT}
-									</Badge>
-								{/if}
-							</div>
-							<a
-								href={resolve(moduleGroup.href)}
-								class="text-primary inline-flex items-center gap-1 text-sm font-medium hover:underline"
-							>
-								{copy.viewModulePath}
-								<ArrowRightIcon class="size-3.5" />
-							</a>
-						</Card.Content>
-					</Card.Root>
+					{@render gatewayModuleCard(moduleGroup)}
 				{/each}
 			</div>
 		</div>
@@ -315,46 +297,93 @@
 				<p class="text-muted-foreground text-sm">{copy.futureModulesDescription}</p>
 				<div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
 					{#each futureModuleGroups as moduleGroup (moduleGroup.id)}
-						{@const Icon = moduleGroup.icon}
-						<Card.Root class="transition-colors hover:bg-muted/40">
-							<Card.Header class="space-y-3">
-								<div class="flex items-start justify-between gap-3">
-									<div class="bg-primary/10 text-primary flex size-10 items-center justify-center rounded-xl">
-										<Icon class="size-5" />
-									</div>
-									<Badge variant="outline" class={statusTone[moduleGroup.primaryStatus]}>
-										{moduleGroup.primaryStatus}
-									</Badge>
-								</div>
-								<div>
-									<Card.Title>{moduleGroup.title}</Card.Title>
-									<Card.Description>{moduleGroup.description}</Card.Description>
-								</div>
-							</Card.Header>
-							<Card.Content class="space-y-4">
-								<div class="flex flex-wrap gap-1.5">
-									{#each moduleGroup.capabilities.slice(0, CAPABILITY_PREVIEW_COUNT) as capability (capability.id)}
-										<Badge variant="secondary">{capability.label}</Badge>
-									{/each}
-									{#if moduleGroup.capabilities.length > CAPABILITY_PREVIEW_COUNT}
-										<Badge variant="outline">
-											+{moduleGroup.capabilities.length - CAPABILITY_PREVIEW_COUNT}
-										</Badge>
-									{/if}
-								</div>
-								<a
-									href={resolve(moduleGroup.href)}
-									class="text-primary inline-flex items-center gap-1 text-sm font-medium hover:underline"
-								>
-									{copy.viewModulePath}
-									<ArrowRightIcon class="size-3.5" />
-								</a>
-							</Card.Content>
-						</Card.Root>
+						{@render gatewayModuleCard(moduleGroup)}
 					{/each}
 				</div>
 			</div>
 		{/if}
+
+		{#snippet gatewayModuleCard(moduleGroup: ModuleGroup)}
+			{@const Icon = moduleGroup.icon}
+			{@const heroSrc = moduleHeroImage(moduleGroup.id)}
+			<Card.Root
+				class={cn(
+					"transition-colors hover:bg-muted/40",
+					heroSrc && "overflow-hidden pt-0 pb-6 gap-4"
+				)}
+			>
+				{#if heroSrc}
+					<div
+						class="border-border bg-muted relative isolate flex aspect-5/3 max-h-36 min-h-28 w-full shrink-0 flex-col justify-end overflow-hidden border-b"
+					>
+						<img
+							src={heroSrc}
+							alt=""
+							class={cn(
+								"pointer-events-none absolute inset-0 size-full object-cover",
+								moduleHeroObjectClass(moduleGroup.id)
+							)}
+							loading="lazy"
+							decoding="async"
+						/>
+						<div
+							class={cn(
+								"pointer-events-none absolute inset-0 bg-linear-to-t from-card to-transparent",
+								moduleGroup.id === "governanceAccess"
+									? "from-32% via-card/88 dark:via-card/85"
+									: "from-28% via-card/75 dark:via-card/80"
+							)}
+							aria-hidden="true"
+						></div>
+						<Card.Header class="relative z-10 space-y-3 border-0 bg-transparent px-6 pb-4 pt-10 shadow-none">
+							<div class="flex items-start justify-between gap-3">
+								<div
+									class="bg-primary/15 text-primary ring-background/60 flex size-10 items-center justify-center rounded-xl ring-1 backdrop-blur-sm"
+								>
+									<Icon class="size-5" />
+								</div>
+								<Badge variant="outline" class={cn(statusTone[moduleGroup.primaryStatus], "bg-card/80 backdrop-blur-sm")}>
+									{moduleGroup.primaryStatus}
+								</Badge>
+							</div>
+							<div>
+								<Card.Title>{moduleGroup.title}</Card.Title>
+								<Card.Description>{moduleGroup.description}</Card.Description>
+							</div>
+						</Card.Header>
+					</div>
+				{:else}
+					<Card.Header class="space-y-3">
+						<div class="flex items-start justify-between gap-3">
+							<div class="bg-primary/10 text-primary flex size-10 items-center justify-center rounded-xl">
+								<Icon class="size-5" />
+							</div>
+							<Badge variant="outline" class={statusTone[moduleGroup.primaryStatus]}>
+								{moduleGroup.primaryStatus}
+							</Badge>
+						</div>
+						<div>
+							<Card.Title>{moduleGroup.title}</Card.Title>
+							<Card.Description>{moduleGroup.description}</Card.Description>
+						</div>
+					</Card.Header>
+				{/if}
+				<Card.Content class="space-y-4">
+					<div class="flex flex-wrap gap-1.5">
+						{#each moduleGroup.capabilities as capability (capability.id)}
+							<Button
+								type="button"
+								variant="secondary"
+								size="sm"
+								class="h-auto rounded-full px-2.5 py-1 text-xs font-medium shadow-none"
+							>
+								{capability.label}
+							</Button>
+						{/each}
+					</div>
+				</Card.Content>
+			</Card.Root>
+		{/snippet}
 	</section>
 
 </div>

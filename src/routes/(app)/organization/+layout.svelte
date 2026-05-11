@@ -48,7 +48,7 @@
 
 <div class="space-y-6">
 	<div class="space-y-1">
-		<h1 class="text-2xl font-semibold tracking-tight">{copy.title}</h1>
+		<h1 class="text-3xl font-bold tracking-tight">{copy.title}</h1>
 		<p class="text-muted-foreground text-sm">{copy.description}</p>
 	</div>
 

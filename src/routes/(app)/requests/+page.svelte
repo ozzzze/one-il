@@ -39,7 +39,7 @@
 <div class="space-y-8">
 	<section class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
 		<div class="space-y-2">
-			<h1 class="text-3xl font-bold tracking-tight md:text-4xl">{copy.heading}</h1>
+			<h1 class="text-3xl font-bold tracking-tight">{copy.heading}</h1>
 			<p class="text-muted-foreground max-w-2xl text-base">{copy.description}</p>
 		</div>
 	</section>

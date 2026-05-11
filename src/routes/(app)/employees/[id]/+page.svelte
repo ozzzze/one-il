@@ -296,7 +296,7 @@
 			<Avatar.Fallback class="text-base font-medium">{nameInitials(emp.fullName)}</Avatar.Fallback>
 		</Avatar.Root>
 		<div class="min-w-0 flex-1 space-y-1">
-			<h1 class="text-2xl font-semibold tracking-tight">{emp.fullName}</h1>
+			<h1 class="text-3xl font-bold tracking-tight">{emp.fullName}</h1>
 			<div class="flex flex-wrap items-center gap-2">
 				<Badge variant={emp.status.toUpperCase() === "ACTIVE" ? "default" : "secondary"}>{emp.status.toUpperCase()}</Badge>
 				{#if emp.hrProfile.hrEmploymentStatus}
