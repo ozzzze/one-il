@@ -205,13 +205,13 @@ export const actions: Actions = {
 		if (!parsed.success) return fail(400, { message: invalidMsg });
 
 		const rawEmail = toText(formData.get("email")).trim();
-		let nextAppRole: string | null | undefined = undefined;
-		if (parsed.data.appRole === "__keep__") {
-			nextAppRole = undefined;
-		} else if (parsed.data.appRole === "") {
+		let nextAppRole: string | null | undefined;
+		if (parsed.data.appRole === "") {
 			nextAppRole = null;
 		} else if (isRole(parsed.data.appRole)) {
 			nextAppRole = parsed.data.appRole;
+		} else if (parsed.data.appRole === "__keep__") {
+			nextAppRole = undefined;
 		} else {
 			return fail(400, { message: invalidMsg });
 		}

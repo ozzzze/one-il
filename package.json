@@ -26,7 +26,11 @@
 		"lint": "eslint .",
 		"format": "prettier --write .",
 		"format:check": "prettier --check .",
-		"supabase:types": "supabase gen types typescript --project-id kcmcqadqsbrhuzekxxlp --schema public > src/lib/database.types.ts"
+		"supabase:link": "npx supabase link",
+		"supabase:db:push": "npx supabase db push",
+		"supabase:start": "npx supabase start",
+		"supabase:stop": "npx supabase stop",
+		"supabase:types": "npx supabase gen types typescript --project-id kcmcqadqsbrhuzekxxlp --schema public > src/lib/database.types.ts"
 	},
 	"devDependencies": {
 		"@eslint/js": "^10.0.1",

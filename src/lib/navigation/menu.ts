@@ -19,6 +19,8 @@ export type IconKey =
 	| "users"
 	| "employees"
 	| "organization"
+	| "supply"
+	| "assets"
 	| "office"
 	| "academic"
 	| "services";
@@ -54,6 +56,14 @@ export function getMenuGroups(locale: Locale): MenuGroup[] {
 					requiredPermissions: ["dashboard:view"],
 				},
 				{
+					id: "gateway",
+					label: itemLabels.modules,
+					href: "/gateway",
+					iconKey: "gateway",
+					keywords: ["portal", "modules", "module map", "workspace", "gateway", "one-il"],
+					requiredPermissions: ["gateway:access"],
+				},
+				{
 					id: "analytics",
 					label: itemLabels.analytics,
 					href: "/analytics",
@@ -64,7 +74,7 @@ export function getMenuGroups(locale: Locale): MenuGroup[] {
 			],
 		},
 		{
-			label: groupLabels.workflows,
+			label: groupLabels.office,
 			items: [
 				{
 					id: "requests",
@@ -73,27 +83,6 @@ export function getMenuGroups(locale: Locale): MenuGroup[] {
 					iconKey: "requests",
 					keywords: ["requests", "ticket", "leave", "booking", "borrow", "forms", "intake"],
 					requiredPermissions: ["requests:view_own"],
-				},
-				{
-					id: "gateway",
-					label: itemLabels.modules,
-					href: "/gateway",
-					iconKey: "gateway",
-					keywords: ["portal", "modules", "module map", "workspace", "gateway", "one-il"],
-					requiredPermissions: ["gateway:access"],
-				},
-			],
-		},
-		{
-			label: groupLabels.management,
-			items: [
-				{
-					id: "users",
-					label: itemLabels.users,
-					href: "/users",
-					iconKey: "users",
-					keywords: ["accounts", "members", "people"],
-					requiredPermissions: ["users:manage"],
 				},
 				{
 					id: "employees",
@@ -121,12 +110,59 @@ export function getMenuGroups(locale: Locale): MenuGroup[] {
 					requiredPermissions: ["organization:manage"],
 				},
 				{
+					id: "supply",
+					label: itemLabels.supply,
+					href: "/supply",
+					iconKey: "supply",
+					keywords: ["supply", "materials", "stock", "วัสดุ", "พัสดุ", "เบิกวัสดุ"],
+					requiredPermissions: ["supply:view"],
+				},
+				{
+					id: "assets",
+					label: itemLabels.assets,
+					href: "/assets",
+					iconKey: "assets",
+					keywords: ["asset", "fixed asset", "equipment", "ครุภัณฑ์", "ทะเบียนครุภัณฑ์"],
+					requiredPermissions: ["asset:view"],
+				},
+			],
+		},
+		{
+			label: groupLabels.academic,
+			items: [
+				{
 					id: "content",
 					label: itemLabels.content,
 					href: "/content",
 					iconKey: "content",
 					keywords: ["pages", "blog", "articles"],
 					requiredPermissions: ["content:view"],
+				},
+			],
+		},
+		{
+			label: groupLabels.sharedServices,
+			items: [
+				{
+					id: "room-booking",
+					label: itemLabels.roomBooking,
+					href: "/room-booking",
+					iconKey: "room",
+					keywords: ["room", "booking", "meeting", "module mockup"],
+					requiredPermissions: ["requests:create"],
+				},
+			],
+		},
+		{
+			label: groupLabels.governanceAccess,
+			items: [
+				{
+					id: "users",
+					label: itemLabels.users,
+					href: "/users",
+					iconKey: "users",
+					keywords: ["accounts", "members", "people"],
+					requiredPermissions: ["users:manage"],
 				},
 				{
 					id: "roles",
@@ -172,14 +208,6 @@ export function getMenuGroups(locale: Locale): MenuGroup[] {
 					iconKey: "docs",
 					keywords: ["help", "guide", "documentation"],
 					requiredPermissions: ["profile:manage"],
-				},
-				{
-					id: "room-booking",
-					label: itemLabels.roomBooking,
-					href: "/room-booking",
-					iconKey: "room",
-					keywords: ["room", "booking", "meeting", "module mockup"],
-					requiredPermissions: ["requests:create"],
 				},
 			],
 		},

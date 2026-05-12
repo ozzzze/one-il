@@ -20,7 +20,7 @@
 
 แหล่งความจริงใน repo:
 
-- [`scratch/org_personnel_schema.sql`](scratch/org_personnel_schema.sql)
+- [`scratch/org_personnel_schema.sql`](../scratch/org_personnel_schema.sql)
 
 ### ระบบลา (กำหนดธุรกิจไว้ — ยังไม่ลงรายละเอียดเต็มในการ deploy)
 
@@ -71,7 +71,7 @@
 
 ## ขั้นถัดไปที่แนะนำ
 
-1. เปิด [`scratch/org_personnel_schema.sql`](scratch/org_personnel_schema.sql) แล้ว sync กับสภาพ DB จริง (บันทึก migration ถาวรถ้ายังไม่มี)
+1. เปิด [`scratch/org_personnel_schema.sql`](../scratch/org_personnel_schema.sql) แล้ว sync กับสภาพ DB จริง (บันทึก migration ถาวรถ้ายังไม่มี)
 2. เปิด **RLS** บนตาราง `public` ที่เกี่ยวกับบุคลากรเมื่อเปิดผ่าน Data API
 3. (เลือก) View เช่น `v_org_chart_current` สำหรับแดชบอร์ด
 4. ออกแบบตารางลา + approval steps ให้ตรง 4 กรณีด้านบน
@@ -81,7 +81,7 @@
 ## ข้อความคัดวางสำหรับ Cursor chat รอบหน้า
 
 ```
-Continue ONE-IL personnel work. Read CONTEXT_HANDOFF.md and scratch/org_personnel_schema.sql on branch main.
-Core personnel tables + triggers are the intended baseline; leave workflow rules are documented in CONTEXT_HANDOFF.md but leave tables may still be incomplete or not applied—confirm Supabase before implementing UI.
+Continue ONE-IL personnel work. Read docs/CONTEXT_HANDOFF.md and scratch/org_personnel_schema.sql on branch main.
+Core personnel tables + triggers are the intended baseline; leave workflow rules are documented in docs/CONTEXT_HANDOFF.md but leave tables may still be incomplete or not applied—confirm Supabase before implementing UI.
 Next priorities: RLS, optional org chart view, then leave schema aligned with the 4 approval paths (HEAD/STAFF/LECTURER/DEPUTY).
 ```

@@ -19,12 +19,14 @@
 
 	type ModuleStatus = "Ready" | "Next" | "Planned";
 	type StatusFilterValue = "All" | ModuleStatus;
-	type ModuleRoute = "/gateway" | "/roles" | "/analytics";
+	type ModuleRoute = "/gateway" | "/roles" | "/analytics" | "/supply" | "/assets";
+	type CapabilityRoute = "/supply" | "/assets";
 
 	type ModuleCapability = {
 		id: string;
 		label: string;
 		status: ModuleStatus;
+		href?: CapabilityRoute;
 		requiresAccess?: boolean;
 	};
 
@@ -57,15 +59,15 @@
 								"งานปฏิบัติการหลักของคณะ ตั้งแต่ HR จนถึงการดูแลทรัพย์สินและงานภายใน",
 							icon: Building2Icon,
 							primaryStatus: "Next",
-							href: "/gateway",
+							href: "/supply",
 							priority: 1,
 							isCore: true,
 							capabilities: [
 								{ id: "hr", label: "ทรัพยากรบุคคล", status: "Next" },
 								{ id: "leave", label: "ลา", status: "Next" },
 								{ id: "welfare", label: "สวัสดิการ", status: "Planned" },
-								{ id: "supply", label: "พัสดุ", status: "Planned" },
-								{ id: "asset", label: "ทรัพย์สิน", status: "Planned" },
+								{ id: "supply", label: "พัสดุ", status: "Next", href: "/supply" },
+								{ id: "asset", label: "ทรัพย์สิน", status: "Next", href: "/assets" },
 								{ id: "worksheet", label: "งานแผ่น", status: "Planned" },
 							],
 						},
@@ -136,15 +138,15 @@
 								"Core faculty operations from HR to assets, welfare, and daily operations management.",
 							icon: Building2Icon,
 							primaryStatus: "Next",
-							href: "/gateway",
+							href: "/supply",
 							priority: 1,
 							isCore: true,
 							capabilities: [
 								{ id: "hr", label: "Human Resource", status: "Next" },
 								{ id: "leave", label: "Leave", status: "Next" },
 								{ id: "welfare", label: "Welfare", status: "Planned" },
-								{ id: "supply", label: "Supply", status: "Planned" },
-								{ id: "asset", label: "Asset", status: "Planned" },
+								{ id: "supply", label: "Supply", status: "Next", href: "/supply" },
+								{ id: "asset", label: "Asset", status: "Next", href: "/assets" },
 								{ id: "worksheet", label: "Worksheet", status: "Planned" },
 							],
 						},
@@ -266,7 +268,7 @@
 		</div>
 
 		<div class="flex flex-wrap gap-2">
-			{#each gatewayUi.statusFilters as statusFilter (statusFilter.value)}
+			{#each gatewayUi.statusFilters as statusFilter, i (statusFilter.value)}
 				<button
 					type="button"
 					onclick={() => (selectedStatus = statusFilter.value)}
@@ -285,7 +287,7 @@
 			<h3 class="text-base font-semibold">{copy.coreModulesHeading}</h3>
 			<p class="text-muted-foreground text-sm">{copy.coreModulesDescription}</p>
 			<div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-				{#each coreModuleGroups as moduleGroup (moduleGroup.id)}
+				{#each coreModuleGroups as moduleGroup, i (moduleGroup.id)}
 					{@render gatewayModuleCard(moduleGroup)}
 				{/each}
 			</div>
@@ -296,7 +298,7 @@
 				<h3 class="text-base font-semibold">{copy.futureModulesHeading}</h3>
 				<p class="text-muted-foreground text-sm">{copy.futureModulesDescription}</p>
 				<div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-					{#each futureModuleGroups as moduleGroup (moduleGroup.id)}
+					{#each futureModuleGroups as moduleGroup, i (moduleGroup.id)}
 						{@render gatewayModuleCard(moduleGroup)}
 					{/each}
 				</div>
@@ -370,17 +372,31 @@
 				{/if}
 				<Card.Content class="space-y-4">
 					<div class="flex flex-wrap gap-1.5">
-						{#each moduleGroup.capabilities as capability (capability.id)}
-							<Button
-								type="button"
-								variant="secondary"
-								size="sm"
-								class="h-auto rounded-full px-2.5 py-1 text-xs font-medium shadow-none"
-							>
-								{capability.label}
-							</Button>
+						{#each moduleGroup.capabilities as capability, i (capability.id)}
+							{#if capability.href}
+								<Button
+									href={capability.href}
+									variant="secondary"
+									size="sm"
+									class="h-auto rounded-full px-2.5 py-1 text-xs font-medium shadow-none"
+								>
+									{capability.label}
+								</Button>
+							{:else}
+								<Button
+									type="button"
+									variant="secondary"
+									size="sm"
+									class="h-auto rounded-full px-2.5 py-1 text-xs font-medium shadow-none"
+								>
+									{capability.label}
+								</Button>
+							{/if}
 						{/each}
 					</div>
+					<Button href={moduleGroup.href} variant="outline" size="sm">
+						{copy.viewModulePath}
+					</Button>
 				</Card.Content>
 			</Card.Root>
 		{/snippet}

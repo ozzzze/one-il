@@ -125,6 +125,12 @@ Loved ONE-IL? Supercharge your workflow with our premium templates on [Dashboard
 
 ---
 
+## Project documentation (ONE-IL)
+
+Product requirements, handoff notes, and module drafts are under [`docs/`](docs/). Start with [`docs/README.md`](docs/README.md) for the recommended reading order.
+
+---
+
 ## Features
 
 ### Authentication & Security

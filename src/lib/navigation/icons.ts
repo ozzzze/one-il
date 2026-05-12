@@ -15,6 +15,8 @@ import SettingsIcon from "@lucide/svelte/icons/settings";
 import UsersIcon from "@lucide/svelte/icons/users";
 import EmployeesIcon from "@lucide/svelte/icons/network";
 import OrganizationIcon from "@lucide/svelte/icons/landmark";
+import SupplyIcon from "@lucide/svelte/icons/package";
+import AssetsIcon from "@lucide/svelte/icons/archive";
 import type { IconKey } from "./menu.js";
 import type { Component } from "svelte";
 
@@ -36,4 +38,6 @@ export const menuIcons = {
 	users: UsersIcon,
 	employees: EmployeesIcon,
 	organization: OrganizationIcon,
+	supply: SupplyIcon,
+	assets: AssetsIcon,
 } satisfies Record<IconKey, Component>;

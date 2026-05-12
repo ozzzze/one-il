@@ -5,6 +5,13 @@
  */
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
+type GenericSupabaseTable = {
+	Row: Record<string, unknown>;
+	Insert: Record<string, unknown>;
+	Update: Record<string, unknown>;
+	Relationships: [];
+};
+
 export type Database = {
 	public: {
 		Tables: {
@@ -509,6 +516,29 @@ export type Database = {
 				Update: Partial<Database["public"]["Tables"]["programs"]["Row"]>;
 				Relationships: [];
 			};
+			asset_annual_inspections: GenericSupabaseTable;
+			asset_assignments: GenericSupabaseTable;
+			asset_categories: GenericSupabaseTable;
+			asset_conditions: GenericSupabaseTable;
+			asset_disposal_lines: GenericSupabaseTable;
+			asset_disposal_requests: GenericSupabaseTable;
+			asset_inspection_lines: GenericSupabaseTable;
+			asset_maintenance: GenericSupabaseTable;
+			asset_registers: GenericSupabaseTable;
+			asset_statuses: GenericSupabaseTable;
+			asset_transfers: GenericSupabaseTable;
+			material_items: GenericSupabaseTable;
+			material_receipts: GenericSupabaseTable;
+			material_requisition_lines: GenericSupabaseTable;
+			material_requisitions: GenericSupabaseTable;
+			material_stock_balances: GenericSupabaseTable;
+			material_stock_movements: GenericSupabaseTable;
+			stock_locations: GenericSupabaseTable;
+			supply_approval_steps: GenericSupabaseTable;
+			supply_audit_events: GenericSupabaseTable;
+			supply_categories: GenericSupabaseTable;
+			supply_documents: GenericSupabaseTable;
+			supply_units: GenericSupabaseTable;
 			sessions: {
 				Row: {
 					id: string;

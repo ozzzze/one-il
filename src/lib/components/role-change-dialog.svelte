@@ -37,11 +37,7 @@ const copy = $derived.by(() =>
 	const uiLabels = $derived(getUiLabels(locale));
 	let savePending = $state(false);
 
-	let newRole = $state<Role>("user");
-
-	$effect.pre(() => {
-		newRole = currentRole;
-	});
+	let newRole = $derived<Role>(currentRole);
 
 	const roleOptions = $derived(getRoleOptions(locale));
 	const currentRoleLabel = $derived(getRoleLabel(currentRole, locale));

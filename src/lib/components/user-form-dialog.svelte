@@ -67,11 +67,7 @@ const title = $derived(mode === "create" ? copy.addUser : copy.editUser);
 	const uiLabels = $derived(getUiLabels(locale));
 	let savePending = $state(false);
 
-	let role = $state<Role>("user");
-
-	$effect.pre(() => {
-		role = user?.role ?? "user";
-	});
+	let role = $derived<Role>(user?.role ?? "user");
 
 	const roleOptions = $derived(getRoleOptions(locale));
 	const roleText = $derived(roleOptions.find((option) => option.value === role)?.label ?? "");

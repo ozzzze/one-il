@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Product documentation (read first)
+
+For domain scope, recent schema decisions, and module notes, start from **[`docs/README.md`](docs/README.md)** — it lists the recommended reading order (`docs/PRD.md`, `docs/CONTEXT_HANDOFF.md`, module PRDs under `docs/`, gateway preview).
+
 ## Project Overview
 
 ONE-IL is a SvelteKit admin dashboard using Svelte 5, Tailwind CSS v4, Supabase (Postgres + Auth via `@supabase/ssr`), and optional Arctic OAuth (Google, GitHub).
@@ -51,6 +55,7 @@ Session handling uses Supabase Auth cookies via `createServerClient` in `hooks.s
 
 ### Key Directories
 
+- `docs/` — Product PRD, context handoff, module drafts (`docs/README.md` for read order)
 - `src/lib/server/` — Server-only code (auth, OAuth, Supabase admin client). Never import from client-side code
 - `src/lib/server/auth.ts` — Loads app user profile from Supabase after Auth user is resolved
 - `src/lib/server/oauth.ts` — Arctic OAuth providers (conditional on env vars)
