@@ -1,5 +1,6 @@
 import { fail } from "@sveltejs/kit";
 import { z } from "zod";
+import type { Locale } from "$lib/i18n/locales.js";
 import { getServiceRoleClient } from "$lib/server/supabase-admin.js";
 import { assertPermission } from "$lib/server/guards.js";
 import type { AppSupabaseClient } from "$lib/server/supply-asset.js";
@@ -45,6 +46,25 @@ const locationUpdateSchema = z.object({
 	sortOrder: z.coerce.number().int().min(0).max(99999),
 	isActive: z.enum(["true", "false"]),
 });
+
+const deleteIdSchema = z.object({
+	id: z.string().uuid(),
+});
+
+function deleteBlockedMessage(locale: Locale): string {
+	return localizedActionMessage(
+		locale,
+		"This record is still referenced elsewhere and cannot be deleted.",
+		"ไม่สามารถลบได้ เนื่องจากยังมีข้อมูลอื่นอ้างอิงอยู่",
+	);
+}
+
+function mapDeleteError(locale: Locale, err: { code?: string; message?: string }): string {
+	if (err.code === "23503" || err.message?.toLowerCase().includes("foreign key")) {
+		return deleteBlockedMessage(locale);
+	}
+	return err.message ?? deleteBlockedMessage(locale);
+}
 
 type LookupTable = "asset_categories" | "asset_statuses" | "asset_conditions";
 
@@ -392,5 +412,109 @@ export const actions: Actions = {
 			summary: "Updated stock location",
 		});
 		return { success: true, action: "updateStockLocation" };
+	},
+
+	deleteAssetCategory: async ({ request, locals }) => {
+		assertPermission(locals.user, "asset:manage");
+		const admin = getServiceRoleClient();
+		const formData = await request.formData();
+		const parsed = deleteIdSchema.safeParse({ id: toText(formData.get("id")) });
+		if (!parsed.success) {
+			return fail(400, {
+				action: "deleteAssetCategory",
+				message: localizedActionMessage(locals.locale, "Invalid id", "รหัสไม่ถูกต้อง"),
+			});
+		}
+		const id = parsed.data.id;
+		const { error } = await admin.from("asset_categories").delete().eq("id", id);
+		if (error) return fail(400, { action: "deleteAssetCategory", message: mapDeleteError(locals.locale, error) });
+		const actorEmployeeId = await currentEmployeeId(admin, locals.user);
+		await writeSupplyAudit(admin, {
+			entityType: "asset_category",
+			entityId: id,
+			eventType: "deleted",
+			actorUserId: locals.user.id,
+			actorEmployeeId,
+			summary: "Deleted asset category",
+		});
+		return { success: true, action: "deleteAssetCategory" };
+	},
+
+	deleteAssetStatus: async ({ request, locals }) => {
+		assertPermission(locals.user, "asset:manage");
+		const admin = getServiceRoleClient();
+		const formData = await request.formData();
+		const parsed = deleteIdSchema.safeParse({ id: toText(formData.get("id")) });
+		if (!parsed.success) {
+			return fail(400, {
+				action: "deleteAssetStatus",
+				message: localizedActionMessage(locals.locale, "Invalid id", "รหัสไม่ถูกต้อง"),
+			});
+		}
+		const id = parsed.data.id;
+		const { error } = await admin.from("asset_statuses").delete().eq("id", id);
+		if (error) return fail(400, { action: "deleteAssetStatus", message: mapDeleteError(locals.locale, error) });
+		const actorEmployeeId = await currentEmployeeId(admin, locals.user);
+		await writeSupplyAudit(admin, {
+			entityType: "asset_status",
+			entityId: id,
+			eventType: "deleted",
+			actorUserId: locals.user.id,
+			actorEmployeeId,
+			summary: "Deleted asset status",
+		});
+		return { success: true, action: "deleteAssetStatus" };
+	},
+
+	deleteAssetCondition: async ({ request, locals }) => {
+		assertPermission(locals.user, "asset:manage");
+		const admin = getServiceRoleClient();
+		const formData = await request.formData();
+		const parsed = deleteIdSchema.safeParse({ id: toText(formData.get("id")) });
+		if (!parsed.success) {
+			return fail(400, {
+				action: "deleteAssetCondition",
+				message: localizedActionMessage(locals.locale, "Invalid id", "รหัสไม่ถูกต้อง"),
+			});
+		}
+		const id = parsed.data.id;
+		const { error } = await admin.from("asset_conditions").delete().eq("id", id);
+		if (error) return fail(400, { action: "deleteAssetCondition", message: mapDeleteError(locals.locale, error) });
+		const actorEmployeeId = await currentEmployeeId(admin, locals.user);
+		await writeSupplyAudit(admin, {
+			entityType: "asset_condition",
+			entityId: id,
+			eventType: "deleted",
+			actorUserId: locals.user.id,
+			actorEmployeeId,
+			summary: "Deleted asset condition",
+		});
+		return { success: true, action: "deleteAssetCondition" };
+	},
+
+	deleteStockLocation: async ({ request, locals }) => {
+		assertPermission(locals.user, "asset:manage");
+		const admin = getServiceRoleClient();
+		const formData = await request.formData();
+		const parsed = deleteIdSchema.safeParse({ id: toText(formData.get("id")) });
+		if (!parsed.success) {
+			return fail(400, {
+				action: "deleteStockLocation",
+				message: localizedActionMessage(locals.locale, "Invalid id", "รหัสไม่ถูกต้อง"),
+			});
+		}
+		const id = parsed.data.id;
+		const { error } = await admin.from("stock_locations").delete().eq("id", id);
+		if (error) return fail(400, { action: "deleteStockLocation", message: mapDeleteError(locals.locale, error) });
+		const actorEmployeeId = await currentEmployeeId(admin, locals.user);
+		await writeSupplyAudit(admin, {
+			entityType: "stock_location",
+			entityId: id,
+			eventType: "deleted",
+			actorUserId: locals.user.id,
+			actorEmployeeId,
+			summary: "Deleted stock location",
+		});
+		return { success: true, action: "deleteStockLocation" };
 	},
 };

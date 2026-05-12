@@ -12,6 +12,7 @@
 	import { Textarea } from "$lib/components/ui/textarea/index.js";
 	import { localizedDualField, localizedLookupLabel } from "$lib/i18n/display.js";
 	import type { SubmitFunction } from "@sveltejs/kit";
+	import { toast } from "svelte-sonner";
 	import type { ActionData, PageData } from "./$types.js";
 
 	type Locale = PageData["locale"];
@@ -130,7 +131,6 @@
 					completedAt: "เสร็จเมื่อ",
 					reporter: "ผู้แจ้ง",
 					save: "บันทึก",
-					success: "บันทึกสำเร็จ",
 				}
 			: {
 					pageTitle: `Asset ${data.asset.assetNo} - ONE-IL`,
@@ -177,9 +177,22 @@
 					completedAt: "Completed at",
 					reporter: "Reporter",
 					save: "Save",
-					success: "Saved successfully",
 				}
 	);
+
+	const successByAction = $derived.by<Record<string, string>>(() => ({
+		updateAsset: data.locale === "th" ? "บันทึกข้อมูลทะเบียนครุภัณฑ์แล้ว" : "Asset register saved",
+		assignAsset: data.locale === "th" ? "บันทึกการมอบหมายแล้ว" : "Assignment saved",
+		createMaintenance: data.locale === "th" ? "บันทึกรายการซ่อมบำรุงแล้ว" : "Maintenance record saved",
+	}));
+
+	$effect(() => {
+		if (form?.message) toast.error(form.message);
+		if (form?.success && form.action) {
+			const msg = successByAction[form.action];
+			if (msg) toast.success(msg);
+		}
+	});
 
 	const hasErrors = $derived(Object.values(data.errors).some(Boolean));
 	const maintenanceStatuses = [
@@ -306,13 +319,9 @@
 		</div>
 	</section>
 
-	{#if hasErrors || form?.message}
+	{#if hasErrors}
 		<div class="border-destructive/30 bg-destructive/5 text-destructive rounded-md border px-3 py-2 text-sm">
-			{form?.message ?? copy.loadError}
-		</div>
-	{:else if form?.success}
-		<div class="rounded-md border border-green-500/30 bg-green-500/5 px-3 py-2 text-sm text-green-700 dark:text-green-400">
-			{copy.success}
+			{copy.loadError}
 		</div>
 	{/if}
 
