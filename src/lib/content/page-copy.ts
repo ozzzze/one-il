@@ -135,25 +135,24 @@ export function getRequestsPageCopy(locale: Locale) {
 				title: `${menu.requests} - ${app.shortName}`,
 				heading: menu.requests,
 				description:
-					"สร้างคำขอลาและคำขอบริการภายในคณะได้จากที่เดียว โดยเริ่มจากคำขอลาสำหรับเวิร์กโฟลว์หลัก",
+					"สร้างและติดตามคำขอภายในคณะจากที่เดียว โดยเริ่มจากคำขอจองห้องและเวิร์กโฟลว์อนุมัติสำหรับผู้ใช้และผู้ดูแล",
 				startRequestCta: "เริ่มคำขอ",
 				yourRequestsHeading: "คำขอของคุณ",
-				yourRequestsDescription: "ติดตามฉบับร่างและรายการที่ส่งแล้วได้ที่นี่หลังเชื่อมตารางคำขอกลาง",
+				yourRequestsDescription: "ติดตามคำขอที่ส่งแล้ว เปิดดูรายละเอียด และยกเลิกการจองที่ยังอยู่ในช่วงเวลาที่อนุญาตได้จากหน้านี้",
 				noSavedRequests: "ยังไม่มีคำขอที่บันทึกไว้",
-				noSavedRequestsHint:
-					"ใช้การ์ดด้านบนเพื่อทดสอบการรับคำขอ การบันทึกและขั้นตอนอนุมัติจะมาพร้อม migration Supabase รอบถัดไป",
+				noSavedRequestsHint: "เริ่มสร้างคำขอใหม่จากการ์ดด้านบน เมื่อส่งสำเร็จแล้วประวัติจะมาแสดงที่นี่ทันที",
 			}
 		: {
 				title: `${menu.requests} - ${app.shortName}`,
 				heading: menu.requests,
 				description:
-					"Create leave requests and other faculty service requests from one place. Start with Leave for the main workflow.",
+					"Create and track faculty requests from one place, starting with room reservations and the approval workflow for requesters and approvers.",
 				startRequestCta: "Start request",
 				yourRequestsHeading: "Your requests",
-				yourRequestsDescription: "Track drafts and submitted items here after the shared requests table is wired.",
+				yourRequestsDescription:
+					"Review submitted requests, open detail pages, and cancel reservations while they are still inside the allowed cancellation window.",
 				noSavedRequests: "No saved requests yet.",
-				noSavedRequestsHint:
-					"Use the cards above to validate intake. Saving and approvals arrive with the next Supabase migration.",
+				noSavedRequestsHint: "Start a new request from the cards above. Submitted history will appear here immediately.",
 			};
 }
 
