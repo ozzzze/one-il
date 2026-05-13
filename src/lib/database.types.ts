@@ -527,12 +527,21 @@ export type Database = {
 			asset_registers: GenericSupabaseTable;
 			asset_statuses: GenericSupabaseTable;
 			asset_transfers: GenericSupabaseTable;
+			faculty_request_events: GenericSupabaseTable;
+			faculty_request_steps: GenericSupabaseTable;
+			faculty_requests: GenericSupabaseTable;
 			material_items: GenericSupabaseTable;
 			material_receipts: GenericSupabaseTable;
 			material_requisition_lines: GenericSupabaseTable;
 			material_requisitions: GenericSupabaseTable;
 			material_stock_balances: GenericSupabaseTable;
 			material_stock_movements: GenericSupabaseTable;
+			reservable_asset_settings: GenericSupabaseTable;
+			reservable_rooms: GenericSupabaseTable;
+			room_booking_equipment_lines: GenericSupabaseTable;
+			room_booking_requests: GenericSupabaseTable;
+			room_default_assets: GenericSupabaseTable;
+			room_schedule_blocks: GenericSupabaseTable;
 			stock_locations: GenericSupabaseTable;
 			supply_approval_steps: GenericSupabaseTable;
 			supply_audit_events: GenericSupabaseTable;
@@ -594,9 +603,65 @@ export type Database = {
 				Relationships: [];
 			};
 		};
-		Views: Record<string, never>;
+		Views: {
+			room_reservable_asset_catalog: GenericSupabaseTable;
+		};
 		Functions: {
+			cancel_faculty_request: {
+				Args: {
+					p_request_id: string;
+					p_actor_user_id: string;
+					p_actor_employee_id: string;
+					p_cancel_reason?: string | null;
+				};
+				Returns: undefined;
+			};
+			decide_room_booking_request: {
+				Args: {
+					p_request_id: string;
+					p_approver_employee_id: string;
+					p_actor_user_id: string;
+					p_decision: string;
+					p_remark?: string | null;
+				};
+				Returns: undefined;
+			};
+			has_requests_manage: { Args: Record<PropertyKey, never>; Returns: boolean };
 			has_employees_manage: { Args: Record<PropertyKey, never>; Returns: boolean };
+			room_booking_windows_overlap: {
+				Args: {
+					existing_start: string;
+					existing_end: string;
+					existing_setup_minutes: number;
+					existing_cleanup_minutes: number;
+					candidate_start: string;
+					candidate_end: string;
+					candidate_setup_minutes: number;
+					candidate_cleanup_minutes: number;
+				};
+				Returns: boolean;
+			};
+			submit_room_booking_request: {
+				Args: {
+					p_request_no: string;
+					p_requester_employee_id: string;
+					p_created_by_user_id: string;
+					p_title: string;
+					p_details?: string | null;
+					p_room_id: string;
+					p_requested_start_at: string;
+					p_requested_end_at: string;
+					p_setup_buffer_minutes: number;
+					p_cleanup_buffer_minutes: number;
+					p_attendee_count: number;
+					p_purpose: string;
+					p_contact_name?: string | null;
+					p_contact_email?: string | null;
+					p_contact_phone?: string | null;
+					p_equipment_asset_ids?: string[] | null;
+				};
+				Returns: string;
+			};
 		};
 		Enums: Record<string, never>;
 		CompositeTypes: Record<string, never>;

@@ -150,11 +150,12 @@
 </svelte:head>
 
 <div class="space-y-6">
-	<a href={resolve("/assets")} class="text-muted-foreground hover:text-foreground text-sm">{copy.back}</a>
-
-	<section class="space-y-1">
-		<h1 class="text-3xl font-bold tracking-tight">{copy.title}</h1>
-		<p class="text-muted-foreground text-sm">{copy.description}</p>
+	<section class="space-y-3">
+		<a href={resolve("/assets")} class="text-muted-foreground hover:text-foreground text-sm">{copy.back}</a>
+		<div class="space-y-1">
+			<h1 class="text-3xl font-bold tracking-tight">{copy.title}</h1>
+			<p class="text-muted-foreground text-sm">{copy.description}</p>
+		</div>
 	</section>
 
 	{#if hasErrors || form?.message}

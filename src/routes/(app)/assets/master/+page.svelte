@@ -196,11 +196,12 @@
 </svelte:head>
 
 <div class="space-y-6">
-	<a href={resolve("/assets")} class="text-muted-foreground hover:text-foreground text-sm">{copy.back}</a>
-
-	<section class="space-y-1">
-		<h1 class="text-3xl font-bold tracking-tight">{copy.title}</h1>
-		<p class="text-muted-foreground text-sm">{copy.description}</p>
+	<section class="space-y-3">
+		<a href={resolve("/assets")} class="text-muted-foreground hover:text-foreground text-sm">{copy.back}</a>
+		<div class="space-y-1">
+			<h1 class="text-3xl font-bold tracking-tight">{copy.title}</h1>
+			<p class="text-muted-foreground text-sm">{copy.description}</p>
+		</div>
 	</section>
 
 	{#if hasErrors}
@@ -257,9 +258,9 @@
 										<Table.Head class="whitespace-nowrap">{copy.code}</Table.Head>
 										<Table.Head>{copy.labelTh}</Table.Head>
 										<Table.Head class="hidden md:table-cell">{copy.labelEn}</Table.Head>
-										<Table.Head class="w-[88px]">{copy.sortOrder}</Table.Head>
+										<Table.Head class="w-24 text-center">{copy.sortOrder}</Table.Head>
 										<Table.Head class="w-20 min-w-20 text-center">{copy.active}</Table.Head>
-										<Table.Head class="w-[100px]"></Table.Head>
+										<Table.Head class="w-24 text-center"></Table.Head>
 									</Table.Row>
 								</Table.Header>
 								<Table.Body>
@@ -273,7 +274,7 @@
 													class="flex flex-col gap-3 md:flex-row md:flex-wrap md:items-end"
 												>
 													<input type="hidden" name="id" value={row.id} />
-													<div class="font-mono text-xs text-muted-foreground md:min-w-[9rem] md:w-[10rem] md:shrink-0">{row.code}</div>
+													<div class="font-mono text-xs text-muted-foreground md:min-w-36 md:w-40 md:shrink-0">{row.code}</div>
 													<div class="min-w-[140px] flex-1 space-y-1">
 														<Label class="text-xs text-muted-foreground md:hidden">{copy.labelTh}</Label>
 														<Input name="labelTh" value={row.label_th} class="h-8" />
@@ -282,11 +283,18 @@
 														<Label class="text-xs text-muted-foreground md:hidden">{copy.labelEn}</Label>
 														<Input name="labelEn" value={row.label_en ?? ""} class="h-8" />
 													</div>
-													<div class="w-24 space-y-1">
+													<div class="w-24 space-y-1 md:shrink-0">
 														<Label class="text-xs text-muted-foreground md:hidden">{copy.sortOrder}</Label>
-														<Input name="sortOrder" type="number" min="0" max="99999" value={row.sort_order} class="h-8" />
+														<Input
+															name="sortOrder"
+															type="number"
+															min="0"
+															max="99999"
+															value={row.sort_order}
+															class="h-8 md:text-center"
+														/>
 													</div>
-													<div class="w-fit shrink-0 space-y-1 md:flex md:justify-center">
+													<div class="w-fit shrink-0 space-y-1 md:w-20 md:min-w-20 md:flex md:justify-center">
 														<Label class="text-xs text-muted-foreground md:hidden" for={`active-${row.id}`}>{copy.active}</Label>
 														<FormIsActiveSwitch
 															id={`active-${row.id}`}
@@ -295,7 +303,7 @@
 															inactiveLabel={copy.inactive}
 														/>
 													</div>
-													<div class="flex shrink-0 items-center gap-1 md:pb-0.5">
+													<div class="flex shrink-0 items-center gap-1 md:w-24 md:justify-center md:pb-0.5">
 														<Button type="submit" variant="ghost" size="icon" class="size-8" aria-label={copy.saveRow}>
 															<SaveIcon class="size-4" />
 														</Button>
