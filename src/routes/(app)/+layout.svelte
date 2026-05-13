@@ -51,13 +51,25 @@
 		return name && name.length > 0 ? name : null;
 	}
 
+	/** Asset detail route merges `asset` into page data — prefer asset no. when set */
+	function assetDetailCrumbLabel(segment: string, segments: string[]): string | null {
+		if (segments.length !== 2 || segments[0] !== "assets" || !isUuidSegment(segment)) return null;
+		const asset = (page.data as { asset?: { assetNo?: string | null } }).asset;
+		if (!asset) return null;
+		const no = asset.assetNo?.trim();
+		return no && no.length > 0 ? no : null;
+	}
+
 	function getBreadcrumbs() {
 		const path = page.url.pathname;
 		if (path === "/") return [{ label: menuLabels.dashboard, href: "/" }];
 
 		const segments = path.split("/").filter(Boolean);
 		return segments.map((segment, i) => ({
-			label: employeeDetailCrumbLabel(segment, segments) ?? getSegmentLabel(segment),
+			label:
+				employeeDetailCrumbLabel(segment, segments) ??
+				assetDetailCrumbLabel(segment, segments) ??
+				getSegmentLabel(segment),
 			href: "/" + segments.slice(0, i + 1).join("/"),
 		}));
 	}
@@ -69,6 +81,7 @@
 			gateway: menuLabels.modules,
 			users: menuLabels.users,
 			employees: menuLabels.employees,
+			assets: menuLabels.assets,
 			content: menuLabels.content,
 			roles: menuLabels.roles,
 			notifications: menuLabels.notifications,

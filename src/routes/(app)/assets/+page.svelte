@@ -246,7 +246,7 @@
 </svelte:head>
 
 <div class="space-y-6">
-	<section class="flex flex-col justify-between gap-3 md:flex-row md:items-end">
+	<section class="space-y-3">
 		<div class="space-y-1">
 			<h1 class="text-3xl font-bold tracking-tight">{copy.title}</h1>
 			<p class="text-muted-foreground text-sm">{copy.description}</p>

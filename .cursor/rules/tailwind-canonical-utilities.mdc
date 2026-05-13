@@ -1,0 +1,26 @@
+---
+description: Prefer canonical Tailwind utilities over arbitrary bracket values in Svelte files
+globs: **/*.svelte
+alwaysApply: false
+---
+
+# Tailwind Canonical Utilities
+
+- Arbitrary values like `w-[9rem]`, `min-w-[9rem]`, and `px-[18px]` are valid modern Tailwind syntax. They are not deprecated or "old".
+- When a built-in Tailwind utility expresses the same value, prefer the canonical utility instead of `[]`.
+- Treat lint suggestions such as `suggestCanonicalClasses` as the default choice unless matching the design truly requires a one-off value.
+
+## Preferred
+
+```svelte
+<!-- good -->
+<div class="md:min-w-36 md:w-40" />
+
+<!-- avoid when an equivalent utility already exists -->
+<div class="md:min-w-36 md:w-40" />
+```
+
+## Use `[]` Only When Needed
+
+- Keep arbitrary values only when there is no standard Tailwind scale/token for that value.
+- If the value maps cleanly to Tailwind's spacing scale, replace it with the canonical class before finishing the change.

@@ -195,6 +195,22 @@
 	});
 
 	const hasErrors = $derived(Object.values(data.errors).some(Boolean));
+	let loadErrorToastSignature: string | null = null;
+
+	$effect(() => {
+		if (!hasErrors) {
+			loadErrorToastSignature = null;
+			return;
+		}
+		const parts = Object.entries(data.errors)
+			.filter((e): e is [string, string] => typeof e[1] === "string" && e[1].length > 0)
+			.map(([k, v]) => `${k}: ${v}`)
+			.sort();
+		const sig = `${data.asset.id}|${parts.join("|")}`;
+		if (loadErrorToastSignature === sig) return;
+		loadErrorToastSignature = sig;
+		toast.error(copy.loadError, { description: parts.length ? parts.join(" · ") : undefined });
+	});
 	const maintenanceStatuses = [
 		{ value: "reported", labelTh: "แจ้งซ่อม", labelEn: "Reported" },
 		{ value: "in_progress", labelTh: "กำลังดำเนินการ", labelEn: "In progress" },
@@ -297,9 +313,8 @@
 </svelte:head>
 
 <div class="space-y-6">
-	<a href={resolve("/assets")} class="text-muted-foreground hover:text-foreground text-sm">{copy.back}</a>
-
 	<section class="space-y-3">
+		<a href={resolve("/assets")} class="text-muted-foreground hover:text-foreground text-sm">{copy.back}</a>
 		<div class="flex flex-wrap items-start justify-between gap-3">
 			<div>
 				<h1 class="text-3xl font-bold tracking-tight">
@@ -318,12 +333,6 @@
 			</div>
 		</div>
 	</section>
-
-	{#if hasErrors}
-		<div class="border-destructive/30 bg-destructive/5 text-destructive rounded-md border px-3 py-2 text-sm">
-			{copy.loadError}
-		</div>
-	{/if}
 
 	<Tabs.Root bind:value={tab} class="w-full">
 		<Tabs.List class="flex h-auto flex-wrap gap-1">

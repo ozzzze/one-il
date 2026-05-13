@@ -29,7 +29,7 @@ export const assetAssignmentSelect = `
 
 export const assetMaintenanceSelect = `
 	id, maintenance_no, status, issue, action_taken, cost, vendor, reported_at, completed_at,
-	reporter:employees(id, employee_no, first_name, last_name)
+	reporter:employees!reported_by_employee_id(id, employee_no, first_name, last_name)
 `;
 
 export type LookupView = {

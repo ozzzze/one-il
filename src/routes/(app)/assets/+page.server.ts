@@ -87,10 +87,33 @@ export const actions: Actions = {
 		});
 
 		if (!parsed.success) {
+			const first = parsed.error.issues[0];
+			const detail = first ? `${String(first.path[0] ?? "field")}: ${first.message}` : "";
 			return fail(400, {
 				action: "createAsset",
-				message: localizedActionMessage(locals.locale, "Asset data is invalid", "ข้อมูลครุภัณฑ์ไม่ถูกต้อง"),
+				message: localizedActionMessage(
+					locals.locale,
+					detail ? `Asset data is invalid (${detail})` : "Asset data is invalid",
+					detail ? `ข้อมูลครุภัณฑ์ไม่ถูกต้อง (${detail})` : "ข้อมูลครุภัณฑ์ไม่ถูกต้อง",
+				),
 			});
+		}
+
+		function mapAssetInsertError(raw: string, code: string | undefined): string {
+			const hint =
+				locals.locale === "th"
+					? "รัน migration ฐานข้อมูล (pnpm supabase:db:push) หรือตรวจว่ามีตาราง public.asset_registers"
+					: "Apply database migrations (pnpm supabase:db:push) and ensure public.asset_registers exists.";
+			if (
+				code === "42P01" ||
+				(raw.toLowerCase().includes("does not exist") && raw.includes("asset_registers"))
+			) {
+				return localizedActionMessage(locals.locale, `${raw}. ${hint}`, `${raw} ${hint}`);
+			}
+			if (code === "23505") {
+				return localizedActionMessage(locals.locale, "Duplicate asset number or serial no.", "เลขครุภัณฑ์หรือ Serial ซ้ำ");
+			}
+			return raw;
 		}
 
 		const { data, error } = await admin
@@ -117,7 +140,12 @@ export const actions: Actions = {
 			.select("id")
 			.single();
 
-		if (error) return fail(400, { action: "createAsset", message: error.message });
+		if (error) {
+			return fail(400, {
+				action: "createAsset",
+				message: mapAssetInsertError(error.message, error.code),
+			});
+		}
 		const assetId = String((data as { id: string }).id);
 
 		if (parsed.data.responsibleEmployeeId || parsed.data.orgUnitId || parsed.data.locationId) {
@@ -128,7 +156,13 @@ export const actions: Actions = {
 				location_id: parsed.data.locationId || null,
 				created_by_user_id: locals.user.id,
 			});
-			if (assignmentError) return fail(400, { action: "createAsset", message: assignmentError.message });
+			if (assignmentError) {
+				await admin.from("asset_registers").delete().eq("id", assetId);
+				return fail(400, {
+					action: "createAsset",
+					message: mapAssetInsertError(assignmentError.message, assignmentError.code),
+				});
+			}
 		}
 
 		const actorEmployeeId = await currentEmployeeId(admin, locals.user);

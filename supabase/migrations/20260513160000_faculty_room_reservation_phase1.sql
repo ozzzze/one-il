@@ -90,8 +90,7 @@ create table if not exists public.reservable_rooms (
   note text,
   is_active boolean not null default true,
   created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now(),
-  unique (stock_location_id)
+  updated_at timestamptz not null default now()
 );
 
 create table if not exists public.reservable_asset_settings (
@@ -168,16 +167,34 @@ create index if not exists idx_faculty_request_steps_approver
   on public.faculty_request_steps (approver_employee_id, step_status, step_order);
 create index if not exists idx_faculty_request_events_request
   on public.faculty_request_events (request_id, created_at desc);
+create index if not exists idx_faculty_request_events_actor_user
+  on public.faculty_request_events (actor_user_id)
+  where actor_user_id is not null;
+create index if not exists idx_faculty_request_events_actor_employee
+  on public.faculty_request_events (actor_employee_id)
+  where actor_employee_id is not null;
 create index if not exists idx_reservable_rooms_room_type
   on public.reservable_rooms (room_type, is_active, room_code);
+create index if not exists idx_reservable_rooms_stock_location
+  on public.reservable_rooms (stock_location_id);
+create index if not exists idx_reservable_rooms_approver
+  on public.reservable_rooms (approver_employee_id)
+  where approver_employee_id is not null;
 create index if not exists idx_reservable_asset_settings_sort
   on public.reservable_asset_settings (is_requestable, sort_order);
 create index if not exists idx_room_booking_requests_room_time
   on public.room_booking_requests (room_id, requested_start_at, requested_end_at);
+create index if not exists idx_room_booking_equipment_lines_asset
+  on public.room_booking_equipment_lines (asset_id);
 create index if not exists idx_room_schedule_blocks_room_time
   on public.room_schedule_blocks (room_id, starts_at, ends_at);
+create index if not exists idx_room_schedule_blocks_created_by
+  on public.room_schedule_blocks (created_by_user_id)
+  where created_by_user_id is not null;
 create index if not exists idx_room_default_assets_room
   on public.room_default_assets (room_id, sort_order);
+create index if not exists idx_room_default_assets_asset
+  on public.room_default_assets (asset_id);
 
 create or replace function public.room_booking_windows_overlap(
   existing_start timestamptz,
@@ -192,6 +209,7 @@ create or replace function public.room_booking_windows_overlap(
 returns boolean
 language sql
 immutable
+set search_path = pg_catalog, pg_temp
 as $$
   select
     (existing_start - make_interval(mins => greatest(existing_setup_minutes, 0)))
@@ -555,6 +573,25 @@ begin
 end;
 $$;
 
+revoke execute on function public.submit_room_booking_request(
+  text,
+  uuid,
+  uuid,
+  text,
+  text,
+  uuid,
+  timestamptz,
+  timestamptz,
+  int,
+  int,
+  int,
+  text,
+  text,
+  text,
+  text,
+  uuid[]
+) from public, anon, authenticated;
+
 grant execute on function public.submit_room_booking_request(
   text,
   uuid,
@@ -574,12 +611,27 @@ grant execute on function public.submit_room_booking_request(
   uuid[]
 ) to service_role;
 
+revoke execute on function public.cancel_faculty_request(
+  uuid,
+  uuid,
+  uuid,
+  text
+) from public, anon, authenticated;
+
 grant execute on function public.cancel_faculty_request(
   uuid,
   uuid,
   uuid,
   text
 ) to service_role;
+
+revoke execute on function public.decide_room_booking_request(
+  uuid,
+  uuid,
+  uuid,
+  text,
+  text
+) from public, anon, authenticated;
 
 grant execute on function public.decide_room_booking_request(
   uuid,
@@ -680,6 +732,7 @@ begin
 end;
 $$;
 
+revoke execute on function public.validate_room_booking_request() from public, anon, authenticated;
 grant execute on function public.validate_room_booking_request() to service_role;
 
 drop trigger if exists room_booking_requests_validate on public.room_booking_requests;

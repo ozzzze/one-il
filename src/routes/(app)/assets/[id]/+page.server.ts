@@ -51,6 +51,19 @@ const updateAssetSchema = z.object({
 	note: z.string().trim().max(4000).optional().or(z.literal("")),
 });
 
+function mapAssetWorkflowTableError(raw: string, code: string | undefined, locale: "th" | "en", table: string) {
+	const missingTable =
+		code === "42P01" ||
+		raw.includes(`Could not find the table 'public.${table}' in the schema cache`) ||
+		(raw.toLowerCase().includes("does not exist") && raw.includes(table));
+	if (!missingTable) return raw;
+	return localizedActionMessage(
+		locale,
+		`Asset workflow schema is incomplete. Apply the asset workflow catch-up migration and reload the schema cache (missing public.${table}).`,
+		`ฐานข้อมูล workflow ครุภัณฑ์ยังไม่ครบ ให้ apply migration สำหรับ catch-up และ reload schema cache (ขาด public.${table})`,
+	);
+}
+
 export const load: PageServerLoad = async ({ params, locals }) => {
 	assertPermission(locals.user, "asset:view");
 	const admin = getServiceRoleClient();
@@ -104,7 +117,9 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		locations: locationsRes.data ?? [],
 		errors: {
 			assignments: assignmentsRes.error?.message ?? null,
-			maintenance: maintenanceRes.error?.message ?? null,
+			maintenance: maintenanceRes.error
+				? mapAssetWorkflowTableError(maintenanceRes.error.message, maintenanceRes.error.code, locals.locale, "asset_maintenance")
+				: null,
 			categories: categoriesRes.error?.message ?? null,
 			statuses: statusesRes.error?.message ?? null,
 			conditions: conditionsRes.error?.message ?? null,
@@ -278,7 +293,12 @@ export const actions: Actions = {
 			})
 			.select("id")
 			.single();
-		if (maintenanceError) return fail(400, { action: "createMaintenance", message: maintenanceError.message });
+		if (maintenanceError) {
+			return fail(400, {
+				action: "createMaintenance",
+				message: mapAssetWorkflowTableError(maintenanceError.message, maintenanceError.code, locals.locale, "asset_maintenance"),
+			});
+		}
 
 		await writeSupplyAudit(admin, {
 			entityType: "asset_maintenance",
