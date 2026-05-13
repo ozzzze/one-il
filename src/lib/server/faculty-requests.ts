@@ -204,6 +204,8 @@ export type RequestDetail = RequestListEntry & {
 	contactPhone: string | null;
 	setupBufferMinutes: number;
 	cleanupBufferMinutes: number;
+	canDecide: boolean;
+	pendingApproverName: string | null;
 	fixedAssets: FixedAssetSummary[];
 	requestedAssets: FixedAssetSummary[];
 	steps: RequestStepEntry[];
@@ -671,6 +673,11 @@ export async function loadRequestDetail(
 		approverName: employeeName(item.approver) ?? "—",
 		approverId: asOne(item.approver)?.id ?? "",
 	}));
+	const pendingStep = steps.find((step) => step.stepStatus === "pending") ?? null;
+	const canDecide =
+		canManage && employeeId != null && pendingStep != null && pendingStep.approverId === employeeId;
+	const pendingApproverName =
+		pendingStep != null && pendingStep.approverId.length > 0 ? pendingStep.approverName : null;
 
 	const events = ((eventRes.data ?? []) as unknown as Array<{
 		id: string;
@@ -728,6 +735,8 @@ export async function loadRequestDetail(
 		contactPhone: booking?.contact_phone ?? null,
 		setupBufferMinutes: booking?.setup_buffer_minutes ?? 0,
 		cleanupBufferMinutes: booking?.cleanup_buffer_minutes ?? 0,
+		canDecide,
+		pendingApproverName,
 		fixedAssets,
 		requestedAssets,
 		steps,

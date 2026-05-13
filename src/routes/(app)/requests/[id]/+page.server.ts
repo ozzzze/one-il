@@ -99,6 +99,24 @@ export const actions: Actions = {
 		}
 
 		const admin = getServiceRoleClient();
+		const requestDetail = await loadRequestDetail(admin, parsed.data.requestId, locals.user);
+		if (!requestDetail) {
+			error(404, "Request not found");
+		}
+		if (!requestDetail.canDecide) {
+			const approverName =
+				requestDetail.pendingApproverName ??
+				(locals.locale === "th" ? "ผู้อนุมัติที่รับผิดชอบ" : "the assigned approver");
+			return fail(403, {
+				action: "decideRequest",
+				message: requestActionMessage(
+					locals.locale,
+					`This request is waiting for ${approverName} to review it.`,
+					`คำขอนี้กำลังรอการพิจารณาจาก ${approverName}`,
+				),
+			});
+		}
+
 		try {
 			await decideRequest(admin, locals.user, {
 				requestId: parsed.data.requestId,

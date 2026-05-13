@@ -116,9 +116,10 @@ export const actions = {
 			}
 
 			const admin = getServiceRoleClient();
+			let requestId: string;
 
 			try {
-				const requestId = await submitRoomBookingRequest(admin, locals.user, {
+				requestId = await submitRoomBookingRequest(admin, locals.user, {
 					title: parsed.data.title,
 					details: parsed.data.details || null,
 					roomId: parsed.data.roomId,
@@ -133,8 +134,6 @@ export const actions = {
 					contactPhone: parsed.data.contactPhone || null,
 					equipmentAssetIds: parsed.data.equipmentAssetIds,
 				});
-
-				redirect(303, `/requests/${requestId}`);
 			} catch (error) {
 				return fail(400, {
 					message:
@@ -148,6 +147,8 @@ export const actions = {
 					values: raw,
 				});
 			}
+
+			redirect(303, `/requests/${requestId}`);
 		}
 
 		function field(name: string): string {

@@ -23,6 +23,10 @@
 
 	const request = $derived(data.requestDetail);
 	const requestKindMeta = $derived(getRequestKindMeta(data.locale));
+	const canShowDecisionForm = $derived(request.status === "pending_approval" && Boolean(request.canDecide));
+	const showPendingApproverNotice = $derived(
+		request.status === "pending_approval" && !request.canDecide,
+	);
 	const copy = $derived.by(() =>
 		data.locale === "th"
 			? {
@@ -56,6 +60,9 @@
 					cancelSuccess: "ยกเลิกคำขอเรียบร้อยแล้ว",
 					managerAction: "การพิจารณาของผู้อนุมัติ",
 					managerHint: "บันทึกผลการพิจารณาพร้อมหมายเหตุเพื่อให้ผู้ขอเห็นเหตุผล",
+					waitingForApprover: "กำลังรอผู้อนุมัติที่รับผิดชอบ",
+					waitingForApproverHint: "คำขอนี้จะอัปเดตเมื่อผู้อนุมัติที่รับผิดชอบบันทึกผลการพิจารณา",
+					assignedApproverFallback: "ผู้อนุมัติที่รับผิดชอบ",
 					decisionRemark: "หมายเหตุการพิจารณา",
 					decisionRemarkPlaceholder: "เช่น อนุมัติตามตารางห้อง หรือขอแก้ไขช่วงเวลา",
 					approve: "อนุมัติ",
@@ -97,6 +104,9 @@
 					cancelSuccess: "Request cancelled.",
 					managerAction: "Manager decision",
 					managerHint: "Save a decision with an audit remark for the requester.",
+					waitingForApprover: "Waiting for assigned approver",
+					waitingForApproverHint: "This request will update once the assigned approver records a decision.",
+					assignedApproverFallback: "the assigned approver",
 					decisionRemark: "Decision remark",
 					decisionRemarkPlaceholder: "For example: approved as scheduled or please revise the timeslot",
 					approve: "Approve",
@@ -170,6 +180,19 @@
 
 	function dateTimeOrFallback(value: string | null) {
 		return value ? formatReservationDateTime(data.locale, value) : copy.notAvailable;
+	}
+
+	function pendingApproverMessage() {
+		const approverName = request.pendingApproverName?.trim();
+		if (approverName) {
+			return data.locale === "th"
+				? `คำขอนี้กำลังรอการพิจารณาจาก ${approverName}`
+				: `This request is waiting for ${approverName} to review it.`;
+		}
+
+		return data.locale === "th"
+			? `คำขอนี้กำลังรอการพิจารณาจาก ${copy.assignedApproverFallback}`
+			: `This request is waiting for ${copy.assignedApproverFallback} to review it.`;
 	}
 
 	function assetLabel(asset: { assetNo: string; name: string; nameEn: string | null }) {
@@ -428,46 +451,55 @@
 				</Card.Root>
 			{/if}
 
-			{#if data.canManage && request.status === "pending_approval"}
+			{#if canShowDecisionForm || showPendingApproverNotice}
 				<Card.Root>
 					<Card.Header>
 						<Card.Title>{copy.managerAction}</Card.Title>
-						<Card.Description>{copy.managerHint}</Card.Description>
+						<Card.Description>
+							{canShowDecisionForm ? copy.managerHint : copy.waitingForApproverHint}
+						</Card.Description>
 					</Card.Header>
 					<Card.Content>
-						<form
-							method="POST"
-							action="?/decideRequest"
-							class="space-y-4"
-							use:enhance={decisionEnhance()}
-						>
-							<input type="hidden" name="requestId" value={request.id} />
-							<div class="space-y-2">
-								<Label for="remark">{copy.decisionRemark}</Label>
-								<Textarea
-									id="remark"
-									name="remark"
-									rows={5}
-									maxlength={1000}
-									placeholder={copy.decisionRemarkPlaceholder}
-									disabled={decisionPending}
-								/>
+						{#if canShowDecisionForm}
+							<form
+								method="POST"
+								action="?/decideRequest"
+								class="space-y-4"
+								use:enhance={decisionEnhance()}
+							>
+								<input type="hidden" name="requestId" value={request.id} />
+								<div class="space-y-2">
+									<Label for="remark">{copy.decisionRemark}</Label>
+									<Textarea
+										id="remark"
+										name="remark"
+										rows={5}
+										maxlength={1000}
+										placeholder={copy.decisionRemarkPlaceholder}
+										disabled={decisionPending}
+									/>
+								</div>
+								<div class="flex flex-wrap gap-3">
+									<Button type="submit" name="decision" value="approved" disabled={decisionPending}>
+										{decisionPending ? copy.processing : copy.approve}
+									</Button>
+									<Button
+										type="submit"
+										name="decision"
+										value="rejected"
+										variant="destructive"
+										disabled={decisionPending}
+									>
+										{decisionPending ? copy.processing : copy.reject}
+									</Button>
+								</div>
+							</form>
+						{:else}
+							<div class="bg-muted/40 space-y-1 rounded-lg border p-4">
+								<p class="text-sm font-medium">{copy.waitingForApprover}</p>
+								<p class="text-muted-foreground text-sm">{pendingApproverMessage()}</p>
 							</div>
-							<div class="flex flex-wrap gap-3">
-								<Button type="submit" name="decision" value="approved" disabled={decisionPending}>
-									{decisionPending ? copy.processing : copy.approve}
-								</Button>
-								<Button
-									type="submit"
-									name="decision"
-									value="rejected"
-									variant="destructive"
-									disabled={decisionPending}
-								>
-									{decisionPending ? copy.processing : copy.reject}
-								</Button>
-							</div>
-						</form>
+						{/if}
 					</Card.Content>
 				</Card.Root>
 			{/if}
