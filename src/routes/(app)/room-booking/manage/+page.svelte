@@ -247,7 +247,7 @@
 		capacity: 1,
 		approverEmployeeId: "",
 		bookingWindowDays: 180,
-		minAdvanceHours: 48,
+		minAdvanceHours: 0,
 		setupBufferMinutes: 15,
 		cleanupBufferMinutes: 15,
 		cancellationCutoffHours: 24,
@@ -405,7 +405,7 @@
 		roomForm.capacity = 1;
 		roomForm.approverEmployeeId = data.employees[0]?.id ?? "";
 		roomForm.bookingWindowDays = 180;
-		roomForm.minAdvanceHours = 48;
+		roomForm.minAdvanceHours = 0;
 		roomForm.setupBufferMinutes = 15;
 		roomForm.cleanupBufferMinutes = 15;
 		roomForm.cancellationCutoffHours = 24;

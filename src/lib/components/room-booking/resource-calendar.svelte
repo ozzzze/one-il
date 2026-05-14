@@ -146,6 +146,7 @@
 					blocked: "ปิดใช้งานห้อง",
 					restricted: "นอกเงื่อนไขการจอง",
 					occupiedReason: "ช่วงเวลานี้มีรายการจองหรือปิดห้องอยู่แล้ว",
+					pastReason: "ช่วงเวลานี้ผ่านไปแล้ว",
 					minAdvanceReason: "ช่วงเวลานี้เร็วเกินกว่ากฎจองล่วงหน้าของห้อง",
 					bookingWindowReason: "ช่วงเวลานี้อยู่นอกช่วงวันที่ห้องเปิดให้จอง",
 					defaultEquipment: "อุปกรณ์ประจำ",
@@ -173,6 +174,7 @@
 					blocked: "Room block",
 					restricted: "Outside booking rules",
 					occupiedReason: "This slot already has a booking or room block.",
+					pastReason: "This slot has already passed.",
 					minAdvanceReason: "This slot is earlier than the room's minimum advance rule.",
 					bookingWindowReason: "This slot is outside the room booking window.",
 					defaultEquipment: "Default equipment",
@@ -218,14 +220,6 @@
 
 	function roomName(room: RoomEntry): string {
 		return localizedDualField(locale, room.name, room.nameEn);
-	}
-
-	function roomLocation(room: RoomEntry): string {
-		if (!room.stockLocationCode && !room.stockLocationName) return copy.none;
-		const locationName = room.stockLocationName
-			? localizedDualField(locale, room.stockLocationName, room.stockLocationNameEn)
-			: "";
-		return `${room.stockLocationCode ?? ""} ${locationName}`.trim();
 	}
 
 	function minutesFromIso(isoValue: string): number {
@@ -494,9 +488,18 @@
 					const candidateEndMs = slotEndMs + room.cleanupBufferMinutes * 60 * 1000;
 					const key = selectionKey(room.id, day.value, column.value);
 
+					if (slotStartMs < nowMs) {
+						record[key] = {
+							disabled: false,
+							tone: "rule",
+							reason: copy.pastReason,
+						};
+						continue;
+					}
+
 					if (slotStartMs < minAllowedMs) {
 						record[key] = {
-							disabled: true,
+							disabled: false,
 							tone: "rule",
 							reason: copy.minAdvanceReason,
 						};
@@ -505,7 +508,7 @@
 
 					if (slotStartMs > maxAllowedMs) {
 						record[key] = {
-							disabled: true,
+							disabled: false,
 							tone: "rule",
 							reason: copy.bookingWindowReason,
 						};
@@ -592,19 +595,12 @@
 
 				{#each rooms as room, i (room.id)}
 					<div class="flex border-b last:border-b-0">
-						<div class="sticky left-0 z-10 flex w-72 shrink-0 flex-col justify-between border-r bg-background/95 px-4 py-4 backdrop-blur">
+						<div class="sticky left-0 z-10 flex w-72 shrink-0 self-start flex-col justify-between border-r bg-background/95 px-4 py-4 backdrop-blur">
 							<div class="space-y-2">
 								<div class="flex flex-wrap items-center gap-2">
 									<p class="font-semibold">{roomName(room)}</p>
 									<Badge variant="outline">{room.roomCode}</Badge>
 									<Badge variant="secondary">{getRoomTypeLabel(locale, room.roomType)}</Badge>
-								</div>
-								<div class="text-muted-foreground space-y-1 text-xs">
-									<p>{copy.capacity}: {room.capacity}</p>
-									<p>{copy.approver}: {room.approverName ?? copy.notAssigned}</p>
-									<p>{copy.bookAhead}: {room.bookingWindowDays} {copy.days}</p>
-									<p>{copy.minAdvance}: {room.minAdvanceHours} {copy.hours}</p>
-									<p>{copy.locationLabel}: {roomLocation(room)}</p>
 								</div>
 							</div>
 							<p class="text-muted-foreground mt-3 text-xs">
@@ -643,12 +639,13 @@
 												class={cn(
 													"border-r border-dashed transition last:border-r-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-0 focus-visible:outline-none",
 													state?.tone === "occupied" && "bg-destructive/5",
-													state?.tone === "rule" && "bg-muted/40",
+													state?.tone === "rule" &&
+														"bg-muted/40 hover:bg-primary/5 focus-visible:bg-primary/5",
 													state?.tone === "available" &&
 														"hover:bg-emerald-500/10 focus-visible:bg-emerald-500/10",
 													isSelected && "bg-primary/10 ring-1 ring-primary/40",
 												)}
-												style="min-height: 144px;"
+												style="min-height: 96px;"
 												title={state?.reason}
 												aria-label={`${copy.selectSlot}: ${roomName(room)} ${day.title} ${column.value}`}
 												disabled={state?.disabled}
@@ -659,7 +656,7 @@
 										{/each}
 									</div>
 
-									<div class="pointer-events-none relative z-10 min-h-36 p-2">
+									<div class="pointer-events-none relative z-10 min-h-24 p-2">
 										{#each segmentsByRoomDay[room.id]?.[day.value] ?? [] as segment, segmentIndex (segment.key)}
 											{#if segment.href}
 												<a
