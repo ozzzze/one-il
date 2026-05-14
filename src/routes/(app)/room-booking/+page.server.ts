@@ -1,6 +1,5 @@
 import { fail, redirect } from "@sveltejs/kit";
 import { hasPermission } from "$lib/auth/roles.js";
-import type { Locale } from "$lib/i18n/locales.js";
 import { roomBookingSubmissionSchema } from "$lib/requests/room-booking-schema.js";
 import { toFacultyDateTimeIso } from "$lib/requests/faculty-request.js";
 import { assertPermission } from "$lib/server/guards.js";
@@ -10,100 +9,11 @@ import {
 	loadReservableAssetCatalog,
 	loadUserRequestList,
 	requestActionMessage,
+	roomBookingActionErrorMessage,
 	submitRoomBookingRequest,
 } from "$lib/server/faculty-requests.js";
 import { getServiceRoleClient } from "$lib/server/supabase-admin.js";
 import type { Actions, PageServerLoad } from "./$types.js";
-
-function createBookingErrorMessage(locale: Locale, error: unknown): string {
-	if (!(error instanceof Error)) {
-		return requestActionMessage(
-			locale,
-			"Room booking could not be submitted.",
-			"ไม่สามารถส่งคำขอจองห้องได้",
-		);
-	}
-
-	const message = error.message;
-
-	if (message === "Attendee count exceeds room capacity") {
-		return requestActionMessage(
-			locale,
-			"Attendee count exceeds the room capacity.",
-			"จำนวนผู้เข้าร่วมเกินความจุของห้อง",
-		);
-	}
-
-	if (message === "Room booking does not satisfy minimum advance notice") {
-		return requestActionMessage(
-			locale,
-			"This booking does not meet the room's minimum advance notice.",
-			"ช่วงเวลานี้ไม่เป็นไปตามกฎแจ้งล่วงหน้าขั้นต่ำของห้อง",
-		);
-	}
-
-	if (message === "Room booking exceeds booking window") {
-		return requestActionMessage(
-			locale,
-			"This booking falls outside the room booking window.",
-			"ช่วงเวลานี้อยู่นอกช่วงวันที่ห้องเปิดให้จอง",
-		);
-	}
-
-	if (message === "Room is blocked during the requested period") {
-		return requestActionMessage(
-			locale,
-			"The room is blocked during the requested period.",
-			"ห้องถูกปิดใช้งานในช่วงเวลาที่เลือก",
-		);
-	}
-
-	if (message === "Room is already reserved for the requested period") {
-		return requestActionMessage(
-			locale,
-			"The room is already reserved during the requested period.",
-			"ห้องถูกจองแล้วในช่วงเวลาที่เลือก",
-		);
-	}
-
-	if (message === "One or more equipment items are not requestable") {
-		return requestActionMessage(
-			locale,
-			"One or more selected equipment items cannot be requested.",
-			"มีอุปกรณ์อย่างน้อยหนึ่งรายการที่ไม่สามารถแนบคำขอได้",
-		);
-	}
-
-	if (message.startsWith("Reservable room ") && message.endsWith(" not found")) {
-		return requestActionMessage(
-			locale,
-			"This room could not be found anymore.",
-			"ไม่พบข้อมูลห้องนี้แล้ว",
-		);
-	}
-
-	if (message.startsWith("Room ") && message.endsWith(" is inactive")) {
-		return requestActionMessage(
-			locale,
-			"This room is no longer active for booking.",
-			"ห้องนี้ไม่พร้อมให้จองแล้ว",
-		);
-	}
-
-	if (message.startsWith("Room ") && message.includes(" is not configured with an approver")) {
-		return requestActionMessage(
-			locale,
-			"This room is not fully configured for booking approval.",
-			"ห้องนี้ยังตั้งค่าผู้อนุมัติไม่ครบ จึงยังไม่พร้อมให้จอง",
-		);
-	}
-
-	return requestActionMessage(
-		locale,
-		"Room booking could not be submitted.",
-		"ไม่สามารถส่งคำขอจองห้องได้",
-	);
-}
 
 export const load: PageServerLoad = async ({ locals, url }) => {
 	assertPermission(locals.user, "requests:create");
@@ -207,7 +117,7 @@ export const actions: Actions = {
 		} catch (error) {
 			return fail(400, {
 				action: "createBooking",
-				message: createBookingErrorMessage(locals.locale, error),
+				message: roomBookingActionErrorMessage(locals.locale, error),
 				values: raw,
 			});
 		}

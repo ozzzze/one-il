@@ -1,14 +1,42 @@
 import { z } from "zod";
 import { roomTypes } from "$lib/requests/faculty-request.js";
 
+const isoDatePattern = /^\d{4}-\d{2}-\d{2}$/;
+const hhmmPattern = /^(?:[01]\d|2[0-3]):[0-5]\d$/;
+
+function isValidIsoDate(value: string): boolean {
+	if (!isoDatePattern.test(value)) return false;
+
+	const [yearText, monthText, dayText] = value.split("-");
+	const year = Number(yearText);
+	const month = Number(monthText);
+	const day = Number(dayText);
+	const date = new Date(Date.UTC(year, month - 1, day));
+
+	return (
+		date.getUTCFullYear() === year &&
+		date.getUTCMonth() + 1 === month &&
+		date.getUTCDate() === day
+	);
+}
+
+const bookingDateField = z.string().refine(isValidIsoDate, {
+	message: "Booking date is invalid",
+});
+
+const timeField = (label: string) =>
+	z.string().regex(hhmmPattern, {
+		message: `${label} is invalid`,
+	});
+
 export const roomBookingSubmissionSchema = z
 	.object({
 		title: z.string().trim().min(3).max(200),
 		details: z.string().trim().max(4000).optional().or(z.literal("")),
 		roomId: z.string().uuid(),
-		bookingDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-		startTime: z.string().regex(/^\d{2}:\d{2}$/),
-		endTime: z.string().regex(/^\d{2}:\d{2}$/),
+		bookingDate: bookingDateField,
+		startTime: timeField("Start time"),
+		endTime: timeField("End time"),
 		attendeeCount: z.coerce.number().int().positive().max(2000),
 		purpose: z.string().trim().min(3).max(1000),
 		contactName: z.string().trim().max(200).optional().or(z.literal("")),
@@ -59,10 +87,10 @@ export const roomScheduleBlockSchema = z
 	.object({
 		roomId: z.string().uuid(),
 		blockType: z.enum(["maintenance", "event", "exam", "closed"]),
-		startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-		startTime: z.string().regex(/^\d{2}:\d{2}$/),
-		endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-		endTime: z.string().regex(/^\d{2}:\d{2}$/),
+		startDate: bookingDateField,
+		startTime: timeField("Start time"),
+		endDate: bookingDateField,
+		endTime: timeField("End time"),
 		reason: z.string().trim().min(3).max(1000),
 	})
 	.refine((value) => `${value.endDate}T${value.endTime}` > `${value.startDate}T${value.startTime}`, {

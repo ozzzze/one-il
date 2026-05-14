@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { enhance } from "$app/forms";
 	import { base } from "$app/paths";
+	import { page } from "$app/state";
 	import { toast } from "svelte-sonner";
 	import { Button } from "$lib/components/ui/button/index.js";
 	import * as Card from "$lib/components/ui/card/index.js";
@@ -128,6 +129,31 @@
 		return {};
 	});
 
+	function readStringValue(values: Record<string, unknown>, key: string, fallback = "") {
+		return typeof values[key] === "string" ? values[key] : fallback;
+	}
+
+	function readNumberishValue(values: Record<string, unknown>, key: string, fallback: number | string) {
+		const value = values[key];
+		if (typeof value === "string") return value;
+		if (typeof value === "number" && Number.isFinite(value)) return String(value);
+		return String(fallback);
+	}
+
+	function readStringArrayValue(values: Record<string, unknown>, key: string) {
+		return Array.isArray(values[key])
+			? values[key].filter((value: unknown): value is string => typeof value === "string")
+			: [];
+	}
+
+	function sanitizeEquipmentAssetIds(roomId: string, equipmentAssetIds: string[]) {
+		if (data.kind !== "room_booking") return [];
+		const room = data.rooms.find((entry) => entry.id === roomId);
+		if (!room?.allowEquipmentRequest) return [];
+		const catalogIds = new Set(data.equipmentCatalog.map((asset) => asset.id));
+		return equipmentAssetIds.filter((assetId) => catalogIds.has(assetId));
+	}
+
 	const genericValues = $derived.by(() => {
 		const values = formValues;
 		return {
@@ -136,47 +162,100 @@
 		};
 	});
 
-	const roomFormValues = $derived.by(() => {
+	const roomBookingDefaults = $derived.by(() => {
 		if (data.kind !== "room_booking") return null;
-		const values = formValues;
+		const defaults = data.roomBookingDefaults as Record<string, unknown>;
+		const params = page.url.searchParams;
+		const queryDefaults: Record<string, unknown> = {
+			title: params.get("title") ?? undefined,
+			details: params.get("details") ?? undefined,
+			roomId: params.get("roomId") ?? undefined,
+			bookingDate: params.get("date") ?? undefined,
+			startTime: params.get("startTime") ?? undefined,
+			endTime: params.get("endTime") ?? undefined,
+			attendeeCount: params.get("attendeeCount") ?? undefined,
+			purpose: params.get("purpose") ?? undefined,
+			contactName: params.get("contactName") ?? undefined,
+			contactEmail: params.get("contactEmail") ?? undefined,
+			contactPhone: params.get("contactPhone") ?? undefined,
+			setupBufferMinutes: params.get("setupBufferMinutes") ?? undefined,
+			cleanupBufferMinutes: params.get("cleanupBufferMinutes") ?? undefined,
+			equipmentAssetIds: params.getAll("equipmentAssetIds"),
+		};
+		const mergedDefaults = { ...defaults, ...queryDefaults };
+		const roomId = readStringValue(mergedDefaults, "roomId", data.roomBookingDefaults.roomId);
+
 		return {
-			title: typeof values.title === "string" ? values.title : "",
-			details: typeof values.details === "string" ? values.details : "",
-			roomId:
-				typeof values.roomId === "string" && values.roomId.length > 0
-					? values.roomId
-					: data.roomBookingDefaults.roomId,
-			bookingDate:
-				typeof values.bookingDate === "string" && values.bookingDate.length > 0
-					? values.bookingDate
-					: data.roomBookingDefaults.bookingDate,
-			startTime:
-				typeof values.startTime === "string" && values.startTime.length > 0
-					? values.startTime
-					: data.roomBookingDefaults.startTime,
-			endTime:
-				typeof values.endTime === "string" && values.endTime.length > 0
-					? values.endTime
-					: data.roomBookingDefaults.endTime,
-			attendeeCount:
-				typeof values.attendeeCount === "string" && values.attendeeCount.length > 0
-					? values.attendeeCount
-					: String(data.roomBookingDefaults.attendeeCount),
-			purpose: typeof values.purpose === "string" ? values.purpose : "",
-			contactName: typeof values.contactName === "string" ? values.contactName : "",
-			contactEmail: typeof values.contactEmail === "string" ? values.contactEmail : "",
-			contactPhone: typeof values.contactPhone === "string" ? values.contactPhone : "",
-			setupBufferMinutes:
-				typeof values.setupBufferMinutes === "string" && values.setupBufferMinutes.length > 0
-					? values.setupBufferMinutes
-					: String(data.roomBookingDefaults.setupBufferMinutes),
-			cleanupBufferMinutes:
-				typeof values.cleanupBufferMinutes === "string" && values.cleanupBufferMinutes.length > 0
-					? values.cleanupBufferMinutes
-					: String(data.roomBookingDefaults.cleanupBufferMinutes),
-			equipmentAssetIds: Array.isArray(values.equipmentAssetIds)
-				? values.equipmentAssetIds.filter((value: unknown): value is string => typeof value === "string")
-				: [],
+			title: readStringValue(mergedDefaults, "title"),
+			details: readStringValue(mergedDefaults, "details"),
+			roomId,
+			bookingDate: readStringValue(
+				mergedDefaults,
+				"bookingDate",
+				data.roomBookingDefaults.bookingDate,
+			),
+			startTime: readStringValue(mergedDefaults, "startTime", data.roomBookingDefaults.startTime),
+			endTime: readStringValue(mergedDefaults, "endTime", data.roomBookingDefaults.endTime),
+			attendeeCount: readNumberishValue(
+				mergedDefaults,
+				"attendeeCount",
+				data.roomBookingDefaults.attendeeCount,
+			),
+			purpose: readStringValue(mergedDefaults, "purpose"),
+			contactName: readStringValue(mergedDefaults, "contactName"),
+			contactEmail: readStringValue(mergedDefaults, "contactEmail"),
+			contactPhone: readStringValue(mergedDefaults, "contactPhone"),
+			setupBufferMinutes: readNumberishValue(
+				mergedDefaults,
+				"setupBufferMinutes",
+				data.roomBookingDefaults.setupBufferMinutes,
+			),
+			cleanupBufferMinutes: readNumberishValue(
+				mergedDefaults,
+				"cleanupBufferMinutes",
+				data.roomBookingDefaults.cleanupBufferMinutes,
+			),
+			equipmentAssetIds: sanitizeEquipmentAssetIds(
+				roomId,
+				readStringArrayValue(mergedDefaults, "equipmentAssetIds"),
+			),
+		};
+	});
+
+	const roomFormValues = $derived.by(() => {
+		if (data.kind !== "room_booking" || !roomBookingDefaults) return null;
+		const values = formValues;
+		const roomId = readStringValue(values, "roomId", roomBookingDefaults.roomId);
+		const equipmentAssetIds = sanitizeEquipmentAssetIds(
+			roomId,
+			Array.isArray(values.equipmentAssetIds)
+				? readStringArrayValue(values, "equipmentAssetIds")
+				: roomBookingDefaults.equipmentAssetIds,
+		);
+
+		return {
+			title: readStringValue(values, "title", roomBookingDefaults.title),
+			details: readStringValue(values, "details", roomBookingDefaults.details),
+			roomId,
+			bookingDate: readStringValue(values, "bookingDate", roomBookingDefaults.bookingDate),
+			startTime: readStringValue(values, "startTime", roomBookingDefaults.startTime),
+			endTime: readStringValue(values, "endTime", roomBookingDefaults.endTime),
+			attendeeCount: readNumberishValue(values, "attendeeCount", roomBookingDefaults.attendeeCount),
+			purpose: readStringValue(values, "purpose", roomBookingDefaults.purpose),
+			contactName: readStringValue(values, "contactName", roomBookingDefaults.contactName),
+			contactEmail: readStringValue(values, "contactEmail", roomBookingDefaults.contactEmail),
+			contactPhone: readStringValue(values, "contactPhone", roomBookingDefaults.contactPhone),
+			setupBufferMinutes: readNumberishValue(
+				values,
+				"setupBufferMinutes",
+				roomBookingDefaults.setupBufferMinutes,
+			),
+			cleanupBufferMinutes: readNumberishValue(
+				values,
+				"cleanupBufferMinutes",
+				roomBookingDefaults.cleanupBufferMinutes,
+			),
+			equipmentAssetIds,
 		};
 	});
 
@@ -274,6 +353,9 @@
 		if (!room) return;
 		setupBufferMinutesValue = String(room.setupBufferMinutes);
 		cleanupBufferMinutesValue = String(room.cleanupBufferMinutes);
+		if (!room.allowEquipmentRequest) {
+			selectedEquipmentIds = [];
+		}
 	}
 </script>
 

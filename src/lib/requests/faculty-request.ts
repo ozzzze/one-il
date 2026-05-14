@@ -98,6 +98,20 @@ export function toFacultyDateTimeIso(
 	return `${dateValue}T${safeTime}${offset}`;
 }
 
+function offsetMinutes(offset: string): number {
+	const match = /^([+-])(\d{2}):(\d{2})$/.exec(offset);
+	if (!match) return 0;
+
+	const [, sign, hours, minutes] = match;
+	const totalMinutes = Number(hours) * 60 + Number(minutes);
+	return sign === "-" ? -totalMinutes : totalMinutes;
+}
+
+export function todayFacultyDate(now: Date = new Date(), offset: string = facultyTimeZoneOffset): string {
+	const shifted = new Date(now.getTime() + offsetMinutes(offset) * 60_000);
+	return shifted.toISOString().slice(0, 10);
+}
+
 export function expandBufferedWindow(window: BookingWindow): { startMs: number; endMs: number } {
 	const startMs =
 		new Date(window.startAt).getTime() - Math.max(window.setupBufferMinutes, 0) * 60_000;

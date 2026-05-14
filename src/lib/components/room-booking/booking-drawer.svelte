@@ -113,11 +113,24 @@
 		return value ? `${value.roomId}:${value.date}:${value.startTime}:${value.endTime}` : "";
 	}
 
+	function cloneSeed(source: BookingSeed): BookingSeed {
+		return {
+			...source,
+			equipmentAssetIds: [...source.equipmentAssetIds],
+		};
+	}
+
 	function rememberSubmittedSelection(key: string) {
 		submittedSelectionKey = key;
 	}
 
+	function rememberDraft(selectionKey: string, draft: BookingSeed) {
+		if (selectionKey.length === 0) return;
+		draftCache[selectionKey] = cloneSeed(draft);
+	}
+
 	let submittedSelectionKey = $state("");
+	let draftCache = $state<Record<string, BookingSeed>>({});
 
 	const currentSelectionKey = $derived(selectionKeyValue(selection));
 	const formValues = $derived.by<Record<string, unknown>>(() => {
@@ -144,7 +157,7 @@
 		if (!room || !selection) return null;
 
 		const values = useFormSeed ? formValues : {};
-		return {
+		const nextSeed = {
 			title: typeof values.title === "string" ? values.title : "",
 			purpose: typeof values.purpose === "string" ? values.purpose : "",
 			attendeeCount:
@@ -179,6 +192,13 @@
 				? values.equipmentAssetIds.filter((value: unknown): value is string => typeof value === "string")
 				: [],
 		};
+
+		if (useFormSeed) {
+			return nextSeed;
+		}
+
+		const cachedDraft = draftCache[currentSelectionKey];
+		return cachedDraft ? cloneSeed(cachedDraft) : nextSeed;
 	});
 	const seedKey = $derived(
 		useFormSeed ? `form:${currentSelectionKey}:${JSON.stringify(formValues)}` : `slot:${currentSelectionKey}`,
@@ -203,6 +223,7 @@
 						{seed}
 						selectionKey={currentSelectionKey}
 						onClose={() => setOpen(false)}
+						onDraftChange={(draft) => rememberDraft(currentSelectionKey, draft)}
 						onSubmittingSelection={rememberSubmittedSelection}
 					/>
 				{/key}

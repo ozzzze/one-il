@@ -3,6 +3,7 @@ import {
 	canCancelReservation,
 	facultyRequestStatuses,
 	facultyTimeZoneOffset,
+	todayFacultyDate,
 	roomTypes,
 	type FacultyRequestStatus,
 	type RoomType,
@@ -158,6 +159,10 @@ export type CalendarBlock = {
 	reason: string;
 };
 
+function isCalendarVisibleStatus(status: FacultyRequestStatus): boolean {
+	return status === "pending_approval" || status === "approved";
+}
+
 export type RequestListEntry = {
 	id: string;
 	requestNo: string;
@@ -290,9 +295,25 @@ function assetSummary(asset: MaybeOneOrMany<AssetLite>): FixedAssetSummary | nul
 	};
 }
 
+function isValidDateKey(value: string): boolean {
+	if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+
+	const [yearText, monthText, dayText] = value.split("-");
+	const year = Number(yearText);
+	const month = Number(monthText);
+	const day = Number(dayText);
+	const parsed = new Date(Date.UTC(year, month - 1, day));
+
+	return (
+		parsed.getUTCFullYear() === year &&
+		parsed.getUTCMonth() + 1 === month &&
+		parsed.getUTCDate() === day
+	);
+}
+
 export function normalizeSelectedDate(dateValue: string | null | undefined): string {
-	if (dateValue && /^\d{4}-\d{2}-\d{2}$/.test(dateValue)) return dateValue;
-	return new Date().toISOString().slice(0, 10);
+	if (dateValue && isValidDateKey(dateValue)) return dateValue;
+	return todayFacultyDate();
 }
 
 function addDays(dateValue: string, days: number): string {
@@ -446,22 +467,25 @@ export async function loadRoomCalendarData(
 		RoomBookingLite & {
 			faculty_requests?: FacultyRequestLite | FacultyRequestLite[] | null;
 		}
-	>).map((row) => {
-		const request = asOne(row.faculty_requests);
-		return {
-			requestId: row.request_id,
-			roomId: row.room_id,
-			title: request?.title ?? "Room booking",
-			status: toRequestStatus(request?.status ?? "draft"),
-			startAt: row.requested_start_at,
-			endAt: row.requested_end_at,
-			setupBufferMinutes: row.setup_buffer_minutes,
-			cleanupBufferMinutes: row.cleanup_buffer_minutes,
-			attendeeCount: row.attendee_count,
-			purpose: row.purpose,
-			requesterName: employeeName(request?.requester),
-		};
-	});
+	>)
+		.map((row) => {
+			const request = asOne(row.faculty_requests);
+			const status = toRequestStatus(request?.status ?? "draft");
+			return {
+				requestId: row.request_id,
+				roomId: row.room_id,
+				title: request?.title ?? "Room booking",
+				status,
+				startAt: row.requested_start_at,
+				endAt: row.requested_end_at,
+				setupBufferMinutes: row.setup_buffer_minutes,
+				cleanupBufferMinutes: row.cleanup_buffer_minutes,
+				attendeeCount: row.attendee_count,
+				purpose: row.purpose,
+				requesterName: employeeName(request?.requester),
+			};
+		})
+		.filter((booking) => isCalendarVisibleStatus(booking.status));
 
 	const blocks = ((blocksRes.data ?? []) as unknown as Array<{
 		id: string;
@@ -490,6 +514,19 @@ export async function submitRoomBookingRequest(
 	const requesterEmployeeId = await currentEmployeeId(admin, user);
 	if (!requesterEmployeeId) {
 		throw new Error("Your account is not linked to an employee profile.");
+	}
+
+	if (input.equipmentAssetIds.length > 0) {
+		const { data: roomPolicy, error: roomPolicyError } = await admin
+			.from("reservable_rooms")
+			.select("allow_equipment_request")
+			.eq("id", input.roomId)
+			.maybeSingle<{ allow_equipment_request?: boolean | null }>();
+
+		if (roomPolicyError) throw roomPolicyError;
+		if (roomPolicy && roomPolicy.allow_equipment_request === false) {
+			throw new Error("Equipment requests are not allowed for this room");
+		}
 	}
 
 	const requestNo = documentNo("RB");
@@ -859,4 +896,102 @@ export async function loadStockLocationOptions(
 
 export function requestActionMessage(locale: Locale, en: string, th: string): string {
 	return locale === "th" ? th : en;
+}
+
+export function roomBookingActionErrorMessage(locale: Locale, error: unknown): string {
+	if (!(error instanceof Error)) {
+		return requestActionMessage(
+			locale,
+			"Room booking could not be submitted.",
+			"ไม่สามารถส่งคำขอจองห้องได้",
+		);
+	}
+
+	const message = error.message;
+
+	if (message === "Attendee count exceeds room capacity") {
+		return requestActionMessage(
+			locale,
+			"Attendee count exceeds the room capacity.",
+			"จำนวนผู้เข้าร่วมเกินความจุของห้อง",
+		);
+	}
+
+	if (message === "Room booking does not satisfy minimum advance notice") {
+		return requestActionMessage(
+			locale,
+			"This booking does not meet the room's minimum advance notice.",
+			"ช่วงเวลานี้ไม่เป็นไปตามกฎแจ้งล่วงหน้าขั้นต่ำของห้อง",
+		);
+	}
+
+	if (message === "Room booking exceeds booking window") {
+		return requestActionMessage(
+			locale,
+			"This booking falls outside the room booking window.",
+			"ช่วงเวลานี้อยู่นอกช่วงวันที่ห้องเปิดให้จอง",
+		);
+	}
+
+	if (message === "Room is blocked during the requested period") {
+		return requestActionMessage(
+			locale,
+			"The room is blocked during the requested period.",
+			"ห้องถูกปิดใช้งานในช่วงเวลาที่เลือก",
+		);
+	}
+
+	if (message === "Room is already reserved for the requested period") {
+		return requestActionMessage(
+			locale,
+			"The room is already reserved during the requested period.",
+			"ห้องถูกจองแล้วในช่วงเวลาที่เลือก",
+		);
+	}
+
+	if (message === "One or more equipment items are not requestable") {
+		return requestActionMessage(
+			locale,
+			"One or more selected equipment items cannot be requested.",
+			"มีอุปกรณ์อย่างน้อยหนึ่งรายการที่ไม่สามารถแนบคำขอได้",
+		);
+	}
+
+	if (message === "Equipment requests are not allowed for this room") {
+		return requestActionMessage(
+			locale,
+			"This room does not allow additional equipment requests.",
+			"ห้องนี้ไม่เปิดให้แนบคำขออุปกรณ์เพิ่มเติม",
+		);
+	}
+
+	if (message.startsWith("Reservable room ") && message.endsWith(" not found")) {
+		return requestActionMessage(
+			locale,
+			"This room could not be found anymore.",
+			"ไม่พบข้อมูลห้องนี้แล้ว",
+		);
+	}
+
+	if (message.startsWith("Room ") && message.endsWith(" is inactive")) {
+		return requestActionMessage(
+			locale,
+			"This room is no longer active for booking.",
+			"ห้องนี้ไม่พร้อมให้จองแล้ว",
+		);
+	}
+
+	if (message.startsWith("Room ") && message.includes(" is not configured with an approver")) {
+		return requestActionMessage(
+			locale,
+			"This room is not fully configured for booking approval.",
+			"ห้องนี้ยังตั้งค่าผู้อนุมัติไม่ครบ จึงยังไม่พร้อมให้จอง",
+		);
+	}
+
+	return requestActionMessage(
+		locale,
+		"Room booking could not be submitted.",
+		"ไม่สามารถส่งคำขอจองห้องได้",
+	);
 }

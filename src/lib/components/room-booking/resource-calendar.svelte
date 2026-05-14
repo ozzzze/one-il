@@ -98,7 +98,7 @@
 		endAt: string;
 		badgeLabel: string;
 		badgeVariant: BadgeVariant;
-		href: string | null;
+		href: `/requests/${string}` | null;
 		setupBufferMinutes: number;
 		cleanupBufferMinutes: number;
 	};
@@ -192,15 +192,28 @@
 		return `${year}-${month}-${day}`;
 	}
 
+	function parseDateParts(dateValue: string) {
+		const normalized = dateValue.length >= 10 ? dateValue.slice(0, 10) : dateValue;
+		const [year, month, day] = normalized.split("-").map(Number);
+		return { year, month, day };
+	}
+
+	function formatDateKey(date: Date): string {
+		return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}-${String(date.getUTCDate()).padStart(2, "0")}`;
+	}
+
+	function dateFromKey(dateValue: string): Date {
+		const { year, month, day } = parseDateParts(dateValue);
+		return new Date(year, month - 1, day);
+	}
+
 	function shiftDate(dateValue: string, days: number): string {
-		const baseDateMs = new Date(`${dateValue}T00:00:00Z`).getTime();
-		return new Date(baseDateMs + days * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+		const { year, month, day } = parseDateParts(dateValue);
+		return formatDateKey(new Date(Date.UTC(year, month - 1, day + days)));
 	}
 
 	function formatDateLabel(dateValue: string, options: Intl.DateTimeFormatOptions): string {
-		return new Intl.DateTimeFormat(locale === "th" ? "th-TH" : "en-US", options).format(
-			new Date(`${dateValue}T00:00:00`),
-		);
+		return new Intl.DateTimeFormat(locale === "th" ? "th-TH" : "en-US", options).format(dateFromKey(dateValue));
 	}
 
 	function roomName(room: RoomEntry): string {
@@ -232,8 +245,8 @@
 		return timeValue(hour * 60 + minute + minutes);
 	}
 
-	function requestDetailHref(requestId: string) {
-		return resolve(`/requests/${requestId}` as `/requests/${string}`);
+	function requestDetailPath(requestId: string): `/requests/${string}` {
+		return `/requests/${requestId}` as `/requests/${string}`;
 	}
 
 	function eventOverlapsDay(startAt: string, endAt: string, dateValue: string): boolean {
@@ -347,7 +360,7 @@
 				endAt: booking.endAt,
 				badgeLabel: getFacultyRequestStatusLabel(locale, booking.status),
 				badgeVariant: bookingStatusVariant(booking.status),
-				href: requestDetailHref(booking.requestId),
+				href: requestDetailPath(booking.requestId),
 				setupBufferMinutes: booking.setupBufferMinutes,
 				cleanupBufferMinutes: booking.cleanupBufferMinutes,
 			});
@@ -642,7 +655,7 @@
 										{#each segmentsByRoomDay[room.id]?.[day.value] ?? [] as segment, segmentIndex (segment.key)}
 											{#if segment.href}
 												<a
-													href={segment.href}
+													href={resolve(segment.href)}
 													class={cn(
 														"pointer-events-auto absolute top-2 bottom-2 overflow-hidden rounded-md border px-2 py-1 shadow-sm transition hover:shadow-md",
 														eventTone(segment),

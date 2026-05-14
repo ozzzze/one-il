@@ -7,11 +7,23 @@ import { toFacultyDateTimeIso } from "$lib/requests/faculty-request.js";
 import {
 	loadReservableAssetCatalog,
 	loadRoomOptions,
+	normalizeSelectedDate,
 	requestActionMessage,
+	roomBookingActionErrorMessage,
 	submitRoomBookingRequest,
 } from "$lib/server/faculty-requests.js";
 import { getServiceRoleClient } from "$lib/server/supabase-admin.js";
 import { assertPermission } from "$lib/server/guards.js";
+
+function parsePositiveInteger(value: string | null, fallback: number): number {
+	const parsed = Number(value);
+	return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function parseNonNegativeInteger(value: string | null, fallback: number): number {
+	const parsed = Number(value);
+	return Number.isInteger(parsed) && parsed >= 0 ? parsed : fallback;
+}
 
 export const load: PageServerLoad = async ({ url, locals }) => {
 	assertPermission(locals.user, "requests:create");
@@ -35,6 +47,11 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 
 	const requestedRoomId = url.searchParams.get("roomId") ?? "";
 	const selectedRoom = rooms.find((room) => room.id === requestedRoomId) ?? rooms[0] ?? null;
+	const catalogIds = new Set(equipmentCatalog.map((asset) => asset.id));
+	const defaultEquipmentAssetIds =
+		selectedRoom?.allowEquipmentRequest
+			? url.searchParams.getAll("equipmentAssetIds").filter((id) => catalogIds.has(id))
+			: [];
 
 	return {
 		kind,
@@ -45,12 +62,25 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 		equipmentCatalog,
 		roomBookingDefaults: {
 			roomId: selectedRoom?.id ?? "",
-			bookingDate: url.searchParams.get("date") ?? new Date().toISOString().slice(0, 10),
+			title: url.searchParams.get("title") ?? "",
+			details: url.searchParams.get("details") ?? "",
+			purpose: url.searchParams.get("purpose") ?? "",
+			contactName: url.searchParams.get("contactName") ?? "",
+			contactEmail: url.searchParams.get("contactEmail") ?? "",
+			contactPhone: url.searchParams.get("contactPhone") ?? "",
+			bookingDate: normalizeSelectedDate(url.searchParams.get("date")),
 			startTime: url.searchParams.get("startTime") ?? "09:00",
 			endTime: url.searchParams.get("endTime") ?? "10:00",
-			setupBufferMinutes: selectedRoom?.setupBufferMinutes ?? 15,
-			cleanupBufferMinutes: selectedRoom?.cleanupBufferMinutes ?? 15,
-			attendeeCount: 1,
+			setupBufferMinutes: parseNonNegativeInteger(
+				url.searchParams.get("setupBufferMinutes"),
+				selectedRoom?.setupBufferMinutes ?? 15,
+			),
+			cleanupBufferMinutes: parseNonNegativeInteger(
+				url.searchParams.get("cleanupBufferMinutes"),
+				selectedRoom?.cleanupBufferMinutes ?? 15,
+			),
+			attendeeCount: parsePositiveInteger(url.searchParams.get("attendeeCount"), 1),
+			equipmentAssetIds: defaultEquipmentAssetIds,
 		},
 	};
 };
@@ -136,14 +166,7 @@ export const actions = {
 				});
 			} catch (error) {
 				return fail(400, {
-					message:
-						error instanceof Error
-							? error.message
-							: requestActionMessage(
-									locals.locale,
-									"Room booking could not be submitted.",
-									"ไม่สามารถส่งคำขอจองห้องได้",
-								),
+					message: roomBookingActionErrorMessage(locals.locale, error),
 					values: raw,
 				});
 			}
