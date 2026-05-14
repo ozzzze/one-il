@@ -1,5 +1,12 @@
 <script lang="ts">
 	import { resolve } from "$app/paths";
+	import ArrowRightIcon from "@lucide/svelte/icons/arrow-right";
+	import CalendarCheckIcon from "@lucide/svelte/icons/calendar-check";
+	import CalendarDaysIcon from "@lucide/svelte/icons/calendar-days";
+	import CalendarIcon from "@lucide/svelte/icons/calendar";
+	import ChevronLeftIcon from "@lucide/svelte/icons/chevron-left";
+	import ChevronRightIcon from "@lucide/svelte/icons/chevron-right";
+	import XIcon from "@lucide/svelte/icons/x";
 	import BookingDrawer from "$lib/components/room-booking/booking-drawer.svelte";
 	import ResourceCalendar from "$lib/components/room-booking/resource-calendar.svelte";
 	import { Badge, type BadgeVariant } from "$lib/components/ui/badge/index.js";
@@ -215,7 +222,8 @@
 		<div class="flex flex-wrap gap-2">
 			{#if data.canManage}
 				<Button href={resolve("/room-booking/manage")} variant="outline" size="sm">
-					{copy.manageBookings}
+					<CalendarCheckIcon class="size-4" aria-hidden="true" />
+					<span>{copy.manageBookings}</span>
 				</Button>
 			{/if}
 			<Button
@@ -223,14 +231,16 @@
 				variant={data.view === "day" ? "default" : "outline"}
 				size="sm"
 			>
-				{copy.dayView}
+				<CalendarIcon class="size-4" aria-hidden="true" />
+				<span>{copy.dayView}</span>
 			</Button>
 			<Button
 				href={buildPageHref({ view: "week" })}
 				variant={data.view === "week" ? "default" : "outline"}
 				size="sm"
 			>
-				{copy.weekView}
+				<CalendarDaysIcon class="size-4" aria-hidden="true" />
+				<span>{copy.weekView}</span>
 			</Button>
 		</div>
 	</header>
@@ -244,10 +254,12 @@
 				</div>
 				<div class="flex flex-wrap gap-2">
 					<Button href={buildPageHref({ date: previousDate })} variant="outline" size="sm">
-						{copy.previousRange}
+						<ChevronLeftIcon class="size-4" aria-hidden="true" />
+						<span>{copy.previousRange}</span>
 					</Button>
 					<Button href={buildPageHref({ date: nextDate })} variant="outline" size="sm">
-						{copy.nextRange}
+						<span>{copy.nextRange}</span>
+						<ChevronRightIcon class="size-4" aria-hidden="true" />
 					</Button>
 				</div>
 			</div>
@@ -282,9 +294,13 @@
 				</div>
 
 				<div class="flex flex-wrap items-end gap-2">
-					<Button type="submit" size="sm">{copy.applyFilters}</Button>
+					<Button type="submit" size="sm">
+						<CalendarCheckIcon class="size-4" aria-hidden="true" />
+						<span>{copy.applyFilters}</span>
+					</Button>
 					<Button href={buildPageHref({ roomType: null })} variant="outline" size="sm">
-						{copy.clearFilters}
+						<XIcon class="size-4" aria-hidden="true" />
+						<span>{copy.clearFilters}</span>
 					</Button>
 				</div>
 			</form>
@@ -332,7 +348,8 @@
 				<Card.Description>{rangeLabel}</Card.Description>
 			</div>
 			<Button href={requestsPath} variant="outline" size="sm">
-				{copy.viewAllRequests}
+				<span>{copy.viewAllRequests}</span>
+				<ArrowRightIcon class="size-4" aria-hidden="true" />
 			</Button>
 		</Card.Header>
 		<Card.Content>

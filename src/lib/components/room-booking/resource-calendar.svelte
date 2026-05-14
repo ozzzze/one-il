@@ -444,8 +444,16 @@
 							item.startAt.slice(0, 10) === day.value ? minutesFromIso(item.startAt) : 0;
 						const rawEnd =
 							item.endAt.slice(0, 10) === day.value ? minutesFromIso(item.endAt) : 24 * 60;
-						const clampedStart = Math.max(visibleRange.start, rawStart);
-						const clampedEnd = Math.min(visibleRange.end, rawEnd);
+						const occupiedStart =
+							item.startAt.slice(0, 10) === day.value
+								? rawStart - item.setupBufferMinutes
+								: 0;
+						const occupiedEnd =
+							item.endAt.slice(0, 10) === day.value
+								? rawEnd + item.cleanupBufferMinutes
+								: 24 * 60;
+						const clampedStart = Math.max(visibleRange.start, occupiedStart);
+						const clampedEnd = Math.min(visibleRange.end, occupiedEnd);
 
 						if (clampedEnd <= clampedStart) return null;
 
@@ -616,7 +624,7 @@
 								<div
 									class={cn(
 										"relative border-r last:border-r-0",
-										day.isToday ? "bg-primary/[0.03]" : "bg-background",
+										day.isToday ? "bg-primary/3" : "bg-background",
 									)}
 									style={`width:${dayWidth}px;`}
 								>
@@ -634,7 +642,7 @@
 												type="button"
 												class={cn(
 													"border-r border-dashed transition last:border-r-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-0 focus-visible:outline-none",
-													state?.tone === "occupied" && "bg-destructive/[0.05]",
+													state?.tone === "occupied" && "bg-destructive/5",
 													state?.tone === "rule" && "bg-muted/40",
 													state?.tone === "available" &&
 														"hover:bg-emerald-500/10 focus-visible:bg-emerald-500/10",
