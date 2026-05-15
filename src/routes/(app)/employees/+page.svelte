@@ -43,6 +43,7 @@
 	let contractFilter = $state<string>("ALL");
 	let pageSize = $state(10);
 	let currentPage = $state(1);
+	let lastEmployeeListFilterKey = "";
 
 	const copy = $derived.by(() =>
 		data.locale === "th"
@@ -134,16 +135,16 @@
 	);
 
 	$effect(() => {
-		search;
-		orgUnitFilter;
-		hrStatusFilter;
-		contractFilter;
-		currentPage = 1;
-	});
-
-	$effect(() => {
+		const filterKey = `${search}|${orgUnitFilter}|${hrStatusFilter}|${contractFilter}`;
+		if (filterKey !== lastEmployeeListFilterKey) {
+			lastEmployeeListFilterKey = filterKey;
+			currentPage = 1;
+			return;
+		}
 		const totalPages = Math.max(1, Math.ceil(filteredEmployees.length / pageSize));
-		if (currentPage > totalPages) currentPage = totalPages;
+		if (currentPage > totalPages) {
+			currentPage = totalPages;
+		}
 	});
 
 	$effect(() => {

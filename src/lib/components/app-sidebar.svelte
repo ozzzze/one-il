@@ -13,6 +13,7 @@
 	import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
 	import * as Avatar from "$lib/components/ui/avatar/index.js";
 	import { Badge } from "$lib/components/ui/badge/index.js";
+	import { afterNavigate } from "$app/navigation";
 	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
 	import type { Role } from "$lib/auth/roles.js";
@@ -21,6 +22,20 @@
 	import type { NavMenuGroup, NavMenuItem } from "$lib/navigation/catalog.js";
 	import { menuIconFor } from "$lib/navigation/icons.js";
 	import { cn } from "$lib/utils.js";
+	import {
+		isEmployeesPath,
+		isLeavePath,
+		isOrgPath,
+	} from "$lib/navigation/sidebar-expand.js";
+	import {
+		expandMenuBranch,
+		openHrHub,
+		OFFICE_LEAVE_ID as LEAVE_BRANCH_ID,
+		sidebarMenuExpand,
+		toggleHrHub,
+		toggleMenuBranch,
+		isMenuBranchExpanded,
+	} from "$lib/navigation/sidebar-menu-expand.svelte.js";
 
 	type Props = {
 		user: {
@@ -39,32 +54,23 @@
 
 	const OFFICE_HR_ID = "office-hr";
 	const OFFICE_ORG_ID = "office-organization";
-	const OFFICE_LEAVE_ID = "office-leave";
-
-	let hrHubExpanded = $state(false);
-	let menuBranchExpanded = $state<Record<string, boolean>>({});
-
 	const menuItemLabels = $derived(getMenuItemLabels(locale));
 
-	function isEmployeesPath(pathname: string): boolean {
-		return pathname === "/employees" || pathname.startsWith("/employees/");
+	function autoExpandForPath(pathname: string) {
+		if (isEmployeesPath(pathname) || isOrgPath(pathname)) {
+			openHrHub();
+		}
+		if (isLeavePath(pathname)) {
+			expandMenuBranch(LEAVE_BRANCH_ID);
+		}
 	}
 
-	function isOrgPath(pathname: string): boolean {
-		return pathname.startsWith("/organization");
-	}
-
-	function isLeavePath(pathname: string): boolean {
-		return pathname === "/leave" || pathname.startsWith("/leave/");
-	}
-
-	function isBranchExpanded(itemId: string): boolean {
-		return menuBranchExpanded[itemId] === true;
-	}
-
-	function toggleBranch(itemId: string) {
-		menuBranchExpanded = { ...menuBranchExpanded, [itemId]: !isBranchExpanded(itemId) };
-	}
+	afterNavigate(({ to }) => {
+		const pathname = to?.url.pathname;
+		if (pathname) {
+			autoExpandForPath(pathname);
+		}
+	});
 
 	function isPathActive(href: string | null): boolean {
 		if (!href) return false;
@@ -73,15 +79,10 @@
 		return p === href || p.startsWith(`${href}/`);
 	}
 
-	$effect(() => {
-		const p = page.url.pathname;
-		if ((isEmployeesPath(p) || isOrgPath(p)) && !hrHubExpanded) {
-			hrHubExpanded = true;
-		}
-		if (isLeavePath(p) && !menuBranchExpanded[OFFICE_LEAVE_ID]) {
-			menuBranchExpanded = { ...menuBranchExpanded, [OFFICE_LEAVE_ID]: true };
-		}
-	});
+	function isBranchActive(item: NavMenuItem): boolean {
+		if (item.href && isPathActive(item.href)) return true;
+		return item.children.some((c) => isPathActive(c.href));
+	}
 
 	function officeItemsWithoutMergedOrg(items: readonly NavMenuItem[]): NavMenuItem[] {
 		return items.filter((i) => i.id !== OFFICE_ORG_ID);
@@ -171,32 +172,50 @@
 
 {#snippet menuBranch(item: NavMenuItem)}
 	{@const BranchIcon = menuIconFor(item.iconKey)}
-	{@const expanded = isBranchExpanded(item.id)}
-	{@const branchActive = item.children.some((c) => isPathActive(c.href))}
+	{@const expanded = isMenuBranchExpanded(item.id)}
+	{@const branchActive = isBranchActive(item)}
 	<Sidebar.MenuItem class="group-data-[collapsible=icon]:hidden">
-		<Sidebar.MenuButton
-			type="button"
-			class="w-full"
-			aria-expanded={expanded}
-			onclick={() => toggleBranch(item.id)}
-			isActive={branchActive || item.children.some((c) => isPathActive(c.href))}
-		>
-			<BranchIcon class="size-4" />
-			<span class="flex-1 truncate text-start">{item.label}</span>
-			<ChevronDownIcon
-				class={cn(
-					"ml-auto size-4 shrink-0 transition-transform duration-200",
-					expanded ? "rotate-180" : "",
-				)}
-			/>
-		</Sidebar.MenuButton>
-		{#if expanded}
-			<Sidebar.MenuSub>
-				{#each item.children as menuChild (menuChild.id)}
-					{@render menuSubLeaf(menuChild)}
-				{/each}
-			</Sidebar.MenuSub>
+		{#if item.accessible}
+			<Sidebar.MenuButton
+				type="button"
+				data-testid="sidebar-branch-toggle-{item.id}"
+				aria-expanded={expanded}
+				isActive={branchActive}
+				onclick={() => toggleMenuBranch(item.id)}
+			>
+				<BranchIcon class="size-4" />
+				<span class="flex-1 truncate text-start">{item.label}</span>
+				<ChevronDownIcon
+					class={cn(
+						"ml-auto size-4 shrink-0 transition-transform duration-200",
+						expanded ? "rotate-180" : "",
+					)}
+				/>
+			</Sidebar.MenuButton>
+		{:else}
+			<Sidebar.MenuButton
+				type="button"
+				class="w-full cursor-not-allowed"
+				disabled
+				isActive={branchActive}
+			>
+				<BranchIcon class="size-4" />
+				<span class="flex min-w-0 flex-1 flex-col items-start gap-0.5 text-start">
+					<span class="truncate">{item.label}</span>
+					<span class="text-muted-foreground max-w-full truncate text-[10px] font-normal leading-tight">
+						{lockHint(item)}
+					</span>
+				</span>
+			</Sidebar.MenuButton>
 		{/if}
+		<Sidebar.MenuSub
+			data-testid="sidebar-branch-submenu-{item.id}"
+			class={cn(!expanded && "hidden")}
+		>
+			{#each item.children as menuChild (menuChild.id)}
+				{@render menuSubLeaf(menuChild)}
+			{/each}
+		</Sidebar.MenuSub>
 	</Sidebar.MenuItem>
 	{#each item.children as menuChild (menuChild.id)}
 		{@const ChildIcon = menuIconFor(menuChild.iconKey)}
@@ -263,24 +282,45 @@
 								{@const EmployeesIcon = menuIconFor(item.iconKey)}
 								{@const OrganizationIcon = menuIconFor(orgMenuItem.iconKey)}
 								<Sidebar.MenuItem class="group-data-[collapsible=icon]:hidden">
-									<Sidebar.MenuButton
-										type="button"
-										class="w-full"
-										aria-expanded={hrHubExpanded}
-										onclick={() => (hrHubExpanded = !hrHubExpanded)}
-										isActive={isEmployeesPath(page.url.pathname) || isOrgPath(page.url.pathname)}
+									{#if item.accessible || orgMenuItem.accessible}
+										<Sidebar.MenuButton
+											type="button"
+											data-testid="sidebar-hr-toggle"
+											aria-expanded={sidebarMenuExpand.hrHubExpanded}
+											isActive={isEmployeesPath(page.url.pathname) || isOrgPath(page.url.pathname)}
+											onclick={() => toggleHrHub()}
+										>
+											<EmployeesIcon class="size-4" />
+											<span class="flex-1 truncate text-start">{menuItemLabels.employees}</span>
+											<ChevronDownIcon
+												class={cn(
+													"ml-auto size-4 shrink-0 transition-transform duration-200",
+													sidebarMenuExpand.hrHubExpanded ? "rotate-180" : "",
+												)}
+											/>
+										</Sidebar.MenuButton>
+									{:else}
+										<Sidebar.MenuButton
+											type="button"
+											class="w-full cursor-not-allowed"
+											disabled
+											isActive={isEmployeesPath(page.url.pathname) || isOrgPath(page.url.pathname)}
+										>
+											<EmployeesIcon class="size-4" />
+											<span class="flex min-w-0 flex-1 flex-col items-start gap-0.5 text-start">
+												<span class="truncate">{menuItemLabels.employees}</span>
+												<span
+													class="text-muted-foreground max-w-full truncate text-[10px] font-normal leading-tight"
+												>
+													{lockHint(item)}
+												</span>
+											</span>
+										</Sidebar.MenuButton>
+									{/if}
+									<Sidebar.MenuSub
+										data-testid="sidebar-hr-submenu"
+										class={cn(!sidebarMenuExpand.hrHubExpanded && "hidden")}
 									>
-										<EmployeesIcon class="size-4" />
-										<span class="flex-1 truncate text-start">{menuItemLabels.employees}</span>
-										<ChevronDownIcon
-											class={cn(
-												"ml-auto size-4 shrink-0 transition-transform duration-200",
-												hrHubExpanded ? "rotate-180" : "",
-											)}
-										/>
-									</Sidebar.MenuButton>
-									{#if hrHubExpanded}
-										<Sidebar.MenuSub>
 											<Sidebar.MenuSubItem>
 												{#if item.accessible && item.href}
 													<Sidebar.MenuSubButton
@@ -333,8 +373,7 @@
 													</Sidebar.MenuSubButton>
 												{/if}
 											</Sidebar.MenuSubItem>
-										</Sidebar.MenuSub>
-									{/if}
+									</Sidebar.MenuSub>
 								</Sidebar.MenuItem>
 								<Sidebar.MenuItem class="hidden group-data-[collapsible=icon]:block">
 									{#if item.accessible && item.href}

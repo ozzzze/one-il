@@ -8,10 +8,12 @@ export type DevErrorEntry = {
 
 const MAX_ENTRIES = 40;
 
-export const devErrorLog = $state<{ entries: DevErrorEntry[]; installed: boolean }>({
+export const devErrorLog = $state<{ entries: DevErrorEntry[] }>({
 	entries: [],
-	installed: false,
 });
+
+/** Non-reactive guard — must not live on $state or installDevErrorCapture loops in $effect. */
+let captureInstalled = false;
 
 function nextId(): string {
 	return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -52,9 +54,9 @@ function pushFromConsoleArgs(args: unknown[]) {
 }
 
 export function installDevErrorCapture() {
-	if (!import.meta.env.DEV || devErrorLog.installed || typeof window === "undefined") return;
+	if (!import.meta.env.DEV || captureInstalled || typeof window === "undefined") return;
 
-	devErrorLog.installed = true;
+	captureInstalled = true;
 
 	const onError = (event: ErrorEvent) => {
 		const message = event.message || "Unknown error";
@@ -85,7 +87,7 @@ export function installDevErrorCapture() {
 		window.removeEventListener("error", onError);
 		window.removeEventListener("unhandledrejection", onRejection);
 		console.error = originalConsoleError;
-		devErrorLog.installed = false;
+		captureInstalled = false;
 	};
 }
 
