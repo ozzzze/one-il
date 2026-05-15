@@ -14,11 +14,13 @@
 	import * as Avatar from "$lib/components/ui/avatar/index.js";
 	import { Badge } from "$lib/components/ui/badge/index.js";
 	import { resolve } from "$app/paths";
+	import { page } from "$app/state";
 	import type { Role } from "$lib/auth/roles.js";
-	import { getUiLabels } from "$lib/content/labels.js";
+	import { getMenuItemLabels, getUiLabels } from "$lib/content/labels.js";
 	import type { Locale } from "$lib/i18n/locales.js";
 	import type { NavMenuGroup, NavMenuItem } from "$lib/navigation/catalog.js";
 	import { menuIconFor } from "$lib/navigation/icons.js";
+	import { cn } from "$lib/utils.js";
 
 	type Props = {
 		user: {
@@ -34,6 +36,56 @@
 	};
 
 	let { user, navMenuGroups, locale, notificationCount = 0 }: Props = $props();
+
+	const OFFICE_HR_ID = "office-hr";
+	const OFFICE_ORG_ID = "office-organization";
+	const OFFICE_LEAVE_ID = "office-leave";
+
+	let hrHubExpanded = $state(false);
+	let menuBranchExpanded = $state<Record<string, boolean>>({});
+
+	const menuItemLabels = $derived(getMenuItemLabels(locale));
+
+	function isEmployeesPath(pathname: string): boolean {
+		return pathname === "/employees" || pathname.startsWith("/employees/");
+	}
+
+	function isOrgPath(pathname: string): boolean {
+		return pathname.startsWith("/organization");
+	}
+
+	function isLeavePath(pathname: string): boolean {
+		return pathname === "/leave" || pathname.startsWith("/leave/");
+	}
+
+	function isBranchExpanded(itemId: string): boolean {
+		return menuBranchExpanded[itemId] === true;
+	}
+
+	function toggleBranch(itemId: string) {
+		menuBranchExpanded = { ...menuBranchExpanded, [itemId]: !isBranchExpanded(itemId) };
+	}
+
+	function isPathActive(href: string | null): boolean {
+		if (!href) return false;
+		const p = page.url.pathname;
+		if (href === "/") return p === "/";
+		return p === href || p.startsWith(`${href}/`);
+	}
+
+	$effect(() => {
+		const p = page.url.pathname;
+		if ((isEmployeesPath(p) || isOrgPath(p)) && !hrHubExpanded) {
+			hrHubExpanded = true;
+		}
+		if (isLeavePath(p) && !menuBranchExpanded[OFFICE_LEAVE_ID]) {
+			menuBranchExpanded = { ...menuBranchExpanded, [OFFICE_LEAVE_ID]: true };
+		}
+	});
+
+	function officeItemsWithoutMergedOrg(items: readonly NavMenuItem[]): NavMenuItem[] {
+		return items.filter((i) => i.id !== OFFICE_ORG_ID);
+	}
 
 	function getInitials(name: string) {
 		return name
@@ -88,6 +140,93 @@
 	</Sidebar.MenuItem>
 {/snippet}
 
+{#snippet menuSubLeaf(menuChild: NavMenuItem)}
+	<Sidebar.MenuSubItem>
+		{#if menuChild.accessible && menuChild.href}
+			<Sidebar.MenuSubButton
+				href={resolve(menuChild.href as "/")}
+				isActive={isPathActive(menuChild.href)}
+				size="sm"
+			>
+				{menuChild.label}
+			</Sidebar.MenuSubButton>
+		{:else}
+			<Sidebar.MenuSubButton size="sm">
+				{#snippet child({ props })}
+					<button type="button" disabled class="w-full cursor-not-allowed opacity-60" {...props}>
+						<span class="flex min-w-0 flex-1 flex-col items-start gap-0.5 text-start">
+							<span class="truncate">{menuChild.label}</span>
+							<span
+								class="text-muted-foreground max-w-24 truncate text-[10px] font-normal leading-tight"
+							>
+								{lockHint(menuChild)}
+							</span>
+						</span>
+					</button>
+				{/snippet}
+			</Sidebar.MenuSubButton>
+		{/if}
+	</Sidebar.MenuSubItem>
+{/snippet}
+
+{#snippet menuBranch(item: NavMenuItem)}
+	{@const BranchIcon = menuIconFor(item.iconKey)}
+	{@const expanded = isBranchExpanded(item.id)}
+	{@const branchActive = item.children.some((c) => isPathActive(c.href))}
+	<Sidebar.MenuItem class="group-data-[collapsible=icon]:hidden">
+		<Sidebar.MenuButton
+			type="button"
+			class="w-full"
+			aria-expanded={expanded}
+			onclick={() => toggleBranch(item.id)}
+			isActive={branchActive || item.children.some((c) => isPathActive(c.href))}
+		>
+			<BranchIcon class="size-4" />
+			<span class="flex-1 truncate text-start">{item.label}</span>
+			<ChevronDownIcon
+				class={cn(
+					"ml-auto size-4 shrink-0 transition-transform duration-200",
+					expanded ? "rotate-180" : "",
+				)}
+			/>
+		</Sidebar.MenuButton>
+		{#if expanded}
+			<Sidebar.MenuSub>
+				{#each item.children as menuChild (menuChild.id)}
+					{@render menuSubLeaf(menuChild)}
+				{/each}
+			</Sidebar.MenuSub>
+		{/if}
+	</Sidebar.MenuItem>
+	{#each item.children as menuChild (menuChild.id)}
+		{@const ChildIcon = menuIconFor(menuChild.iconKey)}
+		<Sidebar.MenuItem class="hidden group-data-[collapsible=icon]:block">
+			{#if menuChild.accessible && menuChild.href}
+				<Sidebar.MenuButton tooltipContent={menuChild.label} isActive={isPathActive(menuChild.href)}>
+					{#snippet child({ props })}
+						<a href={resolve(menuChild.href as "/")} {...props}>
+							<ChildIcon class="size-4" />
+							<span>{menuChild.label}</span>
+						</a>
+					{/snippet}
+				</Sidebar.MenuButton>
+			{:else}
+				<Sidebar.MenuButton type="button" disabled class="cursor-not-allowed">
+					<ChildIcon class="size-4" />
+					<span class="flex min-w-0 flex-1 flex-col items-start gap-0.5 text-left">
+						<span>{menuChild.label}</span>
+						<span
+							class="text-muted-foreground max-w-full truncate text-[10px] font-normal leading-tight"
+						>
+							{lockHint(menuChild)}
+						</span>
+					</span>
+				</Sidebar.MenuButton>
+			{/if}
+		</Sidebar.MenuItem>
+	{/each}
+{/snippet}
+
 <Sidebar.Root>
 	<Sidebar.Header>
 		<Sidebar.Menu>
@@ -113,12 +252,142 @@
 
 	<Sidebar.Content>
 		{#each navMenuGroups as group (group.code)}
+			{@const orgMenuItem =
+				group.code === "office" ? group.items.find((i) => i.id === OFFICE_ORG_ID) ?? null : null}
 			<Sidebar.Group>
 				<Sidebar.GroupLabel>{group.label}</Sidebar.GroupLabel>
 				<Sidebar.GroupContent>
 					<Sidebar.Menu>
-						{#each group.items as item (item.id)}
-							{@render menuLeaf(item)}
+						{#each (group.code === "office" && orgMenuItem ? officeItemsWithoutMergedOrg(group.items) : group.items) as item (item.id)}
+							{#if group.code === "office" && item.id === OFFICE_HR_ID && orgMenuItem}
+								{@const EmployeesIcon = menuIconFor(item.iconKey)}
+								{@const OrganizationIcon = menuIconFor(orgMenuItem.iconKey)}
+								<Sidebar.MenuItem class="group-data-[collapsible=icon]:hidden">
+									<Sidebar.MenuButton
+										type="button"
+										class="w-full"
+										aria-expanded={hrHubExpanded}
+										onclick={() => (hrHubExpanded = !hrHubExpanded)}
+										isActive={isEmployeesPath(page.url.pathname) || isOrgPath(page.url.pathname)}
+									>
+										<EmployeesIcon class="size-4" />
+										<span class="flex-1 truncate text-start">{menuItemLabels.employees}</span>
+										<ChevronDownIcon
+											class={cn(
+												"ml-auto size-4 shrink-0 transition-transform duration-200",
+												hrHubExpanded ? "rotate-180" : "",
+											)}
+										/>
+									</Sidebar.MenuButton>
+									{#if hrHubExpanded}
+										<Sidebar.MenuSub>
+											<Sidebar.MenuSubItem>
+												{#if item.accessible && item.href}
+													<Sidebar.MenuSubButton
+														href={resolve(item.href as "/")}
+														isActive={isEmployeesPath(page.url.pathname)}
+														size="sm"
+													>
+														{ui.employeeFallback}
+													</Sidebar.MenuSubButton>
+												{:else}
+													<Sidebar.MenuSubButton size="sm">
+														{#snippet child({ props })}
+															<button type="button" disabled {...props}>
+																<span class="flex min-w-0 flex-1 flex-col items-start gap-0.5 text-start">
+																	<span class="truncate">{ui.employeeFallback}</span>
+																	<span
+																		class="text-muted-foreground max-w-24 truncate text-[10px] font-normal leading-tight"
+																	>
+																		{lockHint(item)}
+																	</span>
+																</span>
+															</button>
+														{/snippet}
+													</Sidebar.MenuSubButton>
+												{/if}
+											</Sidebar.MenuSubItem>
+											<Sidebar.MenuSubItem>
+												{#if orgMenuItem.accessible && orgMenuItem.href}
+													<Sidebar.MenuSubButton
+														href={resolve(orgMenuItem.href as "/")}
+														isActive={isOrgPath(page.url.pathname)}
+														size="sm"
+													>
+														{menuItemLabels.organization}
+													</Sidebar.MenuSubButton>
+												{:else}
+													<Sidebar.MenuSubButton size="sm">
+														{#snippet child({ props })}
+															<button type="button" disabled {...props}>
+																<span class="flex min-w-0 flex-1 flex-col items-start gap-0.5 text-start">
+																	<span class="truncate">{menuItemLabels.organization}</span>
+																	<span
+																		class="text-muted-foreground max-w-24 truncate text-[10px] font-normal leading-tight"
+																	>
+																		{lockHint(orgMenuItem)}
+																	</span>
+																</span>
+															</button>
+														{/snippet}
+													</Sidebar.MenuSubButton>
+												{/if}
+											</Sidebar.MenuSubItem>
+										</Sidebar.MenuSub>
+									{/if}
+								</Sidebar.MenuItem>
+								<Sidebar.MenuItem class="hidden group-data-[collapsible=icon]:block">
+									{#if item.accessible && item.href}
+										<Sidebar.MenuButton
+											tooltipContent={menuItemLabels.employees}
+											isActive={isEmployeesPath(page.url.pathname)}
+										>
+											{#snippet child({ props })}
+												<a href={resolve(item.href as "/")} {...props}>
+													<EmployeesIcon class="size-4" />
+													<span>{menuItemLabels.employees}</span>
+												</a>
+											{/snippet}
+										</Sidebar.MenuButton>
+									{:else}
+										<Sidebar.MenuButton type="button" disabled class="cursor-not-allowed">
+											<EmployeesIcon class="size-4" />
+											<span>{menuItemLabels.employees}</span>
+										</Sidebar.MenuButton>
+									{/if}
+								</Sidebar.MenuItem>
+								<Sidebar.MenuItem class="hidden group-data-[collapsible=icon]:block">
+									{#if orgMenuItem.accessible && orgMenuItem.href}
+										<Sidebar.MenuButton
+											tooltipContent={menuItemLabels.organization}
+											isActive={isOrgPath(page.url.pathname)}
+										>
+											{#snippet child({ props })}
+												<a href={resolve(orgMenuItem.href as "/")} {...props}>
+													<OrganizationIcon class="size-4" />
+													<span>{menuItemLabels.organization}</span>
+												</a>
+											{/snippet}
+										</Sidebar.MenuButton>
+									{:else}
+										<Sidebar.MenuButton type="button" disabled class="cursor-not-allowed">
+											<OrganizationIcon class="size-4" />
+											<span class="flex min-w-0 flex-1 flex-col items-start gap-0.5 text-left">
+												<span>{menuItemLabels.organization}</span>
+												<span
+													class="text-muted-foreground max-w-full truncate text-[10px] font-normal leading-tight"
+												>
+													{lockHint(orgMenuItem)}
+												</span>
+											</span>
+										</Sidebar.MenuButton>
+									{/if}
+								</Sidebar.MenuItem>
+							{:else if item.children.length > 0}
+								{@render menuBranch(item)}
+							{:else}
+								{@render menuLeaf(item)}
+							{/if}
 						{/each}
 					</Sidebar.Menu>
 				</Sidebar.GroupContent>

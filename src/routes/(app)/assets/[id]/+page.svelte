@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { enhance } from "$app/forms";
-	import { resolve } from "$app/paths";
 	import { Badge } from "$lib/components/ui/badge/index.js";
 	import SaveSubmitButton from "$lib/components/save-submit-button.svelte";
 	import { getUiLabels } from "$lib/content/labels.js";
@@ -88,7 +87,6 @@
 		data.locale === "th"
 			? {
 					pageTitle: `ครุภัณฑ์ ${data.asset.assetNo} - ONE-IL`,
-					back: "กลับทะเบียนครุภัณฑ์",
 					loadError: "ข้อมูลประวัติหรือรายการอ้างอิงโหลดไม่สำเร็จ",
 					tabs: { register: "ทะเบียน", custody: "ผู้รับผิดชอบ", maintenance: "ซ่อมบำรุง", history: "ประวัติ" },
 					register: "ข้อมูลทะเบียนครุภัณฑ์",
@@ -134,7 +132,6 @@
 				}
 			: {
 					pageTitle: `Asset ${data.asset.assetNo} - ONE-IL`,
-					back: "Back to assets",
 					loadError: "History or reference data failed to load.",
 					tabs: { register: "Register", custody: "Custody", maintenance: "Maintenance", history: "History" },
 					register: "Asset register",
@@ -314,7 +311,6 @@
 
 <div class="space-y-6">
 	<section class="space-y-3">
-		<a href={resolve("/assets")} class="text-muted-foreground hover:text-foreground text-sm">{copy.back}</a>
 		<div class="flex flex-wrap items-start justify-between gap-3">
 			<div>
 				<h1 class="text-3xl font-bold tracking-tight">

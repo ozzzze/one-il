@@ -89,6 +89,8 @@
 			settings: menuLabels.settings,
 			docs: menuLabels.documentation,
 			"room-booking": menuLabels.roomBooking,
+			leave: menuLabels.leave,
+			holidays: menuLabels.holidays,
 		};
 
 		if (map[segment]) return map[segment];

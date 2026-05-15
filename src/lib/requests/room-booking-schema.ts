@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { roomTypes } from "$lib/requests/faculty-request.js";
+import { isRoomBookingWeekday } from "$lib/requests/room-booking-dates.js";
 
 const isoDatePattern = /^\d{4}-\d{2}-\d{2}$/;
 const hhmmPattern = /^(?:[01]\d|2[0-3]):[0-5]\d$/;
@@ -49,6 +50,10 @@ export const roomBookingSubmissionSchema = z
 	.refine((value) => value.endTime > value.startTime, {
 		message: "End time must be after start time",
 		path: ["endTime"],
+	})
+	.refine((value) => isRoomBookingWeekday(value.bookingDate), {
+		message: "Bookings are only allowed Monday through Friday",
+		path: ["bookingDate"],
 	});
 
 export type RoomBookingSubmission = z.infer<typeof roomBookingSubmissionSchema>;

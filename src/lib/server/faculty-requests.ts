@@ -11,8 +11,6 @@ import {
 import type { SessionUser } from "$lib/server/auth.js";
 import { currentEmployeeId, documentNo, type AppSupabaseClient } from "$lib/server/supply-asset.js";
 
-export type CalendarViewMode = "day" | "week";
-
 type MaybeOneOrMany<T> = T | T[] | null | undefined;
 
 type EmployeeLite = {
@@ -322,14 +320,14 @@ function addDays(dateValue: string, days: number): string {
 	return date.toISOString().slice(0, 10);
 }
 
-export function getCalendarRange(dateValue: string | null | undefined, view: CalendarViewMode) {
+export function getCalendarRange(dateValue: string | null | undefined) {
 	const selectedDate = normalizeSelectedDate(dateValue);
-	const endDate = addDays(selectedDate, view === "week" ? 7 : 1);
+	const rangeEndDate = addDays(selectedDate, 1);
 
 	return {
 		selectedDate,
 		rangeStart: `${selectedDate}T00:00:00${facultyTimeZoneOffset}`,
-		rangeEnd: `${endDate}T00:00:00${facultyTimeZoneOffset}`,
+		rangeEnd: `${rangeEndDate}T00:00:00${facultyTimeZoneOffset}`,
 	};
 }
 
@@ -429,9 +427,9 @@ export async function loadReservableAssetCatalog(admin: AppSupabaseClient): Prom
 
 export async function loadRoomCalendarData(
 	admin: AppSupabaseClient,
-	options: { selectedDate: string; view: CalendarViewMode; roomType?: string | null },
+	options: { selectedDate: string; roomType?: string | null },
 ): Promise<{ rooms: RoomOption[]; bookings: CalendarBooking[]; blocks: CalendarBlock[] }> {
-	const range = getCalendarRange(options.selectedDate, options.view);
+	const range = getCalendarRange(options.selectedDate);
 	const rooms = await loadRoomOptions(admin, {
 		includeInactive: false,
 		onlyWithApprover: true,

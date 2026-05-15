@@ -278,7 +278,7 @@
 			<PlusIcon class="mr-2 size-4" />
 			{copy.create}
 		</Button>
-		<p class="text-muted-foreground text-xs">
+		<p class="text-muted-foreground text-sm">
 			{filteredRows.length}
 			{copy.orgUnit}{filteredRows.length !== 1 && data.locale !== "th" ? "s" : ""}
 		</p>
@@ -287,36 +287,36 @@
 	<div class="rounded-md border">
 		<Table.Root>
 			<Table.Header>
-				<Table.Row class="h-9">
-					<Table.Head class="h-9 px-3 text-xs">{copy.columns.code}</Table.Head>
-					<Table.Head class="h-9 px-3 text-xs">{copy.columns.displayName}</Table.Head>
-					<Table.Head class="h-9 px-3 text-xs">{copy.columns.unitType}</Table.Head>
-					<Table.Head class="h-9 px-3 text-xs">{copy.columns.parent}</Table.Head>
-					<Table.Head class="h-9 px-3 text-xs">{copy.columns.sortOrder}</Table.Head>
-					<Table.Head class="h-9 px-3 text-xs">{copy.columns.isActive}</Table.Head>
-					<Table.Head class="h-9 px-3 w-[100px] text-xs">{copy.columns.actions}</Table.Head>
+				<Table.Row>
+					<Table.Head>{copy.columns.code}</Table.Head>
+					<Table.Head>{copy.columns.displayName}</Table.Head>
+					<Table.Head>{copy.columns.unitType}</Table.Head>
+					<Table.Head>{copy.columns.parent}</Table.Head>
+					<Table.Head>{copy.columns.sortOrder}</Table.Head>
+					<Table.Head>{copy.columns.isActive}</Table.Head>
+					<Table.Head class="w-[100px]">{copy.columns.actions}</Table.Head>
 				</Table.Row>
 			</Table.Header>
 			<Table.Body>
 				{#each filteredRows as row, i (row.id)}
-					<Table.Row class="h-9">
-						<Table.Cell class="px-3 py-1.5 text-xs font-mono">
+					<Table.Row>
+						<Table.Cell class="font-mono">
 							<span class={depthIndentClass(row.depth)}>{row.code}</span>
 						</Table.Cell>
-						<Table.Cell class="px-3 py-1.5 text-xs font-medium">
+						<Table.Cell class="font-medium">
 							<span class={depthIndentClass(row.depth)}>
 								{localizedDisplayName(row.name, row.name_en)}
 							</span>
 						</Table.Cell>
-						<Table.Cell class="px-3 py-1.5 text-xs">{unitTypeLabel(row.unit_type)}</Table.Cell>
-						<Table.Cell class="text-muted-foreground px-3 py-1.5 text-xs">{parentLabel(row.parent_unit_id)}</Table.Cell>
-						<Table.Cell class="px-3 py-1.5 text-xs">{row.sort_order}</Table.Cell>
-						<Table.Cell class="px-3 py-1.5 text-xs">
+						<Table.Cell>{unitTypeLabel(row.unit_type)}</Table.Cell>
+						<Table.Cell class="text-muted-foreground">{parentLabel(row.parent_unit_id)}</Table.Cell>
+						<Table.Cell>{row.sort_order}</Table.Cell>
+						<Table.Cell>
 							<Badge variant={row.is_active ? "default" : "secondary"}>
 								{row.is_active ? copy.active : copy.inactive}
 							</Badge>
 						</Table.Cell>
-						<Table.Cell class="px-3 py-1.5 text-xs">
+						<Table.Cell>
 							<div class="flex items-center gap-1">
 								<Button variant="ghost" size="icon" class="size-8" type="button" onclick={() => openEdit(row)}>
 									<PencilIcon class="size-4" />
@@ -335,7 +335,7 @@
 					</Table.Row>
 				{:else}
 					<Table.Row>
-						<Table.Cell colspan={7} class="h-16 text-center text-sm">
+						<Table.Cell colspan={7} class="h-24 text-center">
 							{copy.noMatch}
 						</Table.Cell>
 					</Table.Row>

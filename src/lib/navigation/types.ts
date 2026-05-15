@@ -6,6 +6,8 @@ export type IconKey =
 	| "academic"
 	| "analytics"
 	| "assets"
+	| "calendar_fold"
+	| "calendar_days"
 	| "content"
 	| "dashboard"
 	| "database"
@@ -19,6 +21,7 @@ export type IconKey =
 	| "roles"
 	| "services"
 	| "settings"
+	| "square_activity"
 	| "supply"
 	| "users"
 	| "employees";

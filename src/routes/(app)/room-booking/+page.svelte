@@ -2,8 +2,6 @@
 	import { resolve } from "$app/paths";
 	import ArrowRightIcon from "@lucide/svelte/icons/arrow-right";
 	import CalendarCheckIcon from "@lucide/svelte/icons/calendar-check";
-	import CalendarDaysIcon from "@lucide/svelte/icons/calendar-days";
-	import CalendarIcon from "@lucide/svelte/icons/calendar";
 	import ChevronLeftIcon from "@lucide/svelte/icons/chevron-left";
 	import ChevronRightIcon from "@lucide/svelte/icons/chevron-right";
 	import XIcon from "@lucide/svelte/icons/x";
@@ -22,6 +20,7 @@
 		roomTypes,
 		type FacultyRequestStatus,
 	} from "$lib/requests/faculty-request.js";
+	import { shiftAcrossWeekdays } from "$lib/requests/room-booking-dates.js";
 	import type { ActionData, PageData } from "./$types.js";
 
 	type RecentRequestEntry = PageData["recentRequests"][number];
@@ -43,11 +42,8 @@
 					pageTitle: "ปฏิทินการจองห้อง - ONE-IL",
 					title: "ปฏิทินการจองห้อง",
 					description:
-						"ตรวจสอบความพร้อมใช้งานแบบปฏิทินตามวันหรือสัปดาห์ แล้วเปิดคำขอจองห้องจากช่วงเวลาว่างได้ทันที",
-					viewLabel: "มุมมอง",
-					dayView: "รายวัน",
-					weekView: "รายสัปดาห์",
-					dateLabel: "วันที่อ้างอิง",
+						"ตรวจสอบความพร้อมใช้งานรายวัน (จันทร์–ศุกร์) แล้วเปิดคำขอจองห้องจากช่วงเวลาว่างได้ทันที",
+					dateLabel: "วันที่",
 					roomTypeLabel: "ประเภทห้อง",
 					allRoomTypes: "ทุกประเภทห้อง",
 					applyFilters: "ใช้ตัวกรอง",
@@ -63,7 +59,7 @@
 					recentRequests: "คำขอล่าสุดของฉัน",
 					viewAllRequests: "ดูคำขอทั้งหมด",
 					noRecentRequests: "ยังไม่มีคำขอจองห้องล่าสุด",
-					dateRange: (start: string, end: string) => `ช่วงข้อมูล ${start} - ${end}`,
+					selectedDateLabel: (date: string) => `วันที่ ${date}`,
 					openRequest: "เปิดคำขอ",
 					none: "ไม่มี",
 				}
@@ -71,11 +67,8 @@
 					pageTitle: "Room Booking Availability - ONE-IL",
 					title: "Room booking availability",
 					description:
-						"Review room availability in a calendar-first layout and open a streamlined booking request from any valid open slot.",
-					viewLabel: "View",
-					dayView: "Day",
-					weekView: "Week",
-					dateLabel: "Reference date",
+						"Review daily room availability (Monday–Friday) and open a booking request from any valid open slot.",
+					dateLabel: "Date",
 					roomTypeLabel: "Room type",
 					allRoomTypes: "All room types",
 					applyFilters: "Apply filters",
@@ -91,7 +84,7 @@
 					recentRequests: "My recent requests",
 					viewAllRequests: "View all requests",
 					noRecentRequests: "No recent room booking requests yet.",
-					dateRange: (start: string, end: string) => `Range ${start} - ${end}`,
+					selectedDateLabel: (date: string) => date,
 					openRequest: "Open request",
 					none: "None",
 				},
@@ -103,18 +96,9 @@
 		return { year, month, day };
 	}
 
-	function formatDateKey(date: Date): string {
-		return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}-${String(date.getUTCDate()).padStart(2, "0")}`;
-	}
-
 	function dateFromKey(dateValue: string): Date {
 		const { year, month, day } = parseDateParts(dateValue);
 		return new Date(year, month - 1, day);
-	}
-
-	function shiftDate(dateValue: string, days: number): string {
-		const { year, month, day } = parseDateParts(dateValue);
-		return formatDateKey(new Date(Date.UTC(year, month - 1, day + days)));
 	}
 
 	function setParam(params: URLSearchParams, key: string, value: string | null | undefined) {
@@ -125,9 +109,8 @@
 		params.set(key, value);
 	}
 
-	function buildPageHref(overrides?: { view?: "day" | "week"; date?: string; roomType?: string | null }) {
+	function buildPageHref(overrides?: { date?: string; roomType?: string | null }) {
 		const params = new URLSearchParams();
-		setParam(params, "view", overrides?.view ?? data.view);
 		setParam(params, "date", overrides?.date ?? data.selectedDate);
 		setParam(params, "roomType", overrides?.roomType ?? data.roomType ?? null);
 		const query = params.toString();
@@ -179,17 +162,20 @@
 	let drawerOpen = $state(false);
 	let lastRestoredFormSelection = $state("");
 
-	const previousDate = $derived(shiftDate(data.selectedDate, data.view === "week" ? -7 : -1));
-	const nextDate = $derived(shiftDate(data.selectedDate, data.view === "week" ? 7 : 1));
-	const visibleRangeEnd = $derived(shiftDate(data.selectedDate, data.view === "week" ? 6 : 0));
+	const previousDate = $derived(shiftAcrossWeekdays(data.selectedDate, -1));
+	const nextDate = $derived(shiftAcrossWeekdays(data.selectedDate, 1));
 	const selectedRoom = $derived.by(() => {
 		const slot = selectedSlot;
 		return slot ? data.rooms.find((room) => room.id === slot.roomId) ?? null : null;
 	});
 	const rangeLabel = $derived(
-		copy.dateRange(
-			formatDateLabel(data.selectedDate, { day: "numeric", month: "short", year: "numeric" }),
-			formatDateLabel(visibleRangeEnd, { day: "numeric", month: "short", year: "numeric" }),
+		copy.selectedDateLabel(
+			formatDateLabel(data.selectedDate, {
+				weekday: "long",
+				day: "numeric",
+				month: "short",
+				year: "numeric",
+			}),
 		),
 	);
 
@@ -219,30 +205,12 @@
 			<h1 class="text-3xl font-bold tracking-tight">{copy.title}</h1>
 			<p class="text-muted-foreground max-w-3xl text-sm">{copy.description}</p>
 		</div>
-		<div class="flex flex-wrap gap-2">
-			{#if data.canManage}
-				<Button href={resolve("/room-booking/manage")} variant="outline" size="sm">
-					<CalendarCheckIcon class="size-4" aria-hidden="true" />
-					<span>{copy.manageBookings}</span>
-				</Button>
-			{/if}
-			<Button
-				href={buildPageHref({ view: "day" })}
-				variant={data.view === "day" ? "default" : "outline"}
-				size="sm"
-			>
-				<CalendarIcon class="size-4" aria-hidden="true" />
-				<span>{copy.dayView}</span>
+		{#if data.canManage}
+			<Button href={resolve("/room-booking/manage")} variant="outline" size="sm">
+				<CalendarCheckIcon class="size-4" aria-hidden="true" />
+				<span>{copy.manageBookings}</span>
 			</Button>
-			<Button
-				href={buildPageHref({ view: "week" })}
-				variant={data.view === "week" ? "default" : "outline"}
-				size="sm"
-			>
-				<CalendarDaysIcon class="size-4" aria-hidden="true" />
-				<span>{copy.weekView}</span>
-			</Button>
-		</div>
+		{/if}
 	</header>
 
 	<Card.Root>
@@ -271,7 +239,6 @@
 				action={roomBookingPath}
 				class="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]"
 			>
-				<input type="hidden" name="view" value={data.view} />
 				<div class="grid gap-2">
 					<Label for="room-booking-date">{copy.dateLabel}</Label>
 					<Input id="room-booking-date" type="date" name="date" value={data.selectedDate} />
@@ -305,12 +272,9 @@
 				</div>
 			</form>
 
-			<div class="flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-muted/20 px-4 py-3">
-				<div>
-					<p class="text-sm font-medium">{rangeLabel}</p>
-					<p class="text-muted-foreground text-xs">{copy.calendarDescription}</p>
-				</div>
-				<Badge variant="outline">{copy.viewLabel}: {data.view === "day" ? copy.dayView : copy.weekView}</Badge>
+			<div class="rounded-lg border bg-muted/20 px-4 py-3">
+				<p class="text-sm font-medium">{rangeLabel}</p>
+				<p class="text-muted-foreground text-xs">{copy.calendarDescription}</p>
 			</div>
 
 			{#if data.rooms.length === 0}
@@ -320,7 +284,6 @@
 			{:else}
 				<ResourceCalendar
 					locale={data.locale}
-					view={data.view as "day" | "week"}
 					selectedDate={data.selectedDate}
 					rooms={data.rooms}
 					bookings={data.bookings}

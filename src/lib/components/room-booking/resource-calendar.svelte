@@ -10,12 +10,13 @@
 		type FacultyRequestStatus,
 		type RoomType,
 	} from "$lib/requests/faculty-request.js";
+	import { isRoomBookingWeekday } from "$lib/requests/room-booking-dates.js";
 	import { cn } from "$lib/utils.js";
 
 	const SLOT_MINUTES = 60;
-	const DEFAULT_START_MINUTES = 7 * 60;
-	const DEFAULT_END_MINUTES = 22 * 60;
-	const HOUR_WIDTH = 84;
+	/** Business hours for the day grid (slots 08:00–15:00, visible through 16:00). */
+	const BUSINESS_START_MINUTES = 8 * 60;
+	const BUSINESS_END_MINUTES = 16 * 60;
 
 	type FixedAsset = {
 		id: string;
@@ -72,7 +73,6 @@
 
 	type Props = {
 		locale: Locale;
-		view: "day" | "week";
 		selectedDate: string;
 		rooms: RoomEntry[];
 		bookings: BookingEntry[];
@@ -117,7 +117,6 @@
 
 	let {
 		locale,
-		view,
 		selectedDate,
 		rooms,
 		bookings,
@@ -145,6 +144,8 @@
 					approved: "อนุมัติแล้ว",
 					blocked: "ปิดใช้งานห้อง",
 					restricted: "นอกเงื่อนไขการจอง",
+					weekendClosed: "จองห้องได้เฉพาะวันจันทร์–ศุกร์",
+					weekendReason: "วันเสาร์และวันอาทิตย์ไม่เปิดให้จอง",
 					occupiedReason: "ช่วงเวลานี้มีรายการจองหรือปิดห้องอยู่แล้ว",
 					pastReason: "ช่วงเวลานี้ผ่านไปแล้ว",
 					minAdvanceReason: "ช่วงเวลานี้เร็วเกินกว่ากฎจองล่วงหน้าของห้อง",
@@ -173,6 +174,8 @@
 					approved: "Approved",
 					blocked: "Room block",
 					restricted: "Outside booking rules",
+					weekendClosed: "Room bookings are available Monday through Friday only.",
+					weekendReason: "Saturday and Sunday are not available for booking.",
 					occupiedReason: "This slot already has a booking or room block.",
 					pastReason: "This slot has already passed.",
 					minAdvanceReason: "This slot is earlier than the room's minimum advance rule.",
@@ -308,6 +311,8 @@
 	}
 
 	function handleSlotClick(roomId: string, dateValue: string, startTime: string) {
+		if (!isRoomBookingWeekday(dateValue)) return;
+
 		onSelectSlot?.({
 			roomId,
 			date: dateValue,
@@ -325,17 +330,18 @@
 	const todayKey = todayLocalKey();
 
 	const dayColumns = $derived.by<DayColumn[]>(() => {
-		const count = view === "week" ? 7 : 1;
-		return Array.from({ length: count }, (_, offset) => {
-			const value = shiftDate(selectedDate, offset);
-			return {
+		const value = selectedDate;
+		return [
+			{
 				value,
 				title: formatDateLabel(value, { weekday: "short", day: "numeric", month: "short" }),
 				subtitle: formatDateLabel(value, { year: "numeric" }),
 				isToday: value === todayKey,
-			};
-		});
+			},
+		];
 	});
+
+	const showWeekendClosed = $derived(!isRoomBookingWeekday(selectedDate));
 
 	const calendarItemsByRoom = $derived.by<Record<string, CalendarItem[]>>(() => {
 		const record: Record<string, CalendarItem[]> = {};
@@ -384,28 +390,9 @@
 		return record;
 	});
 
-	const visibleRange = $derived.by(() => {
-		let start = DEFAULT_START_MINUTES;
-		let end = DEFAULT_END_MINUTES;
-
-		for (const room of rooms) {
-			for (const item of calendarItemsByRoom[room.id] ?? []) {
-				for (const day of dayColumns) {
-					if (!eventOverlapsDay(item.startAt, item.endAt, day.value)) continue;
-					const segmentStart = item.startAt.slice(0, 10) === day.value ? minutesFromIso(item.startAt) : 0;
-					const segmentEnd =
-						item.endAt.slice(0, 10) === day.value ? minutesFromIso(item.endAt) : 24 * 60;
-
-					start = Math.min(start, Math.floor(segmentStart / 60) * 60);
-					end = Math.max(end, Math.ceil(segmentEnd / 60) * 60);
-				}
-			}
-		}
-
-		return {
-			start: Math.max(0, start),
-			end: Math.min(24 * 60, Math.max(start + SLOT_MINUTES, end)),
-		};
+	const visibleRange = $derived({
+		start: BUSINESS_START_MINUTES,
+		end: BUSINESS_END_MINUTES,
 	});
 
 	const timeColumns = $derived.by(() => {
@@ -420,8 +407,11 @@
 		return items;
 	});
 
-	const dayWidth = $derived(timeColumns.length * HOUR_WIDTH);
 	const totalVisibleMinutes = $derived(Math.max(visibleRange.end - visibleRange.start, SLOT_MINUTES));
+
+	const timeGridColumnsStyle = $derived(
+		`grid-template-columns: repeat(${timeColumns.length}, minmax(0, 1fr));`,
+	);
 
 	const segmentsByRoomDay = $derived.by<Record<string, Record<string, EventSegment[]>>>(() => {
 		const record: Record<string, Record<string, EventSegment[]>> = {};
@@ -488,6 +478,15 @@
 					const candidateEndMs = slotEndMs + room.cleanupBufferMinutes * 60 * 1000;
 					const key = selectionKey(room.id, day.value, column.value);
 
+					if (!isRoomBookingWeekday(day.value)) {
+						record[key] = {
+							disabled: true,
+							tone: "rule",
+							reason: copy.weekendReason,
+						};
+						continue;
+					}
+
 					if (slotStartMs < nowMs) {
 						record[key] = {
 							disabled: false,
@@ -543,6 +542,11 @@
 </script>
 
 <div class="space-y-4">
+	{#if showWeekendClosed}
+		<div class="rounded-lg border border-dashed bg-muted/20 px-4 py-6 text-center">
+			<p class="text-muted-foreground text-sm">{copy.weekendClosed}</p>
+		</div>
+	{:else}
 	<div class="flex flex-wrap items-center gap-2">
 		<Badge variant="outline" class="border-emerald-500/30 bg-emerald-500/10">
 			{copy.available}
@@ -562,26 +566,25 @@
 	</div>
 
 	<div class="overflow-hidden rounded-lg border">
-		<div class="overflow-auto">
-			<div class="min-w-max">
+		<div class="overflow-auto overflow-x-hidden">
+			<div class="w-full">
 				<div class="sticky top-0 z-20 flex border-b bg-background/95 backdrop-blur">
 					<div class="sticky left-0 z-30 w-72 shrink-0 border-r bg-background/95 px-4 py-3 backdrop-blur">
 						<p class="text-muted-foreground text-xs font-medium uppercase tracking-wide">{copy.room}</p>
 					</div>
-					<div class="flex">
+					<div class="flex min-w-0 flex-1">
 						{#each dayColumns as day, i (day.value)}
-							<div class="border-r last:border-r-0">
+							<div class="min-w-0 flex-1 border-r last:border-r-0">
 								<div
 									class={cn(
 										"border-b px-4 py-3",
 										day.isToday ? "bg-primary/5" : "bg-muted/20",
 									)}
-									style={`width:${dayWidth}px;`}
 								>
 									<p class="text-sm font-semibold">{day.title}</p>
 									<p class="text-muted-foreground text-xs">{day.subtitle}</p>
 								</div>
-								<div class="grid" style={`grid-template-columns: repeat(${timeColumns.length}, ${HOUR_WIDTH}px);`}>
+								<div class="grid" style={timeGridColumnsStyle}>
 									{#each timeColumns as column, columnIndex (`${day.value}:${column.value}`)}
 										<div class="text-muted-foreground border-r px-2 py-2 text-center text-[11px] last:border-r-0">
 											{column.label}
@@ -615,19 +618,15 @@
 							</p>
 						</div>
 
-						<div class="flex">
+						<div class="flex min-w-0 flex-1">
 							{#each dayColumns as day, dayIndex (day.value)}
 								<div
 									class={cn(
-										"relative border-r last:border-r-0",
+										"relative min-w-0 flex-1 border-r last:border-r-0",
 										day.isToday ? "bg-primary/3" : "bg-background",
 									)}
-									style={`width:${dayWidth}px;`}
 								>
-									<div
-										class="absolute inset-0 grid"
-										style={`grid-template-columns: repeat(${timeColumns.length}, ${HOUR_WIDTH}px);`}
-									>
+									<div class="absolute inset-0 grid" style={timeGridColumnsStyle}>
 										{#each timeColumns as column, columnIndex (`${room.id}:${day.value}:${column.value}`)}
 											{@const state = slotStates[selectionKey(room.id, day.value, column.value)]}
 											{@const isSelected =
@@ -706,4 +705,5 @@
 			</div>
 		</div>
 	</div>
+	{/if}
 </div>

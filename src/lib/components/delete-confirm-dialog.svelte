@@ -1,33 +1,46 @@
 <script lang="ts">
 	import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
+	import { Button } from "$lib/components/ui/button/index.js";
+	import { applyAction } from "$app/forms";
 	import { enhance } from "$app/forms";
+	import { invalidate } from "$app/navigation";
 
 	type Props = {
 		open: boolean;
 		action: string;
 		id: string;
 		itemName?: string;
-	locale?: "en" | "th";
+		locale?: "en" | "th";
+		/** When set, re-runs matching `depends()` loaders instead of only `invalidateAll`. */
+		reloadKey?: string;
 	};
 
-let { open = $bindable(false), action, id, itemName = "item", locale = "en" }: Props = $props();
-const copy = $derived.by(() =>
-	locale === "th"
-		? {
-				areYouSure: "ยืนยันการดำเนินการ?",
-				description: (name: string) =>
-					`การดำเนินการนี้จะลบ ${name} อย่างถาวร และไม่สามารถย้อนกลับได้`,
-				cancel: "ยกเลิก",
-				delete: "ลบ",
-			}
-		: {
-				areYouSure: "Are you sure?",
-				description: (name: string) =>
-					`This will permanently delete this ${name}. This action cannot be undone.`,
-				cancel: "Cancel",
-				delete: "Delete",
-			}
-);
+	let {
+		open = $bindable(false),
+		action,
+		id,
+		itemName = "item",
+		locale = "en",
+		reloadKey,
+	}: Props = $props();
+
+	const copy = $derived.by(() =>
+		locale === "th"
+			? {
+					areYouSure: "ยืนยันการดำเนินการ?",
+					description: (name: string) =>
+						`การดำเนินการนี้จะลบ ${name} อย่างถาวร และไม่สามารถย้อนกลับได้`,
+					cancel: "ยกเลิก",
+					delete: "ลบ",
+				}
+			: {
+					areYouSure: "Are you sure?",
+					description: (name: string) =>
+						`This will permanently delete this ${name}. This action cannot be undone.`,
+					cancel: "Cancel",
+					delete: "Delete",
+				}
+	);
 </script>
 
 <AlertDialog.Root bind:open>
@@ -38,25 +51,33 @@ const copy = $derived.by(() =>
 				{copy.description(itemName)}
 			</AlertDialog.Description>
 		</AlertDialog.Header>
-		<AlertDialog.Footer>
-			<AlertDialog.Cancel>{copy.cancel}</AlertDialog.Cancel>
+		{#key id}
 			<form
 				method="POST"
-				action={action}
+				{action}
 				use:enhance={() => {
 					return async ({ result, update }) => {
-						await update({ reset: false, invalidateAll: true });
+						await applyAction(result);
+
 						if (result.type === "success" || result.type === "redirect") {
 							open = false;
+							if (reloadKey) {
+								await invalidate(reloadKey);
+							}
+							await update({ reset: false, invalidateAll: !reloadKey });
+							return;
 						}
+
+						await update({ reset: false });
 					};
 				}}
 			>
 				<input type="hidden" name="id" value={id} />
-				<AlertDialog.Action type="submit" class="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-					{copy.delete}
-				</AlertDialog.Action>
+				<AlertDialog.Footer>
+					<AlertDialog.Cancel type="button">{copy.cancel}</AlertDialog.Cancel>
+					<Button type="submit" variant="destructive">{copy.delete}</Button>
+				</AlertDialog.Footer>
 			</form>
-		</AlertDialog.Footer>
+		{/key}
 	</AlertDialog.Content>
 </AlertDialog.Root>

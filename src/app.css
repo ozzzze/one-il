@@ -136,3 +136,15 @@
 		@apply bg-background text-foreground font-sans;
 	}
 }
+
+/* Sidebar.Content: hide scrollbar (wheel / touch scroll still works). */
+@layer components {
+	[data-sidebar="content"] {
+		scrollbar-width: none;
+		-ms-overflow-style: none;
+	}
+
+	[data-sidebar="content"]::-webkit-scrollbar {
+		display: none;
+	}
+}

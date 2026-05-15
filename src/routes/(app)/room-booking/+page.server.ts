@@ -18,14 +18,12 @@ import type { Actions, PageServerLoad } from "./$types.js";
 export const load: PageServerLoad = async ({ locals, url }) => {
 	assertPermission(locals.user, "requests:create");
 	const admin = getServiceRoleClient();
-	const view = url.searchParams.get("view") === "week" ? "week" : "day";
 	const roomType = url.searchParams.get("roomType");
 	const selectedDate = url.searchParams.get("date");
-	const range = getCalendarRange(selectedDate, view);
+	const range = getCalendarRange(selectedDate);
 	const [calendar, ownRequests, equipmentCatalog] = await Promise.all([
 		loadRoomCalendarData(admin, {
 			selectedDate: range.selectedDate,
-			view,
 			roomType,
 		}),
 		loadUserRequestList(admin, locals.user.id),
@@ -35,7 +33,6 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	return {
 		locale: locals.locale,
 		canManage: hasPermission(locals.user.role, "requests:manage"),
-		view,
 		selectedDate: range.selectedDate,
 		roomType,
 		rangeStart: range.rangeStart,

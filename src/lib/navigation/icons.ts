@@ -17,6 +17,8 @@ import EmployeesIcon from "@lucide/svelte/icons/network";
 import OrganizationIcon from "@lucide/svelte/icons/landmark";
 import SupplyIcon from "@lucide/svelte/icons/package";
 import AssetsIcon from "@lucide/svelte/icons/archive";
+import CalendarFoldIcon from "@lucide/svelte/icons/calendar-fold";
+import SquareActivityIcon from "@lucide/svelte/icons/square-activity";
 import type { IconKey } from "./types.js";
 import type { Component } from "svelte";
 
@@ -40,6 +42,9 @@ export const menuIcons = {
 	organization: OrganizationIcon,
 	supply: SupplyIcon,
 	assets: AssetsIcon,
+	calendar_fold: CalendarFoldIcon,
+	calendar_days: RoomIcon,
+	square_activity: SquareActivityIcon,
 } satisfies Record<IconKey, Component>;
 
 export function menuIconFor(iconKey: string | null): Component {

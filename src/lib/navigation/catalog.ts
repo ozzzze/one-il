@@ -125,8 +125,24 @@ function buildItemTree(locale: Locale, role: Role, groupItems: RawMenuItemRow[])
 	}
 
 	function toNav(row: RawMenuItemRow): NavMenuItem {
-		const { accessible, lockReason } = evaluateMenuItemAccess(role, row);
 		const kids = (byParent.get(row.id) ?? []).map(toNav);
+		let { accessible, lockReason } = evaluateMenuItemAccess(role, row);
+
+		if (kids.length > 0) {
+			const childAccessible = kids.some((c) => c.accessible);
+			if (!row.href) {
+				accessible = childAccessible;
+				lockReason = childAccessible
+					? null
+					: kids.some((c) => c.lockReason === "no_permission")
+						? "no_permission"
+						: "planned";
+			} else if (!accessible && childAccessible) {
+				accessible = true;
+				lockReason = null;
+			}
+		}
+
 		return {
 			id: row.id,
 			label: labelFor(locale, row),
@@ -216,6 +232,9 @@ export function buildHomeNavCards(
 	items: readonly RawMenuItemRow[],
 ): HomeNavCard[] {
 	const visible = filterCatalogRowsForRole(role, items);
+	const parentIdsWithChildren = new Set(
+		visible.map((row) => row.parent_id).filter((id): id is string => id !== null),
+	);
 	const groupMap = new Map(groups.map((g) => [g.code, g]));
 	const decorated = visible.map((row) => ({
 		row,
@@ -225,6 +244,7 @@ export function buildHomeNavCards(
 
 	const cards: HomeNavCard[] = [];
 	for (const { row } of decorated) {
+		if (!row.href && parentIdsWithChildren.has(row.id)) continue;
 		const g = groupMap.get(row.group_id);
 		const groupLabel = g ? groupLabelFor(locale, g) : row.group_id;
 		const { accessible, lockReason } = evaluateMenuItemAccess(role, row);

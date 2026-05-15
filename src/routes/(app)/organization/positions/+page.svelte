@@ -127,12 +127,6 @@
 		});
 	});
 
-	function localizedDisplayName(name: string, nameEn: string | null | undefined): string {
-		if (data.locale === "th") return name;
-		const en = nameEn?.trim();
-		return en && en.length > 0 ? en : name;
-	}
-
 	function deputyCategoryLabel(cat: string | null | undefined): string {
 		if (!cat) return "—";
 		if (cat === "ADMIN" || cat === "RESEARCH" || cat === "EDU_NETWORK") return copy.deputyLabels[cat];
@@ -221,7 +215,7 @@
 					<Table.Row>
 						<Table.Cell class="font-mono">{pos.code}</Table.Cell>
 						<Table.Cell class="font-medium">
-							{localizedDisplayName(pos.name, pos.name_en)}
+							{pos.name}
 						</Table.Cell>
 						<Table.Cell class="text-muted-foreground">{pos.name_en ?? "—"}</Table.Cell>
 						<Table.Cell>{pos.role_level}</Table.Cell>

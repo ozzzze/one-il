@@ -357,6 +357,38 @@ export type Database = {
 				Update: Partial<Database["public"]["Tables"]["menu_groups"]["Row"]>;
 				Relationships: [];
 			};
+			institutional_holidays: {
+				Row: {
+					id: string;
+					holiday_date: string;
+					name_th: string;
+					name_en: string | null;
+					notes: string | null;
+					created_at: string;
+					updated_at: string;
+					created_by_user_id: string | null;
+				};
+				Insert: {
+					id?: string;
+					holiday_date: string;
+					name_th: string;
+					name_en?: string | null;
+					notes?: string | null;
+					created_at?: string;
+					updated_at?: string;
+					created_by_user_id?: string | null;
+				};
+				Update: Partial<Database["public"]["Tables"]["institutional_holidays"]["Row"]>;
+				Relationships: [
+					{
+						foreignKeyName: "institutional_holidays_created_by_user_id_fkey";
+						columns: ["created_by_user_id"];
+						isOneToOne: false;
+						referencedRelation: "users";
+						referencedColumns: ["id"];
+					},
+				];
+			};
 			menu_items: {
 				Row: {
 					id: string;

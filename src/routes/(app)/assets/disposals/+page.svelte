@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { enhance } from "$app/forms";
-	import { resolve } from "$app/paths";
 	import { Badge } from "$lib/components/ui/badge/index.js";
 	import { Button } from "$lib/components/ui/button/index.js";
 	import * as Card from "$lib/components/ui/card/index.js";
@@ -105,7 +104,6 @@
 					update: "อัปเดต",
 					noRows: "ยังไม่มีคำขอจำหน่าย",
 					success: "บันทึกสำเร็จ",
-					back: "กลับทะเบียนครุภัณฑ์",
 				}
 			: {
 					pageTitle: "Asset Disposals - ONE-IL",
@@ -124,7 +122,6 @@
 					update: "Update",
 					noRows: "No disposal requests yet.",
 					success: "Saved successfully",
-					back: "Back to asset register",
 				}
 	);
 
@@ -151,7 +148,6 @@
 
 <div class="space-y-6">
 	<section class="space-y-3">
-		<a href={resolve("/assets")} class="text-muted-foreground hover:text-foreground text-sm">{copy.back}</a>
 		<div class="space-y-1">
 			<h1 class="text-3xl font-bold tracking-tight">{copy.title}</h1>
 			<p class="text-muted-foreground text-sm">{copy.description}</p>

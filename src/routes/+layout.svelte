@@ -3,6 +3,7 @@
 	import { ModeWatcher } from "mode-watcher";
 	import { MetaTags } from "svelte-meta-tags";
 	import { onNavigate } from "$app/navigation";
+	import DevErrorPanel from "$lib/components/dev-error-panel.svelte";
 	import "../app.css";
 
 	let { children } = $props();
@@ -45,3 +46,5 @@
 </svelte:head>
 
 {@render children()}
+
+<DevErrorPanel />
