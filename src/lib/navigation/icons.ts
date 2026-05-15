@@ -17,7 +17,7 @@ import EmployeesIcon from "@lucide/svelte/icons/network";
 import OrganizationIcon from "@lucide/svelte/icons/landmark";
 import SupplyIcon from "@lucide/svelte/icons/package";
 import AssetsIcon from "@lucide/svelte/icons/archive";
-import type { IconKey } from "./menu.js";
+import type { IconKey } from "./types.js";
 import type { Component } from "svelte";
 
 export const menuIcons = {
@@ -41,3 +41,9 @@ export const menuIcons = {
 	supply: SupplyIcon,
 	assets: AssetsIcon,
 } satisfies Record<IconKey, Component>;
+
+export function menuIconFor(iconKey: string | null): Component {
+	const k = iconKey ?? "dashboard";
+	if (k in menuIcons) return menuIcons[k as IconKey];
+	return DashboardIcon;
+}

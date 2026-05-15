@@ -5,19 +5,17 @@
 	import LayoutGridIcon from "@lucide/svelte/icons/layout-grid";
 	import { getUiLabels } from "$lib/content/labels.js";
 	import type { Locale } from "$lib/i18n/locales.js";
-	import { getVisibleCommandItems } from "$lib/navigation/menu.js";
-	import { menuIcons } from "$lib/navigation/icons.js";
+	import type { CommandNavEntry } from "$lib/navigation/catalog.js";
+	import { menuIconFor } from "$lib/navigation/icons.js";
 
 	type Props = {
-		allowedMenuIds: string[];
+		appsMenuNav: CommandNavEntry[];
 		locale: Locale;
 	};
 
-	let { allowedMenuIds, locale }: Props = $props();
+	let { appsMenuNav, locale }: Props = $props();
 
-	const apps = $derived(
-		getVisibleCommandItems(allowedMenuIds, locale).filter((item) => !item.id.startsWith("gateway-"))
-	);
+	const apps = $derived(appsMenuNav);
 	const ui = $derived(getUiLabels(locale));
 
 	let open = $state(false);
@@ -39,11 +37,13 @@
 	<Popover.Content class="w-64 p-2" align="end">
 		<div class="grid grid-cols-3 gap-1">
 			{#each apps as app, i (app.id)}
-				{@const Icon = menuIcons[app.iconKey]}
+				{@const Icon = menuIconFor(app.iconKey)}
 				<a
 					href={withBase(app.href)}
 					class="hover:bg-muted flex flex-col items-center gap-1.5 rounded-md px-2 py-3 text-center transition-colors"
-					onclick={() => { open = false; }}
+					onclick={() => {
+						open = false;
+					}}
 				>
 					<div class="bg-muted flex size-9 items-center justify-center rounded-lg">
 						<Icon class="text-foreground size-4" />

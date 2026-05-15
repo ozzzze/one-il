@@ -65,6 +65,8 @@ const LABELS = {
 			english: "English",
 			thai: "Thai",
 			formSaving: "Saving...",
+			menuNoAccessHint: "No access",
+			menuComingSoonHint: "Coming soon",
 		},
 	},
 	th: {
@@ -131,6 +133,8 @@ const LABELS = {
 			english: "อังกฤษ",
 			thai: "ไทย",
 			formSaving: "กำลังบันทึก...",
+			menuNoAccessHint: "ไม่มีสิทธิ์ใช้งาน",
+			menuComingSoonHint: "เร็วๆ นี้",
 		},
 	},
 } as const;

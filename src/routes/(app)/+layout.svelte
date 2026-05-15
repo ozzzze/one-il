@@ -103,7 +103,7 @@
 <Sidebar.Provider>
 	<AppSidebar
 		user={data.user}
-		allowedMenuIds={data.allowedMenuIds}
+		navMenuGroups={data.navigation.sidebarGroups}
 		locale={data.locale}
 		notificationCount={data.unreadNotificationCount}
 	/>
@@ -132,7 +132,7 @@
 
 			<div class="ml-auto flex items-center gap-1">
 				<CommandPalette
-					allowedMenuIds={data.allowedMenuIds}
+					commandPaletteNav={data.navigation.commandPaletteNav}
 					permissions={data.permissions}
 					locale={data.locale}
 				/>
@@ -141,7 +141,7 @@
 					notifications={data.recentNotifications}
 					locale={data.locale}
 				/>
-				<AppsMenu allowedMenuIds={data.allowedMenuIds} locale={data.locale} />
+				<AppsMenu appsMenuNav={data.navigation.appsMenuNav} locale={data.locale} />
 				<LanguageSwitcher locale={data.locale} compact />
 				<ThemeToggle />
 				<DropdownMenu.Root>

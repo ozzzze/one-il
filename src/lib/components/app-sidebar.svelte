@@ -14,12 +14,11 @@
 	import * as Avatar from "$lib/components/ui/avatar/index.js";
 	import { Badge } from "$lib/components/ui/badge/index.js";
 	import { resolve } from "$app/paths";
-	import type { Pathname } from "$app/types";
 	import type { Role } from "$lib/auth/roles.js";
 	import { getUiLabels } from "$lib/content/labels.js";
 	import type { Locale } from "$lib/i18n/locales.js";
-	import { getVisibleMenuGroups } from "$lib/navigation/menu.js";
-	import { menuIcons } from "$lib/navigation/icons.js";
+	import type { NavMenuGroup, NavMenuItem } from "$lib/navigation/catalog.js";
+	import { menuIconFor } from "$lib/navigation/icons.js";
 
 	type Props = {
 		user: {
@@ -29,12 +28,12 @@
 			role: Role;
 			avatarUrl: string | null;
 		};
-		allowedMenuIds: string[];
+		navMenuGroups: NavMenuGroup[];
 		locale: Locale;
 		notificationCount?: number;
 	};
 
-	let { user, allowedMenuIds, locale, notificationCount = 0 }: Props = $props();
+	let { user, navMenuGroups, locale, notificationCount = 0 }: Props = $props();
 
 	function getInitials(name: string) {
 		return name
@@ -46,14 +45,48 @@
 			.slice(0, 2);
 	}
 
-	const visibleMenuGroups = $derived(getVisibleMenuGroups(allowedMenuIds, locale));
 	const ui = $derived(getUiLabels(locale));
 
 	function menuBadge(id: string) {
-		return id === "notifications" && notificationCount > 0 ? String(notificationCount) : undefined;
+		return id === "sys-notifications" && notificationCount > 0 ? String(notificationCount) : undefined;
 	}
 
+	function lockHint(item: NavMenuItem): string {
+		if (item.lockReason === "planned") return ui.menuComingSoonHint;
+		if (item.lockReason === "no_permission") return ui.menuNoAccessHint;
+		return "";
+	}
 </script>
+
+{#snippet menuLeaf(item: NavMenuItem)}
+	{@const Icon = menuIconFor(item.iconKey)}
+	{@const badge = menuBadge(item.id)}
+	<Sidebar.MenuItem>
+		{#if item.accessible && item.href}
+			<Sidebar.MenuButton>
+				{#snippet child({ props })}
+					<a href={resolve(item.href as "/")} {...props}>
+						<Icon class="size-4" />
+						<span>{item.label}</span>
+					</a>
+				{/snippet}
+			</Sidebar.MenuButton>
+			{#if badge}
+				<Sidebar.MenuBadge>{badge}</Sidebar.MenuBadge>
+			{/if}
+		{:else}
+			<Sidebar.MenuButton type="button" disabled class="cursor-not-allowed">
+				<Icon class="size-4" />
+				<span class="flex min-w-0 flex-1 flex-col items-start gap-0.5 text-left">
+					<span>{item.label}</span>
+					<span class="text-muted-foreground max-w-full truncate text-[10px] font-normal leading-tight">
+						{lockHint(item)}
+					</span>
+				</span>
+			</Sidebar.MenuButton>
+		{/if}
+	</Sidebar.MenuItem>
+{/snippet}
 
 <Sidebar.Root>
 	<Sidebar.Header>
@@ -79,27 +112,13 @@
 	</Sidebar.Header>
 
 	<Sidebar.Content>
-		{#each visibleMenuGroups as group, groupIndex (group.label)}
+		{#each navMenuGroups as group (group.code)}
 			<Sidebar.Group>
 				<Sidebar.GroupLabel>{group.label}</Sidebar.GroupLabel>
 				<Sidebar.GroupContent>
 					<Sidebar.Menu>
-						{#each group.items as item, itemIndex (item.id)}
-							{@const Icon = menuIcons[item.iconKey]}
-							{@const badge = menuBadge(item.id)}
-							<Sidebar.MenuItem>
-								<Sidebar.MenuButton>
-									{#snippet child({ props })}
-										<a href={resolve(item.href as "/")} {...props}>
-											<Icon class="size-4" />
-											<span>{item.label}</span>
-										</a>
-									{/snippet}
-								</Sidebar.MenuButton>
-								{#if badge}
-									<Sidebar.MenuBadge>{badge}</Sidebar.MenuBadge>
-								{/if}
-							</Sidebar.MenuItem>
+						{#each group.items as item (item.id)}
+							{@render menuLeaf(item)}
 						{/each}
 					</Sidebar.Menu>
 				</Sidebar.GroupContent>
@@ -152,7 +171,7 @@
 									<BellRingIcon class="mr-2 size-4" />
 									{ui.notifications}
 									{#if notificationCount > 0}
-										<Badge variant="secondary" class="ml-auto text-[10px] h-5 px-1.5">{notificationCount}</Badge>
+										<Badge variant="secondary" class="ml-auto h-5 px-1.5 text-[10px]">{notificationCount}</Badge>
 									{/if}
 								</a>
 							{/snippet}

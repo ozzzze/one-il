@@ -15,8 +15,8 @@
 	import type { PermissionKey } from "$lib/auth/roles.js";
 	import { getUiLabels } from "$lib/content/labels.js";
 	import type { Locale } from "$lib/i18n/locales.js";
-	import { getVisibleCommandItems } from "$lib/navigation/menu.js";
-	import { menuIcons } from "$lib/navigation/icons.js";
+	import type { CommandNavEntry } from "$lib/navigation/catalog.js";
+	import { menuIconFor } from "$lib/navigation/icons.js";
 
 	type SearchResult = {
 		type: "user" | "page" | "notification";
@@ -27,19 +27,19 @@
 	};
 
 	type Props = {
-		allowedMenuIds: string[];
+		commandPaletteNav: CommandNavEntry[];
 		permissions: PermissionKey[];
 		locale: Locale;
 	};
 
-	let { allowedMenuIds, permissions, locale }: Props = $props();
+	let { commandPaletteNav, permissions, locale }: Props = $props();
 
 	let open = $state(false);
 	let query = $state("");
 	let searchResults = $state<SearchResult[]>([]);
 	let loading = $state(false);
 
-	const navItems = $derived(getVisibleCommandItems(allowedMenuIds, locale));
+	const navItems = $derived(commandPaletteNav);
 	const ui = $derived(getUiLabels(locale));
 
 	function resultIcon(type: string) {
@@ -146,7 +146,7 @@
 					</Command.GroupHeading>
 					<Command.GroupItems>
 						{#each navItems as item, i (item.id)}
-							{@const Icon = menuIcons[item.iconKey]}
+							{@const Icon = menuIconFor(item.iconKey)}
 							<Command.Item
 								value={item.label}
 								keywords={item.keywords ?? []}

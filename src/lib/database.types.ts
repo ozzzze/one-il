@@ -339,6 +339,104 @@ export type Database = {
 					},
 				];
 			};
+			menu_groups: {
+				Row: {
+					code: string;
+					label_th: string;
+					label_en: string;
+					sort_order: number;
+					is_active: boolean;
+				};
+				Insert: {
+					code: string;
+					label_th: string;
+					label_en: string;
+					sort_order?: number;
+					is_active?: boolean;
+				};
+				Update: Partial<Database["public"]["Tables"]["menu_groups"]["Row"]>;
+				Relationships: [];
+			};
+			menu_items: {
+				Row: {
+					id: string;
+					group_id: string;
+					parent_id: string | null;
+					label_th: string;
+					label_en: string;
+					href: string | null;
+					icon_key: string | null;
+					keywords: string[] | null;
+					required_permission_keys: string[];
+					visibility: "standard" | "admin_only";
+					implementation_status: "live" | "planned";
+					sort_order: number;
+				};
+				Insert: {
+					id: string;
+					group_id: string;
+					parent_id?: string | null;
+					label_th: string;
+					label_en: string;
+					href?: string | null;
+					icon_key?: string | null;
+					keywords?: string[] | null;
+					required_permission_keys?: string[];
+					visibility?: "standard" | "admin_only";
+					implementation_status?: "live" | "planned";
+					sort_order?: number;
+				};
+				Update: Partial<Database["public"]["Tables"]["menu_items"]["Row"]>;
+				Relationships: [
+					{
+						foreignKeyName: "menu_items_group_id_fkey";
+						columns: ["group_id"];
+						isOneToOne: false;
+						referencedRelation: "menu_groups";
+						referencedColumns: ["code"];
+					},
+					{
+						foreignKeyName: "menu_items_parent_id_fkey";
+						columns: ["parent_id"];
+						isOneToOne: false;
+						referencedRelation: "menu_items";
+						referencedColumns: ["id"];
+					},
+				];
+			};
+			user_menu_shortcuts: {
+				Row: {
+					id: string;
+					user_id: string;
+					menu_item_id: string;
+					sort_order: number;
+					created_at: string;
+				};
+				Insert: {
+					id?: string;
+					user_id: string;
+					menu_item_id: string;
+					sort_order?: number;
+					created_at?: string;
+				};
+				Update: Partial<Database["public"]["Tables"]["user_menu_shortcuts"]["Row"]>;
+				Relationships: [
+					{
+						foreignKeyName: "user_menu_shortcuts_menu_item_id_fkey";
+						columns: ["menu_item_id"];
+						isOneToOne: false;
+						referencedRelation: "menu_items";
+						referencedColumns: ["id"];
+					},
+					{
+						foreignKeyName: "user_menu_shortcuts_user_id_fkey";
+						columns: ["user_id"];
+						isOneToOne: false;
+						referencedRelation: "users";
+						referencedColumns: ["id"];
+					},
+				];
+			};
 			org_units: {
 				Row: {
 					id: string;

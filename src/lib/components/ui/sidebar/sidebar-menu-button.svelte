@@ -32,7 +32,7 @@
 	import { cn, type WithElementRef, type WithoutChildrenOrChild } from "$lib/utils.js";
 	import { mergeProps } from "bits-ui";
 	import type { ComponentProps, Snippet } from "svelte";
-	import type { HTMLAttributes } from "svelte/elements";
+	import type { HTMLButtonAttributes } from "svelte/elements";
 	import { useSidebar } from "./context.svelte.js";
 
 	let {
@@ -46,7 +46,7 @@
 		tooltipContent,
 		tooltipContentProps,
 		...restProps
-	}: WithElementRef<HTMLAttributes<HTMLButtonElement>, HTMLButtonElement> & {
+	}: WithElementRef<HTMLButtonAttributes> & {
 		isActive?: boolean;
 		variant?: SidebarMenuButtonVariant;
 		size?: SidebarMenuButtonSize;
