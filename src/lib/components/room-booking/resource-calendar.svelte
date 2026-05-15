@@ -136,7 +136,6 @@
 					days: "วัน",
 					hours: "ชม.",
 					notAssigned: "ยังไม่ระบุ",
-					none: "ไม่มี",
 					roomAvailable: "คลิกช่วงว่างเพื่อเริ่มจอง",
 					roomBusy: "มีรายการในช่วงเวลานี้",
 					available: "ว่าง",
@@ -150,7 +149,6 @@
 					pastReason: "ช่วงเวลานี้ผ่านไปแล้ว",
 					minAdvanceReason: "ช่วงเวลานี้เร็วเกินกว่ากฎจองล่วงหน้าของห้อง",
 					bookingWindowReason: "ช่วงเวลานี้อยู่นอกช่วงวันที่ห้องเปิดให้จอง",
-					defaultEquipment: "อุปกรณ์ประจำ",
 					openRequest: "เปิดคำขอ",
 					bookingDetail: (requester: string | null, attendees: number) =>
 						`${requester ?? "ผู้ขอไม่ระบุชื่อ"} • ${attendees} คน`,
@@ -166,7 +164,6 @@
 					days: "days",
 					hours: "hrs",
 					notAssigned: "Not assigned",
-					none: "None",
 					roomAvailable: "Click an open slot to start a booking",
 					roomBusy: "This range has room activity",
 					available: "Available",
@@ -180,7 +177,6 @@
 					pastReason: "This slot has already passed.",
 					minAdvanceReason: "This slot is earlier than the room's minimum advance rule.",
 					bookingWindowReason: "This slot is outside the room booking window.",
-					defaultEquipment: "Default equipment",
 					openRequest: "Open request",
 					bookingDetail: (requester: string | null, attendees: number) =>
 						`${requester ?? "Unassigned requester"} • ${attendees} attendee${attendees === 1 ? "" : "s"}`,
@@ -598,24 +594,14 @@
 
 				{#each rooms as room, i (room.id)}
 					<div class="flex border-b last:border-b-0">
-						<div class="sticky left-0 z-10 flex w-72 shrink-0 self-start flex-col justify-between border-r bg-background/95 px-4 py-4 backdrop-blur">
+						<div class="sticky left-0 z-10 flex w-72 shrink-0 flex-col self-stretch border-r bg-background px-4 py-4">
 							<div class="space-y-2">
+								<p class="font-semibold">{roomName(room)}</p>
 								<div class="flex flex-wrap items-center gap-2">
-									<p class="font-semibold">{roomName(room)}</p>
 									<Badge variant="outline">{room.roomCode}</Badge>
 									<Badge variant="secondary">{getRoomTypeLabel(locale, room.roomType)}</Badge>
 								</div>
 							</div>
-							<p class="text-muted-foreground mt-3 text-xs">
-								{copy.defaultEquipment}:
-								{#if room.fixedAssets.length > 0}
-									{room.fixedAssets
-										.map((asset) => localizedDualField(locale, asset.name, asset.nameEn))
-										.join(", ")}
-								{:else}
-									{copy.none}
-								{/if}
-							</p>
 						</div>
 
 						<div class="flex min-w-0 flex-1">

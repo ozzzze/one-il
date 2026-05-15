@@ -25,7 +25,9 @@
 	import {
 		isEmployeesPath,
 		isLeavePath,
+		isNavSubItemActive,
 		isOrgPath,
+		isPathActive,
 	} from "$lib/navigation/sidebar-expand.js";
 	import {
 		expandMenuBranch,
@@ -72,16 +74,22 @@
 		}
 	});
 
-	function isPathActive(href: string | null): boolean {
+	function pathnameActive(href: string | null): boolean {
 		if (!href) return false;
-		const p = page.url.pathname;
-		if (href === "/") return p === "/";
-		return p === href || p.startsWith(`${href}/`);
+		return isPathActive(page.url.pathname, href);
+	}
+
+	function subItemActive(href: string | null, siblings: readonly NavMenuItem[]): boolean {
+		if (!href) return false;
+		const siblingHrefs = siblings
+			.map((s) => s.href)
+			.filter((h): h is string => h != null);
+		return isNavSubItemActive(page.url.pathname, href, siblingHrefs);
 	}
 
 	function isBranchActive(item: NavMenuItem): boolean {
-		if (item.href && isPathActive(item.href)) return true;
-		return item.children.some((c) => isPathActive(c.href));
+		if (item.href && pathnameActive(item.href)) return true;
+		return item.children.some((c) => pathnameActive(c.href));
 	}
 
 	function officeItemsWithoutMergedOrg(items: readonly NavMenuItem[]): NavMenuItem[] {
@@ -141,12 +149,12 @@
 	</Sidebar.MenuItem>
 {/snippet}
 
-{#snippet menuSubLeaf(menuChild: NavMenuItem)}
+{#snippet menuSubLeaf(menuChild: NavMenuItem, siblings: readonly NavMenuItem[])}
 	<Sidebar.MenuSubItem>
 		{#if menuChild.accessible && menuChild.href}
 			<Sidebar.MenuSubButton
 				href={resolve(menuChild.href as "/")}
-				isActive={isPathActive(menuChild.href)}
+				isActive={subItemActive(menuChild.href, siblings)}
 				size="sm"
 			>
 				{menuChild.label}
@@ -213,7 +221,7 @@
 			class={cn(!expanded && "hidden")}
 		>
 			{#each item.children as menuChild (menuChild.id)}
-				{@render menuSubLeaf(menuChild)}
+				{@render menuSubLeaf(menuChild, item.children)}
 			{/each}
 		</Sidebar.MenuSub>
 	</Sidebar.MenuItem>
@@ -221,7 +229,10 @@
 		{@const ChildIcon = menuIconFor(menuChild.iconKey)}
 		<Sidebar.MenuItem class="hidden group-data-[collapsible=icon]:block">
 			{#if menuChild.accessible && menuChild.href}
-				<Sidebar.MenuButton tooltipContent={menuChild.label} isActive={isPathActive(menuChild.href)}>
+				<Sidebar.MenuButton
+					tooltipContent={menuChild.label}
+					isActive={subItemActive(menuChild.href, item.children)}
+				>
 					{#snippet child({ props })}
 						<a href={resolve(menuChild.href as "/")} {...props}>
 							<ChildIcon class="size-4" />

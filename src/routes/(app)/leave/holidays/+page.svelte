@@ -401,7 +401,7 @@
 						<Input id="notes" name="notes" value={selected?.notes ?? ""} />
 					</div>
 
-					<Dialog.Footer class="gap-2 sm:gap-0">
+					<Dialog.Footer class="gap-3">
 						<Button type="button" variant="outline" onclick={() => (dialogOpen = false)}>
 							{copy.cancel}
 						</Button>
