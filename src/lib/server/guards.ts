@@ -8,3 +8,9 @@ export function assertPermission(user: SessionUser | null, permission: Permissio
 		error(403, "You do not have access to this resource");
 	}
 }
+
+export function assertAdminRole(user: SessionUser | null): asserts user is SessionUser {
+	if (!user || user.role !== "admin") {
+		error(403, "You do not have access to this resource");
+	}
+}

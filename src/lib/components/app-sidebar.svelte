@@ -28,11 +28,13 @@
 		isNavSubItemActive,
 		isOrgPath,
 		isPathActive,
+		isRoomBookingPath,
 	} from "$lib/navigation/sidebar-expand.js";
 	import {
 		expandMenuBranch,
 		openHrHub,
 		OFFICE_LEAVE_ID as LEAVE_BRANCH_ID,
+		ROOM_BOOKING_BRANCH_ID,
 		sidebarMenuExpand,
 		toggleHrHub,
 		toggleMenuBranch,
@@ -64,6 +66,9 @@
 		}
 		if (isLeavePath(pathname)) {
 			expandMenuBranch(LEAVE_BRANCH_ID);
+		}
+		if (isRoomBookingPath(pathname)) {
+			expandMenuBranch(ROOM_BOOKING_BRANCH_ID);
 		}
 	}
 

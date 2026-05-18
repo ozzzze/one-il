@@ -149,21 +149,26 @@ export const actions = {
 			let requestId: string;
 
 			try {
-				requestId = await submitRoomBookingRequest(admin, locals.user, {
-					title: parsed.data.title,
-					details: parsed.data.details || null,
-					roomId: parsed.data.roomId,
-					startAt: toFacultyDateTimeIso(parsed.data.bookingDate, parsed.data.startTime),
-					endAt: toFacultyDateTimeIso(parsed.data.bookingDate, parsed.data.endTime),
-					setupBufferMinutes: parsed.data.setupBufferMinutes,
-					cleanupBufferMinutes: parsed.data.cleanupBufferMinutes,
-					attendeeCount: parsed.data.attendeeCount,
-					purpose: parsed.data.purpose,
-					contactName: parsed.data.contactName || null,
-					contactEmail: parsed.data.contactEmail || null,
-					contactPhone: parsed.data.contactPhone || null,
-					equipmentAssetIds: parsed.data.equipmentAssetIds,
-				});
+				requestId = await submitRoomBookingRequest(
+					admin,
+					locals.user,
+					{
+						title: parsed.data.title,
+						details: parsed.data.details || null,
+						roomId: parsed.data.roomId,
+						startAt: toFacultyDateTimeIso(parsed.data.bookingDate, parsed.data.startTime),
+						endAt: toFacultyDateTimeIso(parsed.data.bookingDate, parsed.data.endTime),
+						setupBufferMinutes: parsed.data.setupBufferMinutes,
+						cleanupBufferMinutes: parsed.data.cleanupBufferMinutes,
+						attendeeCount: parsed.data.attendeeCount,
+						purpose: parsed.data.purpose,
+						contactName: parsed.data.contactName || null,
+						contactEmail: parsed.data.contactEmail || null,
+						contactPhone: parsed.data.contactPhone || null,
+						equipmentAssetIds: parsed.data.equipmentAssetIds,
+					},
+					{ locale: locals.locale },
+				);
 			} catch (error) {
 				return fail(400, {
 					message: roomBookingActionErrorMessage(locals.locale, error),

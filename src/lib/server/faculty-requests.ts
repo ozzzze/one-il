@@ -1,4 +1,5 @@
 import type { Locale } from "$lib/i18n/locales.js";
+import { notifyRoomBookingSubmitted } from "$lib/server/notifications/room-booking-submitted.js";
 import {
 	canCancelReservation,
 	facultyRequestStatuses,
@@ -508,6 +509,7 @@ export async function submitRoomBookingRequest(
 	admin: AppSupabaseClient,
 	user: SessionUser,
 	input: SubmitRoomBookingInput,
+	options?: { locale?: Locale },
 ): Promise<string> {
 	const requesterEmployeeId = await currentEmployeeId(admin, user);
 	if (!requesterEmployeeId) {
@@ -548,7 +550,13 @@ export async function submitRoomBookingRequest(
 	});
 
 	if (error) throw error;
-	return String(data);
+
+	const requestId = String(data);
+	await notifyRoomBookingSubmitted(admin, {
+		requestId,
+		locale: options?.locale,
+	});
+	return requestId;
 }
 
 export async function cancelRequest(

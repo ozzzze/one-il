@@ -28,7 +28,7 @@
 	</div>
 	<!-- Bottom fade: taller + softer transition (shadcn docs–style) -->
 	<div
-		class="pointer-events-none absolute inset-x-0 bottom-0 z-[1] h-24 shrink-0 bg-[linear-gradient(to_top,var(--sidebar)_0%,color-mix(in_oklch,var(--sidebar)_55%,transparent)_22%,color-mix(in_oklch,var(--sidebar)_22%,transparent)_52%,color-mix(in_oklch,var(--sidebar)_6%,transparent)_78%,transparent_100%)] group-data-[collapsible=icon]:hidden"
+		class="pointer-events-none absolute inset-x-0 bottom-0 z-1 h-24 shrink-0 bg-[linear-gradient(to_top,var(--sidebar)_0%,color-mix(in_oklch,var(--sidebar)_55%,transparent)_22%,color-mix(in_oklch,var(--sidebar)_22%,transparent)_52%,color-mix(in_oklch,var(--sidebar)_6%,transparent)_78%,transparent_100%)] group-data-[collapsible=icon]:hidden"
 		aria-hidden="true"
 	></div>
 </div>

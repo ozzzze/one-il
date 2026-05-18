@@ -309,6 +309,7 @@ export type Database = {
 				Update: Partial<Database["public"]["Tables"]["hr_employment_statuses"]["Row"]>;
 				Relationships: [];
 			};
+			notifications_outbox: GenericSupabaseTable;
 			notifications: {
 				Row: {
 					id: string;

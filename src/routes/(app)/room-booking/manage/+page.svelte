@@ -514,11 +514,8 @@
 			<Tabs.Trigger value="catalog" class="text-xs">{copy.tabs.catalog}</Tabs.Trigger>
 		</Tabs.List>
 
-		<Tabs.Content
-			value="rooms"
-			class="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]"
-		>
-			<Card.Root>
+		<Tabs.Content value="rooms" class="mt-4 grid gap-4 lg:grid-cols-2">
+			<Card.Root class="min-w-0">
 				<Card.Header>
 					<Card.Title>{copy.roomFormTitle}</Card.Title>
 					<Card.Description>{copy.roomFormDescription}</Card.Description>
@@ -606,19 +603,32 @@
 							</div>
 						</div>
 
-						<div class="grid gap-2">
-							<Label for="room-approver">{copy.approver}</Label>
-							<select
-								id="room-approver"
-								name="approverEmployeeId"
-								bind:value={roomForm.approverEmployeeId}
-								class={selectClass()}
-								required
-							>
-								{#each data.employees as employee, i (employee.id)}
-									<option value={employee.id}>{employee.name}</option>
-								{/each}
-							</select>
+						<div class="grid gap-3 md:grid-cols-2">
+							<div class="grid gap-2">
+								<Label for="room-approver">{copy.approver}</Label>
+								<select
+									id="room-approver"
+									name="approverEmployeeId"
+									bind:value={roomForm.approverEmployeeId}
+									class={selectClass()}
+									required
+								>
+									{#each data.employees as employee, i (employee.id)}
+										<option value={employee.id}>{employee.name}</option>
+									{/each}
+								</select>
+							</div>
+							<div class="grid gap-2">
+								<Label for="cancellation-cutoff">{copy.cancellationCutoff}</Label>
+								<Input
+									id="cancellation-cutoff"
+									type="number"
+									min="0"
+									name="cancellationCutoffHours"
+									bind:value={roomForm.cancellationCutoffHours}
+									required
+								/>
+							</div>
 						</div>
 
 						<div class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
@@ -670,41 +680,29 @@
 
 						<div class="grid gap-3 md:grid-cols-2">
 							<div class="grid gap-2">
-								<Label for="cancellation-cutoff">{copy.cancellationCutoff}</Label>
-								<Input
-									id="cancellation-cutoff"
-									type="number"
-									min="0"
-									name="cancellationCutoffHours"
-									bind:value={roomForm.cancellationCutoffHours}
-									required
-								/>
-							</div>
-							<div class="grid gap-2">
 								<Label for="room-note">{copy.roomNote}</Label>
 								<Textarea id="room-note" name="note" bind:value={roomForm.note} rows={3} />
 							</div>
-						</div>
-
-						<div class="grid gap-2">
-							<label class="flex items-center gap-2 text-sm">
-								<input
-									type="checkbox"
-									name="allowEquipmentRequest"
-									bind:checked={roomForm.allowEquipmentRequest}
-									class="size-4 rounded border"
-								/>
-								{copy.allowEquipmentRequest}
-							</label>
-							<label class="flex items-center gap-2 text-sm">
-								<input
-									type="checkbox"
-									name="isActive"
-									bind:checked={roomForm.isActive}
-									class="size-4 rounded border"
-								/>
-								{copy.isActive}
-							</label>
+							<div class="flex flex-col justify-end gap-2">
+								<label class="flex items-center gap-2 text-sm">
+									<input
+										type="checkbox"
+										name="allowEquipmentRequest"
+										bind:checked={roomForm.allowEquipmentRequest}
+										class="size-4 rounded border"
+									/>
+									{copy.allowEquipmentRequest}
+								</label>
+								<label class="flex items-center gap-2 text-sm">
+									<input
+										type="checkbox"
+										name="isActive"
+										bind:checked={roomForm.isActive}
+										class="size-4 rounded border"
+									/>
+									{copy.isActive}
+								</label>
+							</div>
 						</div>
 
 						<div class="flex justify-end">
@@ -718,7 +716,7 @@
 				</Card.Content>
 			</Card.Root>
 
-			<Card.Root>
+			<Card.Root class="min-w-0">
 				<Card.Header>
 					<Card.Title>{copy.roomOverview}</Card.Title>
 					<Card.Description>{copy.roomOverviewDescription}</Card.Description>

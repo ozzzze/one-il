@@ -1,5 +1,4 @@
 import { fail, redirect } from "@sveltejs/kit";
-import { hasPermission } from "$lib/auth/roles.js";
 import { roomBookingSubmissionSchema } from "$lib/requests/room-booking-schema.js";
 import { toFacultyDateTimeIso } from "$lib/requests/faculty-request.js";
 import { assertPermission } from "$lib/server/guards.js";
@@ -7,7 +6,6 @@ import {
 	getCalendarRange,
 	loadRoomCalendarData,
 	loadReservableAssetCatalog,
-	loadUserRequestList,
 	requestActionMessage,
 	roomBookingActionErrorMessage,
 	submitRoomBookingRequest,
@@ -21,18 +19,17 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	const roomType = url.searchParams.get("roomType");
 	const selectedDate = url.searchParams.get("date");
 	const range = getCalendarRange(selectedDate);
-	const [calendar, ownRequests, equipmentCatalog] = await Promise.all([
+	const [calendar, equipmentCatalog] = await Promise.all([
 		loadRoomCalendarData(admin, {
 			selectedDate: range.selectedDate,
 			roomType,
 		}),
-		loadUserRequestList(admin, locals.user.id),
 		loadReservableAssetCatalog(admin),
 	]);
 
 	return {
 		locale: locals.locale,
-		canManage: hasPermission(locals.user.role, "requests:manage"),
+		canManage: locals.user.role === "admin",
 		selectedDate: range.selectedDate,
 		roomType,
 		rangeStart: range.rangeStart,
@@ -41,7 +38,6 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		bookings: calendar.bookings,
 		blocks: calendar.blocks,
 		equipmentCatalog,
-		recentRequests: ownRequests.slice(0, 5),
 	};
 };
 
@@ -96,21 +92,26 @@ export const actions: Actions = {
 		let requestId: string;
 
 		try {
-			requestId = await submitRoomBookingRequest(admin, locals.user, {
-				title: parsed.data.title,
-				details: parsed.data.details || null,
-				roomId: parsed.data.roomId,
-				startAt: toFacultyDateTimeIso(parsed.data.bookingDate, parsed.data.startTime),
-				endAt: toFacultyDateTimeIso(parsed.data.bookingDate, parsed.data.endTime),
-				setupBufferMinutes: parsed.data.setupBufferMinutes,
-				cleanupBufferMinutes: parsed.data.cleanupBufferMinutes,
-				attendeeCount: parsed.data.attendeeCount,
-				purpose: parsed.data.purpose,
-				contactName: parsed.data.contactName || null,
-				contactEmail: parsed.data.contactEmail || null,
-				contactPhone: parsed.data.contactPhone || null,
-				equipmentAssetIds: parsed.data.equipmentAssetIds,
-			});
+			requestId = await submitRoomBookingRequest(
+				admin,
+				locals.user,
+				{
+					title: parsed.data.title,
+					details: parsed.data.details || null,
+					roomId: parsed.data.roomId,
+					startAt: toFacultyDateTimeIso(parsed.data.bookingDate, parsed.data.startTime),
+					endAt: toFacultyDateTimeIso(parsed.data.bookingDate, parsed.data.endTime),
+					setupBufferMinutes: parsed.data.setupBufferMinutes,
+					cleanupBufferMinutes: parsed.data.cleanupBufferMinutes,
+					attendeeCount: parsed.data.attendeeCount,
+					purpose: parsed.data.purpose,
+					contactName: parsed.data.contactName || null,
+					contactEmail: parsed.data.contactEmail || null,
+					contactPhone: parsed.data.contactPhone || null,
+					equipmentAssetIds: parsed.data.equipmentAssetIds,
+				},
+				{ locale: locals.locale },
+			);
 		} catch (error) {
 			return fail(400, {
 				action: "createBooking",

@@ -24,6 +24,24 @@ test.describe("Sidebar submenu toggles", () => {
 		await expect(submenu).toBeVisible();
 	});
 
+	test("Room booking toggle shows and hides room booking submenu", async ({ page }) => {
+		await page.goto("/room-booking");
+
+		const toggle = page.getByTestId("sidebar-branch-toggle-shared-booking-room");
+		const submenu = page.getByTestId("sidebar-branch-submenu-shared-booking-room");
+
+		await expect(toggle).toHaveAttribute("aria-expanded", "true");
+		await expect(submenu).toBeVisible();
+
+		await toggle.click();
+		await expect(toggle).toHaveAttribute("aria-expanded", "false");
+		await expect(submenu).toBeHidden();
+
+		await toggle.click();
+		await expect(toggle).toHaveAttribute("aria-expanded", "true");
+		await expect(submenu).toBeVisible();
+	});
+
 	test("Leave toggle shows and hides leave submenu", async ({ page }) => {
 		await page.goto("/leave");
 

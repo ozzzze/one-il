@@ -1,4 +1,5 @@
 const OFFICE_LEAVE_ID = "office-leave";
+export const ROOM_BOOKING_BRANCH_ID = "shared-booking-room";
 
 export const sidebarMenuExpand = $state({
 	hrHubExpanded: false,

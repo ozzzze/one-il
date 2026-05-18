@@ -1,6 +1,6 @@
 import { error, fail } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types.js";
-import { hasPermission } from "$lib/auth/roles.js";
+import { assertAdminRole } from "$lib/server/guards.js";
 import {
 	reservableAssetDeleteSchema,
 	reservableAssetSchema,
@@ -21,9 +21,7 @@ import {
 import { getServiceRoleClient } from "$lib/server/supabase-admin.js";
 
 export const load: PageServerLoad = async ({ locals }) => {
-	if (!locals.user || !hasPermission(locals.user.role, "requests:manage")) {
-		error(403, "You do not have access to this resource");
-	}
+	assertAdminRole(locals.user);
 
 	const admin = getServiceRoleClient();
 	const [rooms, employees, stockLocations, assetOptions, reservableAssets, blocks] = await Promise.all([
@@ -54,9 +52,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 export const actions: Actions = {
 	upsertRoom: async ({ request, locals }) => {
-		if (!locals.user || !hasPermission(locals.user.role, "requests:manage")) {
-			error(403, "You do not have access to this resource");
-		}
+		assertAdminRole(locals.user);
 
 		const formData = await request.formData();
 		const parsed = roomManagementSchema.safeParse({
@@ -142,9 +138,7 @@ export const actions: Actions = {
 		return { success: true, action: "upsertRoom" };
 	},
 	addScheduleBlock: async ({ request, locals }) => {
-		if (!locals.user || !hasPermission(locals.user.role, "requests:manage")) {
-			error(403, "You do not have access to this resource");
-		}
+		assertAdminRole(locals.user);
 
 		const formData = await request.formData();
 		const parsed = roomScheduleBlockSchema.safeParse({
@@ -185,9 +179,7 @@ export const actions: Actions = {
 		return { success: true, action: "addScheduleBlock" };
 	},
 	addDefaultAsset: async ({ request, locals }) => {
-		if (!locals.user || !hasPermission(locals.user.role, "requests:manage")) {
-			error(403, "You do not have access to this resource");
-		}
+		assertAdminRole(locals.user);
 
 		const formData = await request.formData();
 		const parsed = roomDefaultAssetSchema.safeParse({
@@ -219,9 +211,7 @@ export const actions: Actions = {
 		return { success: true, action: "addDefaultAsset" };
 	},
 	removeDefaultAsset: async ({ request, locals }) => {
-		if (!locals.user || !hasPermission(locals.user.role, "requests:manage")) {
-			error(403, "You do not have access to this resource");
-		}
+		assertAdminRole(locals.user);
 
 		const formData = await request.formData();
 		const parsed = roomDefaultAssetDeleteSchema.safeParse({
@@ -248,9 +238,7 @@ export const actions: Actions = {
 		return { success: true, action: "removeDefaultAsset" };
 	},
 	addReservableAsset: async ({ request, locals }) => {
-		if (!locals.user || !hasPermission(locals.user.role, "requests:manage")) {
-			error(403, "You do not have access to this resource");
-		}
+		assertAdminRole(locals.user);
 
 		const formData = await request.formData();
 		const parsed = reservableAssetSchema.safeParse({
@@ -284,9 +272,7 @@ export const actions: Actions = {
 		return { success: true, action: "addReservableAsset" };
 	},
 	removeReservableAsset: async ({ request, locals }) => {
-		if (!locals.user || !hasPermission(locals.user.role, "requests:manage")) {
-			error(403, "You do not have access to this resource");
-		}
+		assertAdminRole(locals.user);
 
 		const formData = await request.formData();
 		const parsed = reservableAssetDeleteSchema.safeParse({

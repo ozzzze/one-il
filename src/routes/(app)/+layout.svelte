@@ -7,6 +7,7 @@
 	import { Toaster } from "$lib/components/ui/sonner/index.js";
 	import ThemeToggle from "$lib/components/theme-toggle.svelte";
 	import CommandPalette from "$lib/components/command-palette.svelte";
+	import DevErrorPanel from "$lib/components/dev-error-panel.svelte";
 	import NotificationBell from "$lib/components/notification-bell.svelte";
 	import AppsMenu from "$lib/components/apps-menu.svelte";
 	import LanguageSwitcher from "$lib/components/language-switcher.svelte";
@@ -69,12 +70,19 @@
 			label:
 				employeeDetailCrumbLabel(segment, segments) ??
 				assetDetailCrumbLabel(segment, segments) ??
-				getSegmentLabel(segment),
+				getSegmentLabel(segment, segments),
 			href: "/" + segments.slice(0, i + 1).join("/"),
 		}));
 	}
 
-	function getSegmentLabel(segment: string) {
+	function getSegmentLabel(segment: string, segments: string[]) {
+		if (segments[0] === "room-booking" && segment === "requests") {
+			return data.locale === "th" ? "คำขอของฉัน" : "My requests";
+		}
+		if (segments[0] === "room-booking" && segment === "manage") {
+			return data.locale === "th" ? "จัดการการจองห้อง" : "Manage bookings";
+		}
+
 		const map: Record<string, string> = {
 			analytics: menuLabels.analytics,
 			requests: menuLabels.requests,
@@ -138,6 +146,7 @@
 					permissions={data.permissions}
 					locale={data.locale}
 				/>
+				<DevErrorPanel />
 				<NotificationBell
 					count={data.unreadNotificationCount}
 					notifications={data.recentNotifications}

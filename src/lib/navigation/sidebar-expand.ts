@@ -1,4 +1,5 @@
 const OFFICE_LEAVE_ID = "office-leave";
+export const ROOM_BOOKING_BRANCH_ID = "shared-booking-room";
 
 export function isEmployeesPath(pathname: string): boolean {
 	return pathname === "/employees" || pathname.startsWith("/employees/");
@@ -10,6 +11,10 @@ export function isOrgPath(pathname: string): boolean {
 
 export function isLeavePath(pathname: string): boolean {
 	return pathname === "/leave" || pathname.startsWith("/leave/");
+}
+
+export function isRoomBookingPath(pathname: string): boolean {
+	return pathname === "/room-booking" || pathname.startsWith("/room-booking/");
 }
 
 export function isPathActive(pathname: string, href: string): boolean {
@@ -46,6 +51,9 @@ export function applySidebarAutoExpand(
 	}
 	if (isLeavePath(pathname)) {
 		nextBranches = { ...nextBranches, [OFFICE_LEAVE_ID]: true };
+	}
+	if (isRoomBookingPath(pathname)) {
+		nextBranches = { ...nextBranches, [ROOM_BOOKING_BRANCH_ID]: true };
 	}
 
 	return { hrHubExpanded, menuBranchExpanded: nextBranches };
