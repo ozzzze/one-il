@@ -8,7 +8,7 @@ Decisions in effect for this milestone:
 
 - **Separate git repos** per system (`one-il`, `one-leave`, ...).
 - **Path-based deployment** behind one reverse proxy (same origin).
-- **per-app-login**: login UI lives in **one-leave** (`/leave/login`); gateway redirects there.
+- **Login**: gateway form ที่ `/login` (cookie ร่วมกับ one-leave); ทางเลือก UI เต็มที่ `/leave/login` (proxy).
 - **Identity core**: `one_leave.users`, `one_leave.user_roles`, `one_leave.employees` (Postgres via `DATABASE_URL`).
 - **copy-now-extract-later**: shared code is duplicated per repo for now; extract to `one-shared` later.
 
@@ -16,7 +16,7 @@ Decisions in effect for this milestone:
 
 | Area | Location |
 |------|----------|
-| Auth entry (redirect → one-leave login) | `src/routes/(auth)/login/` → `/leave/login` |
+| Auth entry (gateway login + optional one-leave UI) | `src/routes/(auth)/login/`; link ไป `/leave/login` |
 | Session | Cookie `one_leave_session` (HMAC, `SESSION_SECRET` shared with one-leave) |
 | Auth implementation | `src/lib/server/one-leave/*` |
 | App launcher (home) | `src/routes/(app)/+page.svelte` (renders `navigation.homeNavCards`) |
@@ -67,7 +67,7 @@ cd one-il
 pnpm dev
 ```
 
-`vite.config.ts` proxy `/leave` → `http://127.0.0.1:5174` และตัด prefix ออก (`/leave/login` → `/login` ที่แอปลา).
+`vite.config.ts` proxy `/leave` → `http://localhost:5174` (ตัด prefix — `/leave/login` → `/login` ที่แอปลา). บน Windows อย่าใช้ `127.0.0.1` ถ้า Vite bind เฉพาะ `[::1]`.
 
 ถ้าพอร์ต 5173 ถูกใช้แล้ว: `VITE_PORT=5175 pnpm dev` หรือปิด process เดิม (`netstat -ano | findstr :5173` บน Windows).
 

@@ -2,7 +2,7 @@
 
 /** Sub-paths ที่ส่งต่อให้ one-leave — ไม่ใช่หน้า gateway เอง */
 export function isOneLeaveAppPath(pathname: string): boolean {
-	return pathname.startsWith("/leave/");
+	return pathname === "/leave" || pathname.startsWith("/leave/");
 }
 
 const LOGIN_PATHS = new Set(["/leave/login", "/login", "/register"]);

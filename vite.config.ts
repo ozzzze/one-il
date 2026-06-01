@@ -2,11 +2,13 @@ import { sveltekit } from '@sveltejs/kit/vite';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig, loadEnv } from 'vite';
 import { configDefaults } from 'vitest/config';
+import { rewriteLeaveProxyPath } from './scripts/leave-proxy-rewrite.mjs';
 
 export default defineConfig(({ mode }) => {
 	const env = loadEnv(mode, process.cwd(), '');
 	const leaveDevPort = env.LEAVE_DEV_PORT ?? '5174';
-	const leaveDevOrigin = `http://127.0.0.1:${leaveDevPort}`;
+	// localhost resolves IPv4+IPv6; 127.0.0.1 alone can ECONNREFUSED when Vite binds [::1] only (Windows)
+	const leaveDevOrigin = `http://localhost:${leaveDevPort}`;
 
 	return {
 	plugins: [tailwindcss(), sveltekit()],
@@ -14,11 +16,11 @@ export default defineConfig(({ mode }) => {
 		port: Number(env.VITE_PORT ?? 5173),
 		strictPort: false,
 		proxy: {
-			// one-leave รันคนละพอร์ต — /leave/login → http://127.0.0.1:5174/login
+			// one-leave คนละพอร์ต — /leave/leave/new → /leave/new (ดู scripts/leave-proxy-rewrite.mjs)
 			'/leave': {
 				target: leaveDevOrigin,
 				changeOrigin: true,
-				rewrite: (path) => path.replace(/^\/leave/, '') || '/'
+				rewrite: rewriteLeaveProxyPath
 			}
 		}
 	},

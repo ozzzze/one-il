@@ -6,6 +6,8 @@
 2. **[CONTEXT_HANDOFF.md](./CONTEXT_HANDOFF.md)** — บริบทล่าสุด (schema บุคลากร, กฎการลา, ลิงก์ SQL)
 3. **[PRD-asset-module.md](./PRD-asset-module.md)** — โมดูลครุภัณฑ์ (ร่าง)
 4. **[HOMEPAGE_GATEWAY_PREVIEW.md](./HOMEPAGE_GATEWAY_PREVIEW.md)** — แนวทางหน้า gateway / modules
-5. **[ROOM_BOOKING_CHAT_ASSISTANT.md](./ROOM_BOOKING_CHAT_ASSISTANT.md)** — แนวทางต่อยอด Room Booking ให้รองรับ AI Chat / LINE assistant
+5. **[GATEWAY-ARCHITECTURE.md](./GATEWAY-ARCHITECTURE.md)** — สถาปัตยกรรม gateway + one-leave (SSO, proxy)
+6. **[GATEWAY-NEXT-STEPS.md](./GATEWAY-NEXT-STEPS.md)** — handoff ล่าสุด + checklist ทำต่อ (อ่านก่อน session ถัดไป)
+7. **[ROOM_BOOKING_CHAT_ASSISTANT.md](./ROOM_BOOKING_CHAT_ASSISTANT.md)** — แนวทางต่อยอด Room Booking ให้รองรับ AI Chat / LINE assistant
 
 อื่น ๆ ที่ root: `CLAUDE.md` (stack & commands), `AI-RULES.md` (มาตรฐานโค้ด), `CHANGELOG.md`, `README.md`
