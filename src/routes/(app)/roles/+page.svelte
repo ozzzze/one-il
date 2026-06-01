@@ -4,6 +4,7 @@
 	import { Button } from "$lib/components/ui/button/index.js";
 	import * as Avatar from "$lib/components/ui/avatar/index.js";
 	import RoleChangeDialog from "$lib/components/role-change-dialog.svelte";
+	import { base } from "$app/paths";
 	import ShieldIcon from "@lucide/svelte/icons/shield";
 	import PencilIcon from "@lucide/svelte/icons/pencil";
 	import UsersIcon from "@lucide/svelte/icons/users";
@@ -23,6 +24,7 @@
 					permissions: "สิทธิ์",
 					users: "ผู้ใช้",
 					change: "เปลี่ยน",
+					menuCatalog: "แคตตาล็อกเมนู",
 				}
 			: {
 					roleUpdated: "Role updated",
@@ -33,6 +35,7 @@
 					permissions: "Permissions",
 					users: "Users",
 					change: "Change",
+					menuCatalog: "Menu catalog",
 				}
 	);
 
@@ -77,9 +80,12 @@
 </svelte:head>
 
 <div class="space-y-6">
-	<div>
-		<h1 class="text-3xl font-bold tracking-tight">{copy.title}</h1>
-		<p class="text-muted-foreground">{copy.description}</p>
+	<div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+		<div>
+			<h1 class="text-3xl font-bold tracking-tight">{copy.title}</h1>
+			<p class="text-muted-foreground">{copy.description}</p>
+		</div>
+		<Button href={`${base}/menu-catalog`} variant="outline" size="sm">{copy.menuCatalog}</Button>
 	</div>
 
 	<div class="grid gap-6">

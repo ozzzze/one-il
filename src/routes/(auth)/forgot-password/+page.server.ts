@@ -23,6 +23,15 @@ export const actions: Actions = {
 			});
 		}
 
+		if (!locals.supabase) {
+			return fail(503, {
+				message:
+					locals.locale === "th"
+						? "ใช้การรีเซ็ตรหัสผ่านที่ระบบลา (/leave)"
+						: "Use password reset in one-leave (/leave)",
+			});
+		}
+
 		const origin = env.ORIGIN ?? "http://localhost:5173";
 		const { error } = await locals.supabase.auth.resetPasswordForEmail(email.toLowerCase(), {
 			redirectTo: `${origin}/auth/callback?next=/reset-password`,

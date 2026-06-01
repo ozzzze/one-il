@@ -7,6 +7,12 @@ import type { RequestHandler } from "./$types.js";
  */
 export const GET: RequestHandler = async ({ locals }) => {
 	const supabase = locals.supabase;
+	if (!supabase) {
+		return json({
+			status: "skipped",
+			message: "Supabase client not configured (gateway uses one-leave session)",
+		});
+	}
 
 	const authResult = await supabase.auth.getSession();
 

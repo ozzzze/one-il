@@ -1,68 +1,81 @@
-import { getEnabledProviders } from "$lib/server/oauth.js";
-import { getServiceRoleClient } from "$lib/server/supabase-admin.js";
 import { fail, redirect } from "@sveltejs/kit";
+import { z } from "zod";
+import { authenticateLeaveUser } from "$lib/server/one-leave/authenticate.js";
+import { sanitizePostLoginRedirect } from "$lib/server/one-leave/paths.js";
+import { createLeaveSessionCookie } from "$lib/server/one-leave/session.js";
 import type { Actions, PageServerLoad } from "./$types.js";
 
-export const load: PageServerLoad = async ({ locals }) => {
-	if (locals.user) redirect(302, "/");
+const loginSchema = z.object({
+	username: z.string().trim().min(1),
+	password: z.string().min(1),
+});
+
+export const load: PageServerLoad = async ({ locals, url }) => {
+	if (locals.user) {
+		redirect(302, "/");
+	}
+
 	return {
 		locale: locals.locale,
-		enabledProviders: getEnabledProviders(),
+		redirectTo: sanitizePostLoginRedirect(url.searchParams.get("redirectTo") ?? "/"),
 	};
 };
 
 export const actions: Actions = {
-	default: async ({ request, locals }) => {
+	default: async ({ request, cookies, locals, url }) => {
 		const t =
 			locals.locale === "th"
 				? {
-						invalidUsername: "ชื่อผู้ใช้ไม่ถูกต้อง (ต้องมี 3-31 ตัวอักษร)",
-						invalidPassword: "รหัสผ่านไม่ถูกต้อง (ต้องมี 6-255 ตัวอักษร)",
-						dbUnavailable: "ไม่สามารถเชื่อมต่อฐานข้อมูลผู้ใช้ได้ในขณะนี้ กรุณาลองใหม่",
-						incorrectCredentials: "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง",
+						invalid: "กรุณากรอกชื่อผู้ใช้และรหัสผ่าน",
+						dbError: "เชื่อมต่อฐานข้อมูลไม่สำเร็จ ลองใหม่อีกครั้ง",
+						badCredentials: "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง",
 					}
 				: {
-						invalidUsername: "Invalid username (3-31 characters required)",
-						invalidPassword: "Invalid password (6-255 characters required)",
-						dbUnavailable: "Cannot reach user database right now. Please try again.",
-						incorrectCredentials: "Incorrect username or password",
+						invalid: "Enter username and password",
+						dbError: "Could not reach the database. Please try again.",
+						badCredentials: "Incorrect username or password",
 					};
-		const formData = await request.formData();
-		const username = formData.get("username");
-		const password = formData.get("password");
 
-		if (typeof username !== "string" || username.length < 3 || username.length > 31) {
-			return fail(400, { message: t.invalidUsername });
-		}
-		if (typeof password !== "string" || password.length < 6 || password.length > 255) {
-			return fail(400, { message: t.invalidPassword });
-		}
-
-		const normalizedUsername = username.toLowerCase();
-		const admin = getServiceRoleClient();
-		const { data, error: userLookupError } = await admin
-			.from("users")
-			.select("email")
-			.eq("username", normalizedUsername)
-			.maybeSingle();
-		if (userLookupError) {
-			return fail(500, { message: t.dbUnavailable });
-		}
-		const existingUser = data ? { email: data.email as string } : null;
-
-		if (!existingUser) {
-			return fail(400, { message: t.incorrectCredentials });
-		}
-
-		const { error } = await locals.supabase.auth.signInWithPassword({
-			email: existingUser.email,
-			password,
+		const fd = await request.formData();
+		const parsed = loginSchema.safeParse({
+			username: fd.get("username"),
+			password: fd.get("password"),
 		});
 
-		if (error) {
-			return fail(400, { message: error.message });
+		if (!parsed.success) {
+			return fail(400, { message: t.invalid, username: String(fd.get("username") ?? "") });
 		}
 
-		redirect(302, "/");
+		let user;
+		try {
+			user = await authenticateLeaveUser(parsed.data.username, parsed.data.password);
+		} catch (err) {
+			const message = err instanceof Error ? err.message : t.dbError;
+			return fail(500, { message, username: parsed.data.username });
+		}
+
+		if (!user) {
+			return fail(401, { message: t.badCredentials, username: parsed.data.username });
+		}
+
+		try {
+			await createLeaveSessionCookie(cookies, user);
+		} catch (err) {
+			const message = err instanceof Error ? err.message : t.dbError;
+			return fail(500, { message, username: parsed.data.username });
+		}
+
+		if (user.mustChangePassword) {
+			redirect(303, "/leave/account/change-password");
+		}
+
+		const fromForm = fd.get("redirectTo");
+		const redirectTo = sanitizePostLoginRedirect(
+			typeof fromForm === "string" && fromForm.length > 0
+				? fromForm
+				: (url.searchParams.get("redirectTo") ?? "/"),
+		);
+
+		redirect(303, redirectTo.startsWith("/") ? redirectTo : "/");
 	},
 };

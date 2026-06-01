@@ -358,6 +358,46 @@ export type Database = {
 				Update: Partial<Database["public"]["Tables"]["menu_groups"]["Row"]>;
 				Relationships: [];
 			};
+			user_change_requests: {
+				Row: {
+					id: string;
+					user_id: string;
+					field: string;
+					current_value: string | null;
+					requested_value: string;
+					reason: string | null;
+					status: string;
+					reviewed_by: string | null;
+					review_note: string | null;
+					created_at: string;
+					updated_at: string;
+					reviewed_at: string | null;
+				};
+				Insert: {
+					id?: string;
+					user_id: string;
+					field: string;
+					current_value?: string | null;
+					requested_value: string;
+					reason?: string | null;
+					status?: string;
+					reviewed_by?: string | null;
+					review_note?: string | null;
+					created_at?: string;
+					updated_at?: string;
+					reviewed_at?: string | null;
+				};
+				Update: Partial<Database["public"]["Tables"]["user_change_requests"]["Row"]>;
+				Relationships: [
+					{
+						foreignKeyName: "user_change_requests_user_id_fkey";
+						columns: ["user_id"];
+						isOneToOne: false;
+						referencedRelation: "users";
+						referencedColumns: ["id"];
+					},
+				];
+			};
 			institutional_holidays: {
 				Row: {
 					id: string;

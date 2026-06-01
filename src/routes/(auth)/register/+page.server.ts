@@ -4,7 +4,7 @@ import type { Actions, PageServerLoad } from "./$types.js";
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (locals.user) redirect(302, "/");
-	return { locale: locals.locale };
+	redirect(303, "/login");
 };
 
 export const actions: Actions = {
@@ -72,6 +72,15 @@ export const actions: Actions = {
 		}
 		const userCount = count ?? 0;
 		const role = userCount === 0 ? "admin" : "viewer";
+
+		if (!locals.supabase) {
+			return fail(503, {
+				message:
+					locals.locale === "th"
+						? "สมัครสมาชิกผ่านระบบลา (/leave)"
+						: "Register via one-leave (/leave)",
+			});
+		}
 
 		const { data, error } = await locals.supabase.auth.signUp({
 			email: email.toLowerCase(),

@@ -1,8 +1,12 @@
 import { getServiceRoleClient } from "./supabase-admin.js";
 import type { Role } from "$lib/auth/roles.js";
 import { parseRole } from "$lib/auth/roles.js";
+import { primaryGatewayRole } from "$lib/server/one-leave/role-bridge.js";
+import type { LeaveAuthUser } from "$lib/server/one-leave/types.js";
 
 export { generateId } from "./id.js";
+
+export type AuthSource = "one-leave" | "supabase";
 
 export type SessionEmployee = {
 	id: string;
@@ -15,6 +19,7 @@ export type SessionEmployee = {
 };
 
 export type SessionUser = {
+	/** String id for legacy UI; one-leave uses numeric leaveUserId. */
 	id: string;
 	email: string;
 	username: string;
@@ -22,7 +27,40 @@ export type SessionUser = {
 	role: Role;
 	avatarUrl: string | null;
 	employee: SessionEmployee | null;
+	authSource: AuthSource;
+	/** Set when authSource is one-leave (shared `one_leave_session` cookie). */
+	leaveUserId: number | null;
+	leaveRoles: readonly import("$lib/server/one-leave/types.js").LeaveRoleCode[];
 };
+
+export function sessionUserFromLeave(leave: LeaveAuthUser): SessionUser {
+	const role = primaryGatewayRole(leave.roles);
+	const [firstName, ...rest] = leave.displayName.split(/\s+/);
+	const lastName = rest.join(" ") || firstName;
+
+	return {
+		id: String(leave.id),
+		leaveUserId: leave.id,
+		leaveRoles: leave.roles,
+		authSource: "one-leave",
+		email: leave.username.includes("@") ? leave.username : `${leave.username}@local`,
+		username: leave.username,
+		name: leave.displayName,
+		role,
+		avatarUrl: null,
+		employee: leave.employeeId
+			? {
+					id: String(leave.employeeId),
+					firstName: firstName ?? leave.displayName,
+					lastName,
+					employeeNo: leave.employeeCode,
+					email: null,
+					status: "active",
+					appRole: role,
+				}
+			: null,
+	};
+}
 
 type EmployeeJoinRow = {
 	id: string;
@@ -85,5 +123,8 @@ export async function loadSessionUser(userId: string): Promise<SessionUser | nul
 		role: parseRole(data.role),
 		avatarUrl: data.avatar_url,
 		employee: normalizeEmployeeJoin(data.employees as EmployeeJoinRow[] | EmployeeJoinRow | null),
+		authSource: "supabase",
+		leaveUserId: null,
+		leaveRoles: [],
 	} satisfies SessionUser;
 }

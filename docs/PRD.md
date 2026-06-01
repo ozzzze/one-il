@@ -19,7 +19,7 @@
 - Language: TypeScript
 - Tool: Vercel, vite, pnpm
 - UI: ONE-IL (https://github.com/ColorlibHQ/svelteforge-admin)
-- Font: Google Sans (https://fonts.google.com/specimen/Google+Sans)
+- Font: PK Nonthaburi (Pocket Fonts Education, non-profit org) + Chulabhorn Likit (free); self-host `static/fonts/` — see `LICENSE-PK-NONTHABURI.md`
 - Validate: zod
 - Database: Supabase (local)
 

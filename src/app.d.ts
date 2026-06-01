@@ -9,7 +9,7 @@ declare global {
 	namespace App {
 		// interface Error {}
 		interface Locals {
-			supabase: SupabaseClient<Database>;
+			supabase: SupabaseClient<Database> | null;
 			session: SupabaseSession | null;
 			user: SessionUser | null;
 			locale: Locale;

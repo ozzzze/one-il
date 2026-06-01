@@ -1,4 +1,4 @@
-import type { AppSupabaseClient } from "$lib/server/supply-asset.js";
+import type { AppSupabaseClient } from "$lib/server/supabase-admin.js";
 
 export type NotificationChannel = "email" | "line" | "internal";
 

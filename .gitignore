@@ -28,5 +28,5 @@ vite.config.ts.timestamp-*
 *.db-wal
 *.db-shm
 
-# Proprietary fonts (do not commit)
-/static/fonts/google-sans/
+# Licensed PK Nonthaburi (local self-host only; not in git)
+/static/fonts/pk-nonthaburi/

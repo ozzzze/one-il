@@ -1,4 +1,4 @@
-import type { AppSupabaseClient } from "$lib/server/supply-asset.js";
+import type { AppSupabaseClient } from "$lib/server/supabase-admin.js";
 import { sendMail } from "$lib/server/notifications/mailer.js";
 import { getSmtpConfig, isSmtpConfigured } from "$lib/server/notifications/smtp-config.js";
 

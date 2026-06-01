@@ -16,6 +16,7 @@
 	import { Badge } from "$lib/components/ui/badge/index.js";
 	import UserIcon from "@lucide/svelte/icons/user";
 	import SettingsIcon from "@lucide/svelte/icons/settings";
+	import FilePenLineIcon from "@lucide/svelte/icons/file-pen-line";
 	import LogOutIcon from "@lucide/svelte/icons/log-out";
 	import { resolve } from "$app/paths";
 	import { getMenuItemLabels, getUiLabels } from "$lib/content/labels.js";
@@ -194,6 +195,14 @@
 								<a href={resolve("/settings")} {...props}>
 									<SettingsIcon class="mr-2 size-4" />
 									{ui.settings}
+								</a>
+							{/snippet}
+						</DropdownMenu.Item>
+						<DropdownMenu.Item>
+							{#snippet child({ props })}
+								<a href={resolve("/account/change-request")} {...props}>
+									<FilePenLineIcon class="mr-2 size-4" />
+									{data.locale === "th" ? "คำขอแก้ไขข้อมูล" : "Change request"}
 								</a>
 							{/snippet}
 						</DropdownMenu.Item>

@@ -21,40 +21,54 @@ const notificationPrefKeys = [
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const user = locals.user!;
-	const admin = getServiceRoleClient();
 
-	const { data: profileRow } = await admin
-		.from("users")
-		.select("id,name,email,username,role")
-		.eq("id", user.id)
-		.maybeSingle();
-	const profile = profileRow ?? {
-		id: user.id,
-		name: user.name,
-		email: user.email,
-		username: user.username,
-		role: user.role,
-	};
+	const profile =
+		user.authSource === "one-leave"
+			? {
+					id: user.id,
+					name: user.name,
+					email: user.email,
+					username: user.username,
+					role: user.role,
+				}
+			: await (async () => {
+					const admin = getServiceRoleClient();
+					const { data: profileRow } = await admin
+						.from("users")
+						.select("id,name,email,username,role")
+						.eq("id", user.id)
+						.maybeSingle();
+					return (
+						profileRow ?? {
+							id: user.id,
+							name: user.name,
+							email: user.email,
+							username: user.username,
+							role: user.role,
+						}
+					);
+				})();
 
 	const settings = { ...defaultSettings };
-	if (hasPermission(user.role, "settings:manage")) {
-		const { data: rows } = await admin.from("app_settings").select("key,value");
-		for (const row of rows ?? []) {
-			settings[row.key] = row.value;
-		}
-	}
-
 	const notifPrefs: Record<string, boolean> = {};
 	for (const key of notificationPrefKeys) {
 		notifPrefs[key] = true;
 	}
-	const { data: prefRows } = await admin.from("app_settings").select("key,value");
-	for (const row of prefRows ?? []) {
-		const userPrefKey = `${user.id}:`;
-		if (row.key.startsWith(userPrefKey)) {
-			const prefName = row.key.slice(userPrefKey.length);
-			if (notificationPrefKeys.includes(prefName)) {
-				notifPrefs[prefName] = row.value === "true";
+
+	if (user.authSource !== "one-leave" && hasPermission(user.role, "settings:manage")) {
+		const admin = getServiceRoleClient();
+		const { data: rows } = await admin.from("app_settings").select("key,value");
+		for (const row of rows ?? []) {
+			settings[row.key] = row.value;
+		}
+		const { data: prefRows } = await admin.from("app_settings").select("key,value");
+		for (const row of prefRows ?? []) {
+			const userPrefKey = `${user.id}:`;
+			if (row.key.startsWith(userPrefKey)) {
+				const prefName = row.key.slice(userPrefKey.length);
+				if (notificationPrefKeys.includes(prefName)) {
+					notifPrefs[prefName] = row.value === "true";
+				}
 			}
 		}
 	}
@@ -93,6 +107,14 @@ export const actions: Actions = {
 		}
 		if (typeof email !== "string" || !email.includes("@") || email.length > 255) {
 			return fail(400, { message: t.emailRequired });
+		}
+
+		if (!locals.supabase || locals.user!.authSource === "one-leave") {
+			const msg =
+				locals.locale === "th"
+					? "แก้ไขโปรไฟล์ในระบบลา (/leave) หรือติดต่อผู้ดูแล"
+					: "Update profile in one-leave (/leave) or contact an admin";
+			return fail(400, { message: msg });
 		}
 
 		const lower = email.toLowerCase();
@@ -138,6 +160,14 @@ export const actions: Actions = {
 		}
 		if (newPassword !== confirmPassword) {
 			return fail(400, { message: t.mismatch });
+		}
+
+		if (!locals.supabase || locals.user!.authSource === "one-leave") {
+			const msg =
+				locals.locale === "th"
+					? "เปลี่ยนรหัสผ่านได้ที่ระบบลา (/leave)"
+					: "Change password in one-leave (/leave)";
+			return fail(400, { message: msg });
 		}
 
 		const profile = locals.user!;

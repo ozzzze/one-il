@@ -6,6 +6,9 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 	const next = url.searchParams.get("next") ?? "/";
 
 	if (code) {
+		if (!locals.supabase) {
+			redirect(303, "/login");
+		}
 		const { error } = await locals.supabase.auth.exchangeCodeForSession(code);
 		if (error) {
 			redirect(303, `/login?error=${encodeURIComponent(error.message)}`);

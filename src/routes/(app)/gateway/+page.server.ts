@@ -1,10 +1,7 @@
-import { assertPermission } from "$lib/server/guards.js";
-import { hasPermission } from "$lib/auth/roles.js";
+import { redirect } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types.js";
 
-export const load: PageServerLoad = async ({ locals }) => {
-	assertPermission(locals.user, "gateway:access");
-	return {
-		canManageAccess: hasPermission(locals.user.role, "roles:manage"),
-	};
+/** The app launcher now lives at the gateway home ("/"). Keep this path as an alias. */
+export const load: PageServerLoad = async () => {
+	redirect(307, "/");
 };

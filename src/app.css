@@ -7,7 +7,134 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Optional Google Sans self-hosting was removed to avoid 404s when local font files are absent. */
+/* PK Nonthaburi (licensed) + Chulabhorn Likit (free) — self-hosted from static/fonts/ */
+@font-face {
+	font-family: 'PK Nonthaburi';
+	src: url('/fonts/pk-nonthaburi/PK-Nonthaburi-Light.woff2') format('woff2');
+	font-weight: 300;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'PK Nonthaburi';
+	src: url('/fonts/pk-nonthaburi/PK-Nonthaburi-LightItalic.woff2') format('woff2');
+	font-weight: 300;
+	font-style: italic;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'PK Nonthaburi';
+	src: url('/fonts/pk-nonthaburi/PK-Nonthaburi-Regular.woff2') format('woff2');
+	font-weight: 400;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'PK Nonthaburi';
+	src: url('/fonts/pk-nonthaburi/PK-Nonthaburi-RegularItalic.woff2') format('woff2');
+	font-weight: 400;
+	font-style: italic;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'PK Nonthaburi';
+	src: url('/fonts/pk-nonthaburi/PK-Nonthaburi-Medium.woff2') format('woff2');
+	font-weight: 500;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'PK Nonthaburi';
+	src: url('/fonts/pk-nonthaburi/PK-Nonthaburi-MediumItalic.woff2') format('woff2');
+	font-weight: 500;
+	font-style: italic;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'PK Nonthaburi';
+	src: url('/fonts/pk-nonthaburi/PK-Nonthaburi-SemiBold.woff2') format('woff2');
+	font-weight: 600;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'PK Nonthaburi';
+	src: url('/fonts/pk-nonthaburi/PK-Nonthaburi-SemiBoldItalic.woff2') format('woff2');
+	font-weight: 600;
+	font-style: italic;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'PK Nonthaburi';
+	src: url('/fonts/pk-nonthaburi/PK-Nonthaburi-Bold.woff2') format('woff2');
+	font-weight: 700;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'PK Nonthaburi';
+	src: url('/fonts/pk-nonthaburi/PK-Nonthaburi-BoldItalic.woff2') format('woff2');
+	font-weight: 700;
+	font-style: italic;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Noto Sans Thai Looped';
+	src: url('/fonts/pk-nonthaburi/noto-sans-thai-looped-v16-latin-regular.woff2') format('woff2');
+	font-weight: 400;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Chulabhorn Likit';
+	src: url('/fonts/chlabhorn-likhit/chulabhornlikittext-light.woff2') format('woff2');
+	font-weight: 300;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Chulabhorn Likit';
+	src: url('/fonts/chlabhorn-likhit/chulabhornlikittext-regular.woff2') format('woff2');
+	font-weight: 400;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Chulabhorn Likit';
+	src: url('/fonts/chlabhorn-likhit/chulabhornlikittext-medium.woff2') format('woff2');
+	font-weight: 500;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Chulabhorn Likit';
+	src: url('/fonts/chlabhorn-likhit/chulabhornlikittext-bold.woff2') format('woff2');
+	font-weight: 700;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Chulabhorn Likit Display';
+	src: url('/fonts/chlabhorn-likhit/chulabhornlikitdisplay-medium.woff2') format('woff2');
+	font-weight: 500;
+	font-style: normal;
+	font-display: swap;
+}
 
 :root {
 	--radius: 0.625rem;
@@ -82,8 +209,8 @@
 
 @theme inline {
 	--font-sans:
-		"Google Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
-		"Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji",
+		"PK Nonthaburi", "Chulabhorn Likit", "Noto Sans Thai Looped", ui-sans-serif,
+		system-ui, -apple-system, "Segoe UI", sans-serif, "Apple Color Emoji",
 		"Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 
 	--radius-sm: calc(var(--radius) - 4px);
@@ -130,6 +257,7 @@
 		@apply border-border;
 	}
 	html {
+		font-size: 16px;
 		font-family: var(--font-sans);
 	}
 	body {

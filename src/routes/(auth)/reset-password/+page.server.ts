@@ -2,6 +2,9 @@ import { fail, redirect } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types.js";
 
 export const load: PageServerLoad = async ({ locals }) => {
+	if (!locals.supabase) {
+		return { canReset: false, locale: locals.locale };
+	}
 	const {
 		data: { session },
 	} = await locals.supabase.auth.getSession();
@@ -31,6 +34,10 @@ export const actions: Actions = {
 		}
 		if (password !== confirmPassword) {
 			return fail(400, { message: t.passwordMismatch });
+		}
+
+		if (!locals.supabase) {
+			return fail(503, { message: t.sessionExpired });
 		}
 
 		const {

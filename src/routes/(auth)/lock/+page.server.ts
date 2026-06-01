@@ -30,6 +30,12 @@ export const actions: Actions = {
 			});
 		}
 
+		if (!locals.supabase) {
+			return fail(503, {
+				message: locals.locale === "th" ? "ใช้การล็อกอินที่ระบบลา" : "Sign in via one-leave",
+			});
+		}
+
 		const { error } = await locals.supabase.auth.signInWithPassword({
 			email: locals.user.email,
 			password,
