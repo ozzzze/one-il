@@ -111,6 +111,7 @@ export const permissionKeys = [
 	"settings:manage",
 	"users:manage",
 	"roles:manage",
+	"roles:grant_admin",
 	"database:view",
 ] as const;
 

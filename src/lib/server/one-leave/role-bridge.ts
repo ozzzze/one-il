@@ -17,6 +17,7 @@ const leaveRolePermissions: Record<LeaveRoleCode, readonly PermissionKey[]> = {
 		"leave:view",
 		"leave:manage",
 		"profile:manage",
+		"employees:manage",
 		"users:manage",
 		"roles:manage",
 		"notifications:view",

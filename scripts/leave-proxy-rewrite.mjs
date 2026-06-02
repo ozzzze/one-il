@@ -1,6 +1,8 @@
 /**
  * Vite dev proxy: map browser URL under /leave → one-leave pathname.
  * Gateway uses one /leave prefix; app routes may be /leave/new, /org, …
+ * @param {string} path
+ * @returns {string}
  */
 export function rewriteLeaveProxyPath(path) {
 	if (path === '/leave' || path === '/leave/') return '/';

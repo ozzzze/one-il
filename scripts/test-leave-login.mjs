@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import pg from "pg";
-import bcrypt from "bcryptjs";
+import { buildLeavePgPoolConfig } from "../src/lib/server/one-leave/pg-config.ts";
 
 function loadEnvFile(path) {
 	const env = {};
@@ -27,10 +27,37 @@ const secret = env.SESSION_SECRET?.trim();
 
 console.log("DATABASE_URL:", url ? "set" : "MISSING");
 console.log("SESSION_SECRET:", secret ? `set (${secret.length} chars)` : "MISSING");
+console.log("POOLER_TENANT_ID:", env.POOLER_TENANT_ID?.trim() || "(not set)");
 
 if (!url) process.exit(1);
 
-const pool = new pg.Pool({ connectionString: url, ssl: false });
+try {
+	const u = new URL(url);
+	console.log("DATABASE_URL user:", decodeURIComponent(u.username));
+} catch {
+	console.error("DATABASE_URL is not a valid URL");
+	process.exit(1);
+}
+
+if (url.includes("your-tenant-id")) {
+	console.error(
+		"\nFix .env: replace your-tenant-id with POOLER_TENANT_ID from VPS supabase/docker/.env",
+	);
+	process.exit(1);
+}
+
+const poolConfig = buildLeavePgPoolConfig(url, {
+	tenantId: env.POOLER_TENANT_ID,
+	host: env.PG_HOST,
+	port: env.PG_PORT,
+	user: env.PG_USER,
+	password: env.SELF_HOSTED_DB_PASSWORD,
+});
+console.log("AUTH_MOCK:", env.AUTH_MOCK ?? "(not set)");
+console.log("pool user:", poolConfig.user, `@`, poolConfig.host + ":" + poolConfig.port);
+console.log("pool password:", poolConfig.password ? "set" : "MISSING");
+
+const pool = new pg.Pool(poolConfig);
 try {
 	const cols = await pool.query(`
 		select column_name, data_type
@@ -52,6 +79,24 @@ try {
 		select ur.user_id, ur.role_code from one_leave.user_roles ur limit 5
 	`);
 	console.log("roles sample:", roles.rows);
+
+	const nopparat = await pool.query(
+		`
+		select u.id, u.username, u.is_active
+		from one_leave.users u
+		where lower(u.username) = any($1::text[])
+		`,
+		[["nopparat.jap@mahidol.ac.th", "nopparat.jap@mahidol.edu"]],
+	);
+	console.log("\nnopparat user:", nopparat.rows);
+
+	if (nopparat.rows[0]) {
+		const roleRows = await pool.query(
+			`select role_code from one_leave.user_roles where user_id = $1`,
+			[nopparat.rows[0].id],
+		);
+		console.log("nopparat roles:", roleRows.rows.map((r) => r.role_code));
+	}
 
 	if (sample.rows[0]) {
 		const row = await pool.query(

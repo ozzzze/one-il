@@ -1,5 +1,9 @@
 import bcrypt from "bcryptjs";
-import { getLeavePgPool } from "$lib/server/one-leave/pg.js";
+import {
+	authenticateLeaveMockUser,
+	isLeaveAuthMockEnabled,
+} from "$lib/server/one-leave/mock-auth.js";
+import { leaveQuery } from "$lib/server/one-leave/pg.js";
 import {
 	isLeaveRoleCode,
 	type LeaveAuthUser,
@@ -45,8 +49,7 @@ function toInt(value: string | number | null | undefined): number | null {
 }
 
 async function loadRoles(userId: number): Promise<LeaveRoleCode[]> {
-	const pool = getLeavePgPool();
-	const { rows } = await pool.query<{ role_code: string }>(
+	const { rows } = await leaveQuery<{ role_code: string }>(
 		`SELECT role_code FROM one_leave.user_roles WHERE user_id = $1`,
 		[userId],
 	);
@@ -74,9 +77,8 @@ function rowToAuthUser(row: UserRow, roles: LeaveRoleCode[]): LeaveAuthUser {
 }
 
 async function loadUserByUsernames(usernames: string[]): Promise<UserRow | null> {
-	const pool = getLeavePgPool();
 	const lowered = usernames.map((u) => u.toLowerCase());
-	const { rows } = await pool.query<UserRow>(
+	const { rows } = await leaveQuery<UserRow>(
 		`
 		SELECT
 			u.id,
@@ -101,6 +103,10 @@ export async function authenticateLeaveUser(
 	username: string,
 	password: string,
 ): Promise<LeaveAuthUser | null> {
+	if (isLeaveAuthMockEnabled()) {
+		return authenticateLeaveMockUser(username, password);
+	}
+
 	const candidates = getUsernameCandidates(username);
 	const row = await loadUserByUsernames(candidates);
 	if (!row) return null;

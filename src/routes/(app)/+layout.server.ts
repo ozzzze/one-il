@@ -1,5 +1,4 @@
 import { redirect } from "@sveltejs/kit";
-import { getPermissions } from "$lib/auth/roles.js";
 import {
 	buildAppsMenuNav,
 	buildCommandPaletteNav,
@@ -7,7 +6,7 @@ import {
 	buildNavMenuGroups,
 } from "$lib/navigation/catalog.js";
 import { buildGatewayNavigationFromLeave } from "$lib/server/gateway-launcher.js";
-import { permissionsForLeaveRoles } from "$lib/server/one-leave/role-bridge.js";
+import { effectivePermissions } from "$lib/server/guards.js";
 import { tryLoadMenuCatalogRows, tryLoadUserMenuShortcutIds } from "$lib/server/navigation-menu-load.js";
 import { getServiceRoleClient, isServiceRoleConfigured } from "$lib/server/supabase-admin.js";
 import { isOneLeaveAppPath, sanitizePostLoginRedirect } from "$lib/server/one-leave/paths.js";
@@ -95,10 +94,7 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
 		}
 	}
 
-	const permissions =
-		locals.user.authSource === "one-leave"
-			? permissionsForLeaveRoles(locals.user.leaveRoles)
-			: getPermissions(role);
+	const permissions = effectivePermissions(locals.user);
 
 	return {
 		user: locals.user,

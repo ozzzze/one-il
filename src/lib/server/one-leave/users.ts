@@ -1,4 +1,4 @@
-import { getLeavePgPool } from "$lib/server/one-leave/pg.js";
+import { leaveQuery } from "$lib/server/one-leave/pg.js";
 import { isLeaveRoleCode, type LeaveAuthUser, type LeaveRoleCode } from "$lib/server/one-leave/types.js";
 
 type UserRow = {
@@ -19,8 +19,7 @@ function toInt(value: string | number | null | undefined): number | null {
 }
 
 async function loadRoles(userId: number): Promise<LeaveRoleCode[]> {
-	const pool = getLeavePgPool();
-	const { rows } = await pool.query<{ role_code: string }>(
+	const { rows } = await leaveQuery<{ role_code: string }>(
 		`SELECT role_code FROM one_leave.user_roles WHERE user_id = $1`,
 		[userId],
 	);
@@ -48,8 +47,7 @@ function rowToAuthUser(row: UserRow, roles: LeaveRoleCode[]): LeaveAuthUser {
 }
 
 export async function getPasswordChangedAt(userId: number): Promise<number> {
-	const pool = getLeavePgPool();
-	const { rows } = await pool.query<{ password_changed_at: Date | null }>(
+	const { rows } = await leaveQuery<{ password_changed_at: Date | null }>(
 		`SELECT password_changed_at FROM one_leave.users WHERE id = $1 AND is_active = true`,
 		[userId],
 	);
@@ -59,8 +57,7 @@ export async function getPasswordChangedAt(userId: number): Promise<number> {
 }
 
 export async function getLeaveUserById(userId: number): Promise<LeaveAuthUser | null> {
-	const pool = getLeavePgPool();
-	const { rows } = await pool.query<UserRow>(
+	const { rows } = await leaveQuery<UserRow>(
 		`
 		SELECT
 			u.id,

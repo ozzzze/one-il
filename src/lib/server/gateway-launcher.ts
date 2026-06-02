@@ -125,6 +125,48 @@ const LAUNCHER_MODULES: readonly LauncherModule[] = [
 		iconKey: "edit",
 		gatewayOnly: true,
 	},
+	{
+		id: "admin-users",
+		titleTh: "จัดการผู้ใช้ (Admin)",
+		titleEn: "User administration",
+		descriptionTh: "สร้าง/แก้ผู้ใช้ one-leave, รีเซ็ตรหัสผ่าน",
+		descriptionEn: "Create/edit one-leave users, reset passwords",
+		href: "/admin/users",
+		groupTh: "ผู้ดูแลระบบ",
+		groupEn: "Administration",
+		groupCode: "admin",
+		iconKey: "users",
+		gatewayOnly: true,
+		leaveRoles: ["admin", "hr_verifier"],
+	},
+	{
+		id: "admin-employees",
+		titleTh: "จัดการพนักงาน (Admin)",
+		titleEn: "Employee administration",
+		descriptionTh: "ข้อมูลพนักงานและหน่วยงาน",
+		descriptionEn: "Employee records and org units",
+		href: "/admin/employees",
+		groupTh: "ผู้ดูแลระบบ",
+		groupEn: "Administration",
+		groupCode: "admin",
+		iconKey: "users",
+		gatewayOnly: true,
+		leaveRoles: ["admin", "hr_verifier"],
+	},
+	{
+		id: "admin-roles",
+		titleTh: "กำหนดบทบาทผู้ใช้ (Admin)",
+		titleEn: "User role assignment",
+		descriptionTh: "มอบ/ถอนบทบาท; บทบาท admin เฉพาะผู้ดูแลระบบ",
+		descriptionEn: "Assign/revoke roles; admin role gated",
+		href: "/admin/roles",
+		groupTh: "ผู้ดูแลระบบ",
+		groupEn: "Administration",
+		groupCode: "admin",
+		iconKey: "shield",
+		gatewayOnly: true,
+		leaveRoles: ["admin", "hr_verifier"],
+	},
 ];
 
 function label(locale: Locale, th: string, en: string): string {
@@ -139,6 +181,10 @@ function canSeeModule(mod: LauncherModule, leaveRoles: readonly LeaveRoleCode[])
 function moduleAccessible(mod: LauncherModule, role: Role, leaveRoles: readonly LeaveRoleCode[]): boolean {
 	if (mod.gatewayOnly && mod.id === "gateway-roles") {
 		return hasPermission(role, "roles:manage") || leaveRoles.includes("admin");
+	}
+	// Role-gated modules (admin/HR sections) respect leaveRoles even when gateway-only.
+	if (mod.leaveRoles && mod.leaveRoles.length > 0) {
+		return canSeeModule(mod, leaveRoles);
 	}
 	if (mod.gatewayOnly) return true;
 	return canSeeModule(mod, leaveRoles);

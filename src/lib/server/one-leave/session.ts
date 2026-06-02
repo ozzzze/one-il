@@ -3,6 +3,11 @@ import type { Cookies } from "@sveltejs/kit";
 import { dev } from "$app/environment";
 import { env } from "$env/dynamic/private";
 import { sanitizePostLoginRedirect } from "$lib/server/one-leave/paths.js";
+import {
+	getMockLeaveUserById,
+	getMockPasswordChangedAt,
+	isMockLeaveUserId,
+} from "$lib/server/one-leave/mock-auth.js";
 import { getLeaveUserById, getPasswordChangedAt } from "$lib/server/one-leave/users.js";
 import type { LeaveAuthUser, LeaveSessionPayload } from "$lib/server/one-leave/types.js";
 
@@ -33,7 +38,9 @@ function encodePayload(payload: LeaveSessionPayload): string {
 
 /** Set shared SSO cookie after gateway login. */
 export async function createLeaveSessionCookie(cookies: Cookies, user: LeaveAuthUser): Promise<void> {
-	const pwdAt = await getPasswordChangedAt(user.id);
+	const pwdAt = isMockLeaveUserId(user.id)
+		? getMockPasswordChangedAt(user.id)
+		: await getPasswordChangedAt(user.id);
 	const payload: LeaveSessionPayload = {
 		userId: user.id,
 		username: user.username,
@@ -86,6 +93,10 @@ export async function getLeaveSessionUser(cookies: Cookies): Promise<LeaveAuthUs
 
 	const payload = decodeToken(token);
 	if (!payload) return null;
+
+	if (isMockLeaveUserId(payload.userId)) {
+		return getMockLeaveUserById(payload.userId);
+	}
 
 	const dbPwdAt = await getPasswordChangedAt(payload.userId);
 	if (dbPwdAt > 0 && (payload.pwdAt ?? 0) + PWD_CHANGED_SKEW_SEC < dbPwdAt) {

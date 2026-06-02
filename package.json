@@ -36,6 +36,8 @@
 		"db:apply:outbox": "node --env-file=.env scripts/apply-outbox-migration-pg.mjs",
 		"db:apply:user-change-requests": "node --env-file=.env scripts/apply-migration-pg.mjs supabase/migrations/20260601130000_user_change_requests_one_leave.sql",
 		"db:seed:menu-catalog": "node --env-file=.env scripts/apply-migration-pg.mjs supabase/migrations/20260601140000_gateway_menu_catalog_seed.sql",
+		"db:apply:user-admin-audit": "node --env-file=.env scripts/apply-migration-pg.mjs supabase/migrations/20260602120000_one_leave_user_admin_audit.sql",
+		"db:seed:admin-menu": "node --env-file=.env scripts/apply-migration-pg.mjs supabase/migrations/20260602130000_gateway_admin_menu_seed.sql",
 		"test:email": "node --env-file=.env ./node_modules/tsx/dist/cli.mjs scripts/test-email-notification.ts"
 	},
 	"devDependencies": {

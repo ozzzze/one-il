@@ -1,6 +1,7 @@
 import { fail, redirect } from "@sveltejs/kit";
 import { z } from "zod";
 import { authenticateLeaveUser } from "$lib/server/one-leave/authenticate.js";
+import { userFacingDbError } from "$lib/server/one-leave/pg-errors.js";
 import { sanitizePostLoginRedirect } from "$lib/server/one-leave/paths.js";
 import { createLeaveSessionCookie } from "$lib/server/one-leave/session.js";
 import type { Actions, PageServerLoad } from "./$types.js";
@@ -50,8 +51,10 @@ export const actions: Actions = {
 		try {
 			user = await authenticateLeaveUser(parsed.data.username, parsed.data.password);
 		} catch (err) {
-			const message = err instanceof Error ? err.message : t.dbError;
-			return fail(500, { message, username: parsed.data.username });
+			return fail(500, {
+				message: userFacingDbError(err, t.dbError),
+				username: parsed.data.username,
+			});
 		}
 
 		if (!user) {
@@ -61,8 +64,10 @@ export const actions: Actions = {
 		try {
 			await createLeaveSessionCookie(cookies, user);
 		} catch (err) {
-			const message = err instanceof Error ? err.message : t.dbError;
-			return fail(500, { message, username: parsed.data.username });
+			return fail(500, {
+				message: userFacingDbError(err, t.dbError),
+				username: parsed.data.username,
+			});
 		}
 
 		if (user.mustChangePassword) {
