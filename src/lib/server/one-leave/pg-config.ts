@@ -31,7 +31,10 @@ export function buildLeavePgPoolConfig(
 ): PoolConfig {
 	const url = new URL(connectionString);
 	let user = options.user?.trim() || decodeURIComponent(url.username);
-	if (!options.user && user === "postgres") {
+	if (
+		!options.user &&
+		(user === "postgres" || user === `postgres.${DEFAULT_POOLER_TENANT}`)
+	) {
 		user = poolerUsername(options.tenantId);
 	}
 	const ssl = requiresSsl(connectionString, url.hostname)

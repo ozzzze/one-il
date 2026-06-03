@@ -10,6 +10,8 @@
 	import PlusIcon from "@lucide/svelte/icons/plus";
 	import PencilIcon from "@lucide/svelte/icons/pencil";
 	import SearchIcon from "@lucide/svelte/icons/search";
+	import ChevronLeftIcon from "@lucide/svelte/icons/chevron-left";
+	import ChevronRightIcon from "@lucide/svelte/icons/chevron-right";
 	import { toast } from "svelte-sonner";
 	import { enhance } from "$app/forms";
 	import { pendingEnhance } from "$lib/forms/pending-enhance.js";
@@ -49,6 +51,9 @@
 					editTitle: "แก้ไขพนักงาน",
 					updated: "บันทึกสำเร็จ",
 					isActive: "เปิดใช้งาน",
+					showingRows: "แสดง {start}-{end} จาก {total} คน",
+					prev: "ก่อนหน้า",
+					next: "ถัดไป",
 				}
 			: {
 					pageTitle: "Employee administration - ONE-IL",
@@ -80,6 +85,9 @@
 					editTitle: "Edit employee",
 					updated: "Saved successfully",
 					isActive: "Active",
+					showingRows: "Showing {start}-{end} of {total} employees",
+					prev: "Previous",
+					next: "Next",
 				}
 	);
 
@@ -107,6 +115,14 @@
 	let createOpen = $state(false);
 	let editOpen = $state(false);
 	let savePending = $state(false);
+
+	let currentPage = $state(1);
+	const itemsPerPage = 10;
+
+	$effect(() => {
+		search;
+		currentPage = 1;
+	});
 
 	const orgOptions = $derived(
 		data.orgUnits.map((o) => ({
@@ -141,6 +157,10 @@
 				(e.orgUnitName ?? "").toLowerCase().includes(q)
 			);
 		})
+	);
+
+	const paginated = $derived(
+		filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
 	);
 
 	$effect(() => {
@@ -218,7 +238,7 @@
 				</Table.Row>
 			</Table.Header>
 			<Table.Body>
-				{#each filtered as e (e.id)}
+				{#each paginated as e (e.id)}
 					<Table.Row>
 						<Table.Cell class="font-medium">{e.employeeCode}</Table.Cell>
 						<Table.Cell>{e.titleTh ?? ""}{e.firstNameTh} {e.lastNameTh}</Table.Cell>
@@ -245,6 +265,37 @@
 				{/each}
 			</Table.Body>
 		</Table.Root>
+	</div>
+
+	<div class="flex items-center justify-between py-4">
+		<div class="text-sm text-muted-foreground">
+			{#if filtered.length > 0}
+				{t.showingRows
+					.replace("{start}", String((currentPage - 1) * itemsPerPage + 1))
+					.replace("{end}", String(Math.min(currentPage * itemsPerPage, filtered.length)))
+					.replace("{total}", String(filtered.length))}
+			{/if}
+		</div>
+		<div class="flex items-center space-x-2">
+			<Button
+				variant="outline"
+				size="sm"
+				onclick={() => (currentPage = Math.max(currentPage - 1, 1))}
+				disabled={currentPage === 1}
+			>
+				<ChevronLeftIcon class="size-4 mr-1" />
+				{t.prev}
+			</Button>
+			<Button
+				variant="outline"
+				size="sm"
+				onclick={() => (currentPage = Math.min(currentPage + 1, Math.ceil(filtered.length / itemsPerPage)))}
+				disabled={currentPage >= Math.ceil(filtered.length / itemsPerPage) || filtered.length === 0}
+			>
+				{t.next}
+				<ChevronRightIcon class="size-4 ml-1" />
+			</Button>
+		</div>
 	</div>
 </div>
 

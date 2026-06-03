@@ -11,6 +11,8 @@
 	import PencilIcon from "@lucide/svelte/icons/pencil";
 	import KeyIcon from "@lucide/svelte/icons/key-round";
 	import SearchIcon from "@lucide/svelte/icons/search";
+	import ChevronLeftIcon from "@lucide/svelte/icons/chevron-left";
+	import ChevronRightIcon from "@lucide/svelte/icons/chevron-right";
 	import { toast } from "svelte-sonner";
 	import { enhance } from "$app/forms";
 	import { pendingEnhance } from "$lib/forms/pending-enhance.js";
@@ -52,6 +54,9 @@
 					resetDesc: "ตั้งรหัสผ่านใหม่และบังคับเปลี่ยนเมื่อเข้าสู่ระบบ",
 					newPassword: "รหัสผ่านใหม่",
 					updated: "บันทึกสำเร็จ",
+					showingRows: "แสดง {start}-{end} จาก {total} ผู้ใช้",
+					prev: "ก่อนหน้า",
+					next: "ถัดไป",
 				}
 			: {
 					pageTitle: "User administration - ONE-IL",
@@ -84,6 +89,9 @@
 					resetDesc: "Set a new password and require change on next login",
 					newPassword: "New password",
 					updated: "Saved successfully",
+					showingRows: "Showing {start}-{end} of {total} users",
+					prev: "Previous",
+					next: "Next",
 				}
 	);
 
@@ -92,6 +100,14 @@
 	let editOpen = $state(false);
 	let resetOpen = $state(false);
 	let savePending = $state(false);
+
+	let currentPage = $state(1);
+	const itemsPerPage = 10;
+
+	$effect(() => {
+		search;
+		currentPage = 1;
+	});
 
 	let editId = $state(0);
 	let editUsername = $state("");
@@ -116,6 +132,10 @@
 				(u.employeeCode ?? "").toLowerCase().includes(q)
 			);
 		})
+	);
+
+	const paginated = $derived(
+		filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
 	);
 
 	$effect(() => {
@@ -193,7 +213,7 @@
 				</Table.Row>
 			</Table.Header>
 			<Table.Body>
-				{#each filtered as u (u.id)}
+				{#each paginated as u (u.id)}
 					<Table.Row>
 						<Table.Cell class="font-medium">{u.username}</Table.Cell>
 						<Table.Cell class="text-muted-foreground">{u.fullName ?? "—"}</Table.Cell>
@@ -243,6 +263,37 @@
 				{/each}
 			</Table.Body>
 		</Table.Root>
+	</div>
+
+	<div class="flex items-center justify-between py-4">
+		<div class="text-sm text-muted-foreground">
+			{#if filtered.length > 0}
+				{t.showingRows
+					.replace("{start}", String((currentPage - 1) * itemsPerPage + 1))
+					.replace("{end}", String(Math.min(currentPage * itemsPerPage, filtered.length)))
+					.replace("{total}", String(filtered.length))}
+			{/if}
+		</div>
+		<div class="flex items-center space-x-2">
+			<Button
+				variant="outline"
+				size="sm"
+				onclick={() => (currentPage = Math.max(currentPage - 1, 1))}
+				disabled={currentPage === 1}
+			>
+				<ChevronLeftIcon class="size-4 mr-1" />
+				{t.prev}
+			</Button>
+			<Button
+				variant="outline"
+				size="sm"
+				onclick={() => (currentPage = Math.min(currentPage + 1, Math.ceil(filtered.length / itemsPerPage)))}
+				disabled={currentPage >= Math.ceil(filtered.length / itemsPerPage) || filtered.length === 0}
+			>
+				{t.next}
+				<ChevronRightIcon class="size-4 ml-1" />
+			</Button>
+		</div>
 	</div>
 </div>
 

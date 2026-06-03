@@ -5,8 +5,10 @@
 	let { children } = $props();
 </script>
 
-<div class="flex justify-end px-4 pt-4">
-	<LanguageSwitcher locale={page.data.locale ?? "en"} compact />
+<div class="pointer-events-none fixed top-4 right-4 z-50">
+	<div class="pointer-events-auto">
+		<LanguageSwitcher locale={page.data.locale ?? "en"} compact />
+	</div>
 </div>
 
 {@render children()}

@@ -80,10 +80,14 @@
 			</form>
 		</Card.Content>
 		<Card.Footer class="justify-center">
-			<p class="text-muted-foreground text-sm">
-				{copy.notYou}
-				<a href="/logout" class="text-primary underline-offset-4 hover:underline">{copy.signOut}</a>
-			</p>
+			<div class="text-muted-foreground flex flex-wrap items-center justify-center gap-1 text-sm">
+				<span>{copy.notYou}</span>
+				<form method="POST" action="/logout" class="inline">
+					<button type="submit" class="text-primary underline-offset-4 hover:underline">
+						{copy.signOut}
+					</button>
+				</form>
+			</div>
 		</Card.Footer>
 	</Card.Root>
 </div>

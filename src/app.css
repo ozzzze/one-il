@@ -209,7 +209,7 @@
 
 @theme inline {
 	--font-sans:
-		"PK Nonthaburi", "Chulabhorn Likit", "Noto Sans Thai Looped", ui-sans-serif,
+		"Chulabhorn Likit", "PK Nonthaburi", "Noto Sans Thai Looped", ui-sans-serif,
 		system-ui, -apple-system, "Segoe UI", sans-serif, "Apple Color Emoji",
 		"Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 
@@ -257,7 +257,7 @@
 		@apply border-border;
 	}
 	html {
-		font-size: 17px;
+		font-size: 16px;
 		font-family: var(--font-sans);
 	}
 	body {

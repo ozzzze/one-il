@@ -1,9 +1,11 @@
 import { fail, redirect } from "@sveltejs/kit";
 import { z } from "zod";
 import { authenticateLeaveUser } from "$lib/server/one-leave/authenticate.js";
+import { isLeaveAuthMockEnabled } from "$lib/server/one-leave/mock-auth.js";
 import { userFacingDbError } from "$lib/server/one-leave/pg-errors.js";
 import { sanitizePostLoginRedirect } from "$lib/server/one-leave/paths.js";
 import { createLeaveSessionCookie } from "$lib/server/one-leave/session.js";
+import { getEnabledProviders } from "$lib/server/oauth.js";
 import type { Actions, PageServerLoad } from "./$types.js";
 
 const loginSchema = z.object({
@@ -19,6 +21,8 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	return {
 		locale: locals.locale,
 		redirectTo: sanitizePostLoginRedirect(url.searchParams.get("redirectTo") ?? "/"),
+		googleEnabled: getEnabledProviders().includes("google"),
+		authMock: isLeaveAuthMockEnabled(),
 	};
 };
 
