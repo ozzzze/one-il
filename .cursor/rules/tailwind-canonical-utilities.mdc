@@ -1,26 +1,27 @@
 ---
-description: Prefer canonical Tailwind utilities over arbitrary bracket values in Svelte files
+description: Prefer canonical Tailwind utilities; IDE lint set to ignore suggestCanonicalClasses noise
 globs: **/*.svelte
 alwaysApply: false
 ---
 
 # Tailwind Canonical Utilities
 
-- Arbitrary values like `w-[9rem]`, `min-w-[9rem]`, and `px-[18px]` are valid modern Tailwind syntax. They are not deprecated or "old".
-- When a built-in Tailwind utility expresses the same value, prefer the canonical utility instead of `[]`.
-- Treat lint suggestions such as `suggestCanonicalClasses` as the default choice unless matching the design truly requires a one-off value.
+- When a built-in Tailwind v4 utility expresses the same value, prefer the canonical class over `[]` (e.g. `min-w-180` not `min-w-[720px]`, `bg-linear-to-r` not `bg-gradient-to-r`).
+- **IDE:** `suggestCanonicalClasses` is `ignore` in `.vscode/settings.json` — conventions live here and in `AGENTS.md`, not as editor warnings.
+- **Do not edit** `src/lib/components/ui/**` for canonical sweeps — shadcn generated; folder excluded from Tailwind IntelliSense lint.
 
 ## Preferred
 
 ```svelte
 <!-- good -->
-<div class="md:min-w-36 md:w-40" />
+<div class="max-h-75 w-30 shrink-0 bg-linear-to-r from-sky-400 to-indigo-400" />
 
-<!-- avoid when an equivalent utility already exists -->
-<div class="md:min-w-36 md:w-40" />
+<!-- avoid when equivalent utility exists -->
+<div class="max-h-[300px] w-[120px] flex-shrink-0 bg-gradient-to-r from-sky-400 to-indigo-400" />
 ```
 
 ## Use `[]` Only When Needed
 
-- Keep arbitrary values only when there is no standard Tailwind scale/token for that value.
-- If the value maps cleanly to Tailwind's spacing scale, replace it with the canonical class before finishing the change.
+- Complex values: `max-h-[min(24rem,70vh)]`, `h-[calc(100vh-3.5rem)]`
+- No scale token: `sm:max-w-[425px]` when `106.25` is not on the scale
+- Third-party constraints: fixed widget heights

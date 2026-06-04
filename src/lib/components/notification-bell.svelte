@@ -111,7 +111,7 @@ const copy = $derived.by(() =>
 				{/if}
 			</div>
 		</div>
-		<div class="max-h-[300px] overflow-y-auto">
+		<div class="max-h-75 overflow-y-auto">
 			{#if notifications.length === 0}
 				<div class="flex flex-col items-center gap-2 py-8">
 					<BellIcon class="text-muted-foreground size-8" />

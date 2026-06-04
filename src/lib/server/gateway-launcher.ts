@@ -127,7 +127,7 @@ const LAUNCHER_MODULES: readonly LauncherModule[] = [
 	},
 	{
 		id: "admin-users",
-		titleTh: "จัดการผู้ใช้ (Admin)",
+		titleTh: "จัดการผู้ใช้",
 		titleEn: "User administration",
 		descriptionTh: "สร้าง/แก้ผู้ใช้ one-leave, รีเซ็ตรหัสผ่าน",
 		descriptionEn: "Create/edit one-leave users, reset passwords",
@@ -141,7 +141,7 @@ const LAUNCHER_MODULES: readonly LauncherModule[] = [
 	},
 	{
 		id: "admin-employees",
-		titleTh: "จัดการพนักงาน (Admin)",
+		titleTh: "จัดการพนักงาน",
 		titleEn: "Employee administration",
 		descriptionTh: "ข้อมูลพนักงานและหน่วยงาน",
 		descriptionEn: "Employee records and org units",
@@ -155,7 +155,7 @@ const LAUNCHER_MODULES: readonly LauncherModule[] = [
 	},
 	{
 		id: "admin-roles",
-		titleTh: "กำหนดบทบาทผู้ใช้ (Admin)",
+		titleTh: "กำหนดบทบาทผู้ใช้",
 		titleEn: "User role assignment",
 		descriptionTh: "มอบ/ถอนบทบาท; บทบาท admin เฉพาะผู้ดูแลระบบ",
 		descriptionEn: "Assign/revoke roles; admin role gated",
@@ -205,6 +205,7 @@ export function buildGatewayNavigationFromLeave(
 	const homeNavCards: HomeNavCard[] = [];
 
 	for (const mod of LAUNCHER_MODULES) {
+		if (mod.groupCode === "leave" || mod.groupCode === "ol_leave") continue;
 		const accessible = moduleAccessible(mod, role, leaveRoles);
 		const groupLabel = label(locale, mod.groupTh, mod.groupEn);
 		let group = groups.get(mod.groupCode);

@@ -80,7 +80,7 @@
 	<div
 		class="relative hidden h-full flex-col overflow-hidden border-r border-zinc-900 bg-zinc-950 p-10 text-white lg:flex"
 	>
-		<div class="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-900 to-zinc-950"></div>
+		<div class="absolute inset-0 bg-linear-to-t from-zinc-950 via-zinc-900 to-zinc-950"></div>
 		<div
 			class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(14,165,233,0.15),transparent_50%)]"
 		></div>
@@ -88,13 +88,13 @@
 			class="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(99,102,241,0.15),transparent_50%)]"
 		></div>
 		<div
-			class="absolute inset-0 bg-[linear-gradient(to_right,#80808007_1px,transparent_1px),linear-gradient(to_bottom,#80808007_1px,transparent_1px)] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] bg-[size:24px_24px]"
+			class="absolute inset-0 bg-[linear-gradient(to_right,#80808007_1px,transparent_1px),linear-gradient(to_bottom,#80808007_1px,transparent_1px)] bg-size-[24px_24px] mask-[radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)]"
 		></div>
 
 		<div class="relative z-20 flex items-center gap-3 text-lg font-bold tracking-tight">
 			<img src={logo} alt="{copy.brand} Logo" class="size-9 object-contain brightness-110" />
 			<span
-				class="bg-gradient-to-r from-sky-400 to-indigo-400 bg-clip-text font-extrabold tracking-wide text-transparent"
+				class="bg-linear-to-r from-sky-400 to-indigo-400 bg-clip-text font-extrabold tracking-wide text-transparent"
 			>
 				{copy.brand}
 			</span>
@@ -108,7 +108,7 @@
 				<img src={logo} alt="" class="relative z-10 size-48 object-contain" />
 			</div>
 			<h2
-				class="bg-gradient-to-r from-zinc-100 to-zinc-400 bg-clip-text text-3xl font-extrabold tracking-tight text-transparent"
+				class="bg-linear-to-r from-zinc-100 to-zinc-400 bg-clip-text text-3xl font-extrabold tracking-tight text-transparent"
 			>
 				{copy.heroTitle}
 			</h2>

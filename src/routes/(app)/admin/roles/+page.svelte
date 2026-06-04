@@ -123,9 +123,9 @@
 		<Table.Root>
 			<Table.Header>
 				<Table.Row>
-					<Table.Head class="w-[260px]">{t.user}</Table.Head>
+					<Table.Head class="w-65">{t.user}</Table.Head>
 					<Table.Head>{t.currentRoles}</Table.Head>
-					<Table.Head class="w-[320px]">{t.addRole}</Table.Head>
+					<Table.Head class="w-80">{t.addRole}</Table.Head>
 				</Table.Row>
 			</Table.Header>
 			<Table.Body>
@@ -179,7 +179,7 @@
 										value={pickValue(u.id, u.roles)}
 										onValueChange={(v) => (addPick[u.id] = v)}
 									>
-										<Select.Trigger class="w-[200px]">
+										<Select.Trigger class="w-50">
 											<span>{leaveRoleLabel(pickValue(u.id, u.roles) as LeaveRoleCode, data.locale)}</span>
 										</Select.Trigger>
 										<Select.Content>

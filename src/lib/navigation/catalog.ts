@@ -75,8 +75,9 @@ function asPermissionKeys(keys: readonly string[]): PermissionKey[] {
 
 /** Items visible in catalog for this role (admin_only stripped for non-admin). */
 export function filterCatalogRowsForRole(role: Role, items: readonly RawMenuItemRow[]): RawMenuItemRow[] {
-	if (role === "admin") return [...items];
-	return items.filter((row) => row.visibility !== "admin_only");
+	const filtered = items.filter((row) => row.group_id !== "ol_leave");
+	if (role === "admin") return [...filtered];
+	return filtered.filter((row) => row.visibility !== "admin_only");
 }
 
 export function evaluateMenuItemAccess(
@@ -173,7 +174,7 @@ export function buildNavMenuGroups(
 		itemsByGroup.set(it.group_id, list);
 	}
 
-	const sortedGroups = [...groups].filter((g) => g.is_active).sort((a, b) => a.sort_order - b.sort_order);
+	const sortedGroups = [...groups].filter((g) => g.is_active && g.code !== "ol_leave").sort((a, b) => a.sort_order - b.sort_order);
 
 	const result: NavMenuGroup[] = [];
 	for (const g of sortedGroups) {

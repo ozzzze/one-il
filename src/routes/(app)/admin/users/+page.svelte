@@ -209,7 +209,7 @@
 					<Table.Head>{t.employeeCode}</Table.Head>
 					<Table.Head>{t.roles}</Table.Head>
 					<Table.Head>{t.status}</Table.Head>
-					<Table.Head class="w-[120px]">{t.actions}</Table.Head>
+					<Table.Head class="w-30">{t.actions}</Table.Head>
 				</Table.Row>
 			</Table.Header>
 			<Table.Body>
@@ -299,7 +299,7 @@
 
 <!-- Create -->
 <Dialog.Root bind:open={createOpen}>
-	<Dialog.Content class="sm:max-w-[480px]">
+	<Dialog.Content class="sm:max-w-120">
 		<Dialog.Header>
 			<Dialog.Title>{t.createTitle}</Dialog.Title>
 			<Dialog.Description>{t.createDesc}</Dialog.Description>
@@ -358,7 +358,7 @@
 
 <!-- Edit -->
 <Dialog.Root bind:open={editOpen}>
-	<Dialog.Content class="sm:max-w-[480px]">
+	<Dialog.Content class="sm:max-w-120">
 		<Dialog.Header>
 			<Dialog.Title>{t.editTitle}</Dialog.Title>
 			<Dialog.Description>{t.editDesc}</Dialog.Description>
@@ -391,7 +391,7 @@
 
 <!-- Reset password -->
 <Dialog.Root bind:open={resetOpen}>
-	<Dialog.Content class="sm:max-w-[420px]">
+	<Dialog.Content class="sm:max-w-105">
 		<Dialog.Header>
 			<Dialog.Title>{t.resetTitle}</Dialog.Title>
 			<Dialog.Description>{t.resetDesc}</Dialog.Description>

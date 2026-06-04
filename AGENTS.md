@@ -34,6 +34,14 @@ pnpm format:check     # Prettier (check only)
 
 - **Svelte 5** with runes API (`$props`, `$state`, `$derived`, `{@render}`)
 - **Tailwind CSS v4** — native CSS with `@theme` directive in `src/app.css`, no JS config file. OKLCH color system
+
+### TailwindCSS v4 + IDE
+
+- Prefer **canonical utilities** from the design scale when writing new code (`min-w-180`, `bg-linear-to-r`, `shrink-0`)
+- **IDE:** `.vscode/settings.json` sets `tailwindCSS.lint.suggestCanonicalClasses` to `ignore` — reduces noise from shadcn `ui/**` and necessary arbitrary values
+- **Exclude:** `tailwindCSS.files.exclude` skips `**/lib/components/ui/**` (generated shadcn)
+- Entry CSS: `src/app.css` — `tailwindCSS.experimental.configFile` points here
+- Use `[...]` only when no scale token exists (e.g. `max-h-[90vh]`, `calc(...)`, third-party widget heights)
 - **shadcn-svelte** — UI components in `$lib/components/ui/`, added via `npx shadcn-svelte@latest add <component>`
 - **Supabase** — `@supabase/supabase-js` + `@supabase/ssr` for database and session handling; server helpers in `src/lib/server/supabase-admin.ts`
 - **OAuth** — Arctic (Google, GitHub), optional via env vars

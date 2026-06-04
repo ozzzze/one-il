@@ -120,7 +120,7 @@
 	/>
 	<Sidebar.Inset>
 		<header
-			class="bg-background sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 border-b px-4"
+			class="shell-header bg-background sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 border-b px-4"
 		>
 			<Sidebar.Trigger class="-ml-1" />
 			<Separator orientation="vertical" class="mr-2 h-4! size-4" />
@@ -221,7 +221,7 @@
 			</div>
 		</header>
 
-		<main class="flex-1 p-4 md:p-6">
+		<main class="page-content flex flex-1 flex-col gap-4 p-4 md:p-6">
 			{@render children()}
 		</main>
 	</Sidebar.Inset>

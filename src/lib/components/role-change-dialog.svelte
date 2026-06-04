@@ -45,7 +45,7 @@ const copy = $derived.by(() =>
 </script>
 
 <Dialog.Root bind:open>
-	<Dialog.Content class="sm:max-w-[350px]">
+	<Dialog.Content class="sm:max-w-87.5">
 		<Dialog.Header>
 			<Dialog.Title>{copy.title}</Dialog.Title>
 			<Dialog.Description>

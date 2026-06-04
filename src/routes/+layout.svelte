@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { browser, dev } from "$app/environment";
 	import ilLogo from "$lib/assets/layout/il-logo.png";
 	import { ModeWatcher } from "mode-watcher";
 	import { MetaTags } from "svelte-meta-tags";
@@ -8,7 +9,16 @@
 	let { children } = $props();
 
 	onNavigate((navigation) => {
-		if (!document.startViewTransition) return;
+		if (!browser || !document.startViewTransition) return;
+
+		const fromPath = navigation.from?.url.pathname ?? "";
+		const toPath = navigation.to?.url.pathname ?? "";
+		if (fromPath === toPath) return;
+
+		if (dev) {
+			console.debug("[view-transition]", fromPath, "→", toPath);
+		}
+
 		return new Promise((resolve) => {
 			document.startViewTransition(async () => {
 				resolve();

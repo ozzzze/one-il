@@ -138,7 +138,8 @@
 
 :root {
 	--radius: 0.625rem;
-	--background: oklch(1 0 0);
+	/* Light: canvas vs card — very subtle lift (L 0.982 vs card 1) */
+	--background: oklch(0.982 0.001 286.375);
 	--foreground: oklch(0.141 0.005 285.823);
 	--card: oklch(1 0 0);
 	--card-foreground: oklch(0.141 0.005 285.823);
@@ -162,7 +163,7 @@
 	--chart-3: oklch(0.606 0.250 292.717);
 	--chart-4: oklch(0.704 0.140 181.071);
 	--chart-5: oklch(0.696 0.170 162.480);
-	--sidebar: oklch(0.985 0 0);
+	--sidebar: oklch(1 0 0);
 	--sidebar-foreground: oklch(0.141 0.005 285.823);
 	--sidebar-primary: oklch(0.21 0.006 285.885);
 	--sidebar-primary-foreground: oklch(0.985 0 0);
@@ -212,6 +213,8 @@
 		"Chulabhorn Likit", "PK Nonthaburi", "Noto Sans Thai Looped", ui-sans-serif,
 		system-ui, -apple-system, "Segoe UI", sans-serif, "Apple Color Emoji",
 		"Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+
+	--font-size-sm: 1px;
 
 	--radius-sm: calc(var(--radius) - 4px);
 	--radius-md: calc(var(--radius) - 2px);
@@ -274,5 +277,69 @@
 
 	[data-sidebar="content"]::-webkit-scrollbar {
 		display: none;
+	}
+}
+
+/* View transitions — stable chrome + animated main content (Chromium) */
+.shell-header {
+	view-transition-name: app-header;
+}
+
+[data-sidebar='sidebar']:not([data-mobile='true']) {
+	view-transition-name: app-sidebar;
+}
+
+.page-content {
+	view-transition-name: page-content;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	@keyframes page-fade-out {
+		to {
+			opacity: 0;
+		}
+	}
+
+	@keyframes page-fade-in {
+		from {
+			opacity: 0;
+		}
+	}
+
+	@keyframes page-slide-out {
+		to {
+			transform: translateX(-16px);
+		}
+	}
+
+	@keyframes page-slide-in {
+		from {
+			transform: translateX(16px);
+		}
+	}
+
+	::view-transition-old(page-content) {
+		animation:
+			140ms cubic-bezier(0.4, 0, 1, 1) both page-fade-out,
+			320ms cubic-bezier(0.4, 0, 0.2, 1) both page-slide-out;
+	}
+
+	::view-transition-new(page-content) {
+		animation:
+			200ms cubic-bezier(0, 0, 0.2, 1) 120ms both page-fade-in,
+			320ms cubic-bezier(0.4, 0, 0.2, 1) both page-slide-in;
+	}
+
+	::view-transition-group(app-header),
+	::view-transition-group(app-sidebar) {
+		animation-duration: 0ms;
+	}
+}
+
+@media (prefers-reduced-motion) {
+	::view-transition-group(*),
+	::view-transition-old(*),
+	::view-transition-new(*) {
+		animation: none !important;
 	}
 }

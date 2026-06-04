@@ -234,7 +234,7 @@
 					<Table.Head>{t.position}</Table.Head>
 					<Table.Head>{t.line}</Table.Head>
 					<Table.Head>{t.status}</Table.Head>
-					<Table.Head class="w-[80px]">{t.actions}</Table.Head>
+					<Table.Head class="w-20">{t.actions}</Table.Head>
 				</Table.Row>
 			</Table.Header>
 			<Table.Body>
@@ -301,7 +301,7 @@
 
 <!-- Create -->
 <Dialog.Root bind:open={createOpen}>
-	<Dialog.Content class="sm:max-w-[560px]">
+	<Dialog.Content class="sm:max-w-140">
 		<Dialog.Header>
 			<Dialog.Title>{t.createTitle}</Dialog.Title>
 		</Dialog.Header>
@@ -378,7 +378,7 @@
 
 <!-- Edit -->
 <Dialog.Root bind:open={editOpen}>
-	<Dialog.Content class="sm:max-w-[560px]">
+	<Dialog.Content class="sm:max-w-140">
 		<Dialog.Header>
 			<Dialog.Title>{t.editTitle}</Dialog.Title>
 		</Dialog.Header>

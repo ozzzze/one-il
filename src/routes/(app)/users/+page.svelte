@@ -255,7 +255,7 @@
 		<Table.Root>
 			<Table.Header>
 				<Table.Row>
-					<Table.Head class="w-[40px]">
+					<Table.Head class="w-10">
 						<input
 							type="checkbox"
 							checked={paginated.length > 0 && selectedIds.size === paginated.length}
@@ -272,7 +272,7 @@
 							</button>
 						</Table.Head>
 					{/each}
-					<Table.Head class="w-[100px]">{copy.columns.actions}</Table.Head>
+					<Table.Head class="w-25">{copy.columns.actions}</Table.Head>
 				</Table.Row>
 			</Table.Header>
 			<Table.Body>

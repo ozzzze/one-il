@@ -187,7 +187,7 @@
 		</Card.Header>
 		<Card.Content>
 			{#if data.recentNotifications.length > 0}
-				<ScrollArea class="max-h-[250px]">
+				<ScrollArea class="max-h-62.5">
 					<div class="space-y-3">
 						{#each data.recentNotifications as notif (notif.id)}
 							{@const Icon = notifIcon(notif.type)}
@@ -204,7 +204,7 @@
 					</div>
 				</ScrollArea>
 			{:else}
-				<div class="flex h-[100px] items-center justify-center">
+				<div class="flex h-25 items-center justify-center">
 					<p class="text-muted-foreground text-sm">{copy.notifications.none}</p>
 				</div>
 			{/if}

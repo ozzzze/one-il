@@ -133,7 +133,7 @@
 					<LoaderIcon class="text-muted-foreground ml-2 size-4 shrink-0 animate-spin" />
 				{/if}
 			</div>
-			<Command.List class="max-h-[300px] overflow-y-auto overflow-x-hidden px-1 py-1.5">
+			<Command.List class="max-h-75 overflow-y-auto overflow-x-hidden px-1 py-1.5">
 				<Command.Empty class="text-muted-foreground py-6 text-center text-sm">
 					{ui.noResultsFound}
 				</Command.Empty>

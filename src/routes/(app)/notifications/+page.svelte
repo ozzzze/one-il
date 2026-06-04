@@ -113,7 +113,7 @@
 	</div>
 
 	{#if data.notifications.length === 0}
-		<div class="bg-muted/50 flex h-[300px] flex-col items-center justify-center gap-3 rounded-lg border border-dashed">
+		<div class="bg-muted/50 flex h-75 flex-col items-center justify-center gap-3 rounded-lg border border-dashed">
 			<BellIcon class="text-muted-foreground size-10" />
 			<p class="text-muted-foreground text-sm">{copy.noneYet}</p>
 		</div>
