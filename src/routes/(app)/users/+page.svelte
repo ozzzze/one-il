@@ -251,7 +251,7 @@
 	</div>
 
 	<!-- Table -->
-	<div class="rounded-md border">
+	<div class="rounded-lg border bg-card shadow-sm overflow-hidden">
 		<Table.Root>
 			<Table.Header>
 				<Table.Row>

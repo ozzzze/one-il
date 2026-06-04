@@ -7,12 +7,11 @@
 	import { Label } from "$lib/components/ui/label/index.js";
 	import { Badge } from "$lib/components/ui/badge/index.js";
 	import SaveSubmitButton from "$lib/components/save-submit-button.svelte";
+	import DataTablePagination from "$lib/components/data-table-pagination.svelte";
 	import PlusIcon from "@lucide/svelte/icons/plus";
 	import PencilIcon from "@lucide/svelte/icons/pencil";
 	import KeyIcon from "@lucide/svelte/icons/key-round";
 	import SearchIcon from "@lucide/svelte/icons/search";
-	import ChevronLeftIcon from "@lucide/svelte/icons/chevron-left";
-	import ChevronRightIcon from "@lucide/svelte/icons/chevron-right";
 	import { toast } from "svelte-sonner";
 	import { enhance } from "$app/forms";
 	import { pendingEnhance } from "$lib/forms/pending-enhance.js";
@@ -200,7 +199,7 @@
 		<Input placeholder={t.search} class="pl-9" bind:value={search} />
 	</div>
 
-	<div class="rounded-md border">
+	<div class="rounded-lg border bg-card shadow-sm overflow-hidden">
 		<Table.Root>
 			<Table.Header>
 				<Table.Row>
@@ -263,37 +262,12 @@
 				{/each}
 			</Table.Body>
 		</Table.Root>
-	</div>
-
-	<div class="flex items-center justify-between py-4">
-		<div class="text-sm text-muted-foreground">
-			{#if filtered.length > 0}
-				{t.showingRows
-					.replace("{start}", String((currentPage - 1) * itemsPerPage + 1))
-					.replace("{end}", String(Math.min(currentPage * itemsPerPage, filtered.length)))
-					.replace("{total}", String(filtered.length))}
-			{/if}
-		</div>
-		<div class="flex items-center space-x-2">
-			<Button
-				variant="outline"
-				size="sm"
-				onclick={() => (currentPage = Math.max(currentPage - 1, 1))}
-				disabled={currentPage === 1}
-			>
-				<ChevronLeftIcon class="size-4 mr-1" />
-				{t.prev}
-			</Button>
-			<Button
-				variant="outline"
-				size="sm"
-				onclick={() => (currentPage = Math.min(currentPage + 1, Math.ceil(filtered.length / itemsPerPage)))}
-				disabled={currentPage >= Math.ceil(filtered.length / itemsPerPage) || filtered.length === 0}
-			>
-				{t.next}
-				<ChevronRightIcon class="size-4 ml-1" />
-			</Button>
-		</div>
+		<DataTablePagination
+			totalItems={filtered.length}
+			locale={data.locale}
+			pageSize={itemsPerPage}
+			bind:currentPage
+		/>
 	</div>
 </div>
 
