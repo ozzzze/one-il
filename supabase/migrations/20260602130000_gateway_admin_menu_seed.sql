@@ -4,7 +4,7 @@
 -- These are admin_only + permission-gated; the route guards remain authoritative.
 
 insert into public.menu_groups (code, label_th, label_en, sort_order, is_active) values
-  ('gw_admin', 'ผู้ดูแลระบบ', 'Administration', 5, true)
+  ('gw_admin', 'ผู้ดูแลระบบ', 'Administration', 40, true)
 on conflict (code) do update set
   label_th = excluded.label_th,
   label_en = excluded.label_en,

@@ -14,7 +14,7 @@ export default defineConfig(({ mode }) => {
 	plugins: [tailwindcss(), sveltekit()],
 	server: {
 		port: Number(env.VITE_PORT ?? 5173),
-		strictPort: false,
+		strictPort: true,
 		proxy: {
 			// one-leave คนละพอร์ต — /leave/leave/new → /leave/new (ดู scripts/leave-proxy-rewrite.mjs)
 			'/leave': {

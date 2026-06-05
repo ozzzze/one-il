@@ -218,6 +218,6 @@ create policy user_menu_shortcuts_delete_own
   to authenticated
   using (user_id = (select auth.uid()));
 
-grant select on public.menu_groups to authenticated;
-grant select on public.menu_items to authenticated;
-grant select, insert, update, delete on public.user_menu_shortcuts to authenticated;
+grant select on public.menu_groups to authenticated, service_role;
+grant select on public.menu_items to authenticated, service_role;
+grant select, insert, update, delete on public.user_menu_shortcuts to authenticated, service_role;
