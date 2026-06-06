@@ -133,8 +133,22 @@
 		})
 	);
 
+	const sorted = $derived(
+		[...filtered].sort((a, b) => {
+			if (a.isActive !== b.isActive) {
+				return a.isActive ? -1 : 1;
+			}
+			const aThai = /^[\u0e00-\u0e7f]/.test(a.username) || /^[\u0e00-\u0e7f]/.test(a.fullName ?? "");
+			const bThai = /^[\u0e00-\u0e7f]/.test(b.username) || /^[\u0e00-\u0e7f]/.test(b.fullName ?? "");
+			if (aThai !== bThai) {
+				return aThai ? -1 : 1;
+			}
+			return a.username.localeCompare(b.username, data.locale);
+		})
+	);
+
 	const paginated = $derived(
-		filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+		sorted.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
 	);
 
 	$effect(() => {
@@ -205,7 +219,6 @@
 				<Table.Row>
 					<Table.Head>{t.username}</Table.Head>
 					<Table.Head>{t.name}</Table.Head>
-					<Table.Head>{t.employeeCode}</Table.Head>
 					<Table.Head>{t.roles}</Table.Head>
 					<Table.Head>{t.status}</Table.Head>
 					<Table.Head class="w-30">{t.actions}</Table.Head>
@@ -216,7 +229,6 @@
 					<Table.Row>
 						<Table.Cell class="font-medium">{u.username}</Table.Cell>
 						<Table.Cell class="text-muted-foreground">{u.fullName ?? "—"}</Table.Cell>
-						<Table.Cell class="text-muted-foreground">{u.employeeCode ?? "—"}</Table.Cell>
 						<Table.Cell>
 							<div class="flex flex-wrap gap-1">
 								{#each u.roles as role (role)}
@@ -257,7 +269,7 @@
 					</Table.Row>
 				{:else}
 					<Table.Row>
-						<Table.Cell colspan={6} class="h-24 text-center">{t.noUsers}</Table.Cell>
+						<Table.Cell colspan={5} class="h-24 text-center">{t.noUsers}</Table.Cell>
 					</Table.Row>
 				{/each}
 			</Table.Body>

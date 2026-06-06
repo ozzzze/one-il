@@ -53,13 +53,13 @@ pnpm format:check     # Prettier (check only)
 Routes use SvelteKit route groups for layout separation:
 
 - `(app)/` — Protected routes. Auth guard in `hooks.server.ts` redirects unauthenticated users to `/login`
-- `(auth)/` — Public auth routes (login, register, OAuth callbacks under `/auth/` where configured)
-- `(public)/` — Public pages (pricing)
+- `(auth)/` — Public auth routes (`/login` gateway form; `/leave/login` proxied to one-leave)
 - `logout/` — Standalone logout action (server-only)
 - `api/search/` — Search endpoint for command palette
-- `sitemap.xml/` — Auto-generated sitemap
 
-Session handling uses Supabase Auth cookies via `createServerClient` in `hooks.server.ts`. `event.locals.supabase`, `event.locals.user` (app profile from `public.users`), and `event.locals.session` are populated per request. See `.env.example` for `PUBLIC_SUPABASE_*` and `SUPABASE_SERVICE_ROLE_KEY`.
+**Auth model (gateway):** HMAC cookie `one_leave_session` shared with one-leave. Identity core is `one_leave.users` + `one_leave.user_roles` + `one_leave.employees` on Postgres (accessed via `DATABASE_URL`). Auth implementation lives in `src/lib/server/one-leave/`. Required env: `DATABASE_URL`, `SESSION_SECRET` (same values as one-leave).
+
+See `docs/GATEWAY-ARCHITECTURE.md` for full SSO + proxy details.
 
 ### Key Directories
 
@@ -77,7 +77,7 @@ Session handling uses Supabase Auth cookies via `createServerClient` in `hooks.s
 
 ### Database
 
-Schema targets **Supabase Postgres** (`public.users`, `sessions`, `pages`, etc.). Reference SQL for bootstrapping tables: `scratch/supabase_schema.sql`. Use the Supabase Dashboard or CLI for migrations and RLS policies.
+Identity/auth schema: `one_leave.*` (users, user_roles, employees, leave tables) on Postgres via `DATABASE_URL`. Gateway tables (menu_groups, menu_items, change_requests) are in `public.*` on the same Postgres/Supabase project. Use the Supabase Dashboard or CLI for migrations and RLS policies.
 
 ### Patterns
 

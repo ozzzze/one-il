@@ -29,32 +29,35 @@
 - Sharing: [CSS, Function] basic component, Example Modal, Toast, Loading,
 - Solve: Null, Undefied, Empty
 
-## 5. Archetechture
+## 5. Architecture
 
-- Modular Monolith
+- **Multi-repo Gateway** — `one-il` คือ gateway/portal (ชั้น 1: identity + launcher + RBAC catalog)
+- ระบบย่อยแต่ละตัวอยู่ใน repo แยก (ชั้น 2) เสียบเข้า gateway ผ่าน reverse proxy (same-origin cookie SSO)
+- รายละเอียด: [`docs/GATEWAY-ARCHITECTURE.md`](./GATEWAY-ARCHITECTURE.md), stage-gate: [`docs/SYSTEM-BLUEPRINT.md`](./SYSTEM-BLUEPRINT.md)
 
 ## 6. Module in app
 
-- Office
-  - Human Resource
-  - Leave
+> โมดูลด้านล่างคือขอบเขตทั้ง platform — บางโมดูลอยู่ใน `one-leave`, บางโมดูลจะเป็น repo ใหม่
+> ดูสถานะจริงที่ [`docs/REGISTRY.md`](./REGISTRY.md)
+
+- **Office**
+  - Human Resource / Employee
+  - Leave *(one-leave)*
   - Welfare
-  - Dashboard for Excutive
-  - Leave
-  - Welfare
+  - Dashboard for Executive
   - Supply
   - Asset
   - WorkSheet
-  - Product from research
-- Academic
+  - Product from Research
+- **Academic**
   - Student/Advisor
   - Research
   - Laboratory Stock
-- Office & Academic
+- **Office & Academic**
   - Academic Service
   - Borrow/Return Equipment
-  - Booking Room
-- My Account
+  - Room Booking *(one-il)*
+- **My Account**
 
 ## 7. Milestone
     - Create ONE-IL
