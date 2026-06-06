@@ -1,7 +1,7 @@
 # Gateway — next steps & session handoff
 
-> **อัปเดตล่าสุด:** 2026-06-01 (session ต่อ — proxy IPv6 fix, DB seed, one-leave `paths.base`)  
-> **Commit อ้างอิง (one-il `main`):** `309dc0f` — feat: gateway hub, one-leave auth, and licensed fonts  
+> **อัปเดตล่าสุด:** 2026-06-06 (SCR tests, docs restructure, Stage 0 Bootstrap plan สำหรับ one-support)  
+> **Commit อ้างอิง (one-il `main`):** `4bf3176` — test(scr): add unit tests + refactor docs and users page  
 > **Remote:** https://github.com/ozzzze/one-il (`origin/main`)
 
 เอกสารนี้รวม **context จาก session** + checklist ใช้ one-leave ผ่าน one-il  
@@ -28,6 +28,7 @@
 2. ~~**one-leave repo** — `paths.base: '/leave'`~~ → ทำแล้วใน `one-leave/apps/web/svelte.config.js`
 3. ~~**DB ops**~~ — รัน `db:apply:user-change-requests` + `db:seed:menu-catalog` แล้ว (2026-06-01)
 4. **Production** — reverse proxy + build สองแอป + `PUBLIC_APP_URL` / CSRF
+5. **one-support Stage 0 Bootstrap** — init repo + copy UI shell จาก one-il (Tier B) ดู [SYSTEM-BLUEPRINT.md §0.5](./SYSTEM-BLUEPRINT.md)
 
 ### ทำใน session นี้ (2026-06-01 ต่อ)
 
