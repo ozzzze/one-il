@@ -164,9 +164,11 @@ export function getRequestsPageCopy(locale: Locale) {
 					"สร้างและติดตามคำขอภายในคณะจากที่เดียว โดยเริ่มจากคำขอจองห้องและเวิร์กโฟลว์อนุมัติสำหรับผู้ใช้และผู้ดูแล",
 				startRequestCta: "เริ่มคำขอ",
 				yourRequestsHeading: "คำขอของคุณ",
-				yourRequestsDescription: "ติดตามคำขอที่ส่งแล้ว เปิดดูรายละเอียด และยกเลิกการจองที่ยังอยู่ในช่วงเวลาที่อนุญาตได้จากหน้านี้",
+				yourRequestsDescription:
+					"ติดตามคำขอที่ส่งแล้ว เปิดดูรายละเอียด และยกเลิกการจองที่ยังอยู่ในช่วงเวลาที่อนุญาตได้จากหน้านี้",
 				noSavedRequests: "ยังไม่มีคำขอที่บันทึกไว้",
-				noSavedRequestsHint: "เริ่มสร้างคำขอใหม่จากการ์ดด้านบน เมื่อส่งสำเร็จแล้วประวัติจะมาแสดงที่นี่ทันที",
+				noSavedRequestsHint:
+					"เริ่มสร้างคำขอใหม่จากการ์ดด้านบน เมื่อส่งสำเร็จแล้วประวัติจะมาแสดงที่นี่ทันที",
 			}
 		: {
 				title: `${menu.requests} - ${app.shortName}`,
@@ -178,7 +180,8 @@ export function getRequestsPageCopy(locale: Locale) {
 				yourRequestsDescription:
 					"Review submitted requests, open detail pages, and cancel reservations while they are still inside the allowed cancellation window.",
 				noSavedRequests: "No saved requests yet.",
-				noSavedRequestsHint: "Start a new request from the cards above. Submitted history will appear here immediately.",
+				noSavedRequestsHint:
+					"Start a new request from the cards above. Submitted history will appear here immediately.",
 			};
 }
 

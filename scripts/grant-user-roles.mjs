@@ -26,7 +26,10 @@ function loadEnvFile(path) {
 }
 
 const username = process.argv[2]?.trim().toLowerCase();
-const roles = process.argv.slice(3).map((r) => r.trim()).filter(Boolean);
+const roles = process.argv
+	.slice(3)
+	.map((r) => r.trim())
+	.filter(Boolean);
 
 if (!username || roles.length === 0) {
 	console.error("Usage: node --env-file=.env scripts/grant-user-roles.mjs <username> <role>...");
@@ -41,13 +44,13 @@ const pool = new pg.Pool(
 		port: env.PG_PORT,
 		user: env.PG_USER,
 		password: env.SELF_HOSTED_DB_PASSWORD,
-	}),
+	})
 );
 
 try {
 	const userRes = await pool.query(
 		`SELECT id FROM one_leave.users WHERE LOWER(username) = $1 AND is_active = true`,
-		[username],
+		[username]
 	);
 	const userId = userRes.rows[0]?.id;
 	if (!userId) {
@@ -62,13 +65,13 @@ try {
 			VALUES ($1, $2)
 			ON CONFLICT (user_id, role_code) DO NOTHING
 			`,
-			[userId, role],
+			[userId, role]
 		);
 	}
 
 	const { rows } = await pool.query(
 		`SELECT role_code FROM one_leave.user_roles WHERE user_id = $1 ORDER BY role_code`,
-		[userId],
+		[userId]
 	);
 	console.log("Updated roles for", username, ":", rows.map((r) => r.role_code).join(", "));
 } finally {

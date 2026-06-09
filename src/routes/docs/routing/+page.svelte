@@ -6,9 +6,7 @@
 <div class="prose dark:prose-invert max-w-none">
 	<h1>Routing &amp; Navigation</h1>
 
-	<p>
-		ONE-IL ใช้ route groups ของ SvelteKit เพื่อแยก layout และ auth boundary:
-	</p>
+	<p>ONE-IL ใช้ route groups ของ SvelteKit เพื่อแยก layout และ auth boundary:</p>
 
 	<ul>
 		<li><code>src/routes/(app)/</code> — protected routes (ต้องมีผู้ใช้)</li>
@@ -18,6 +16,7 @@
 	</ul>
 
 	<p>
-		สำหรับ data fetching และ form submit ให้ทำใน <code>+page.server.ts</code> และใช้ Supabase ผ่าน <code>locals.supabase</code>.
+		สำหรับ data fetching และ form submit ให้ทำใน <code>+page.server.ts</code> และใช้ Supabase ผ่าน
+		<code>locals.supabase</code>.
 	</p>
 </div>

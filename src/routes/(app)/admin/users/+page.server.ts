@@ -23,10 +23,7 @@ function failFromError(err: unknown) {
 }
 
 function parseRoles(formData: FormData): LeaveRoleCode[] {
-	return formData
-		.getAll("roles")
-		.map(String)
-		.filter(isLeaveRoleCode);
+	return formData.getAll("roles").map(String).filter(isLeaveRoleCode);
 }
 
 export const load: PageServerLoad = async ({ locals }) => {

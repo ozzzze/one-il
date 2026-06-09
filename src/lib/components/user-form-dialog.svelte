@@ -22,46 +22,46 @@
 		open: boolean;
 		mode: "create" | "edit";
 		user?: UserData | null;
-	locale?: "en" | "th";
+		locale?: "en" | "th";
 	};
 
-let { open = $bindable(false), mode, user = null, locale = "en" }: Props = $props();
+	let { open = $bindable(false), mode, user = null, locale = "en" }: Props = $props();
 
-const copy = $derived.by(() =>
-	locale === "th"
-		? {
-				addUser: "เพิ่มผู้ใช้",
-				editUser: "แก้ไขผู้ใช้",
-				createDesc: "สร้างบัญชีผู้ใช้ใหม่",
-				editDesc: "อัปเดตรายละเอียดผู้ใช้",
-				name: "ชื่อ",
-				email: "อีเมล",
-				username: "ชื่อผู้ใช้",
-				usernamePlaceholder: "ตัวพิมพ์เล็ก, 3-31 ตัวอักษร",
-				password: "รหัสผ่าน",
-				passwordPlaceholder: "อย่างน้อย 6 ตัวอักษร",
-				role: "บทบาท",
-				create: "สร้าง",
-				saveChanges: "บันทึกการเปลี่ยนแปลง",
-			}
-		: {
-				addUser: "Add User",
-				editUser: "Edit User",
-				createDesc: "Create a new user account.",
-				editDesc: "Update user details.",
-				name: "Name",
-				email: "Email",
-				username: "Username",
-				usernamePlaceholder: "lowercase, 3-31 chars",
-				password: "Password",
-				passwordPlaceholder: "6+ characters",
-				role: "Role",
-				create: "Create",
-				saveChanges: "Save Changes",
-			}
-);
+	const copy = $derived.by(() =>
+		locale === "th"
+			? {
+					addUser: "เพิ่มผู้ใช้",
+					editUser: "แก้ไขผู้ใช้",
+					createDesc: "สร้างบัญชีผู้ใช้ใหม่",
+					editDesc: "อัปเดตรายละเอียดผู้ใช้",
+					name: "ชื่อ",
+					email: "อีเมล",
+					username: "ชื่อผู้ใช้",
+					usernamePlaceholder: "ตัวพิมพ์เล็ก, 3-31 ตัวอักษร",
+					password: "รหัสผ่าน",
+					passwordPlaceholder: "อย่างน้อย 6 ตัวอักษร",
+					role: "บทบาท",
+					create: "สร้าง",
+					saveChanges: "บันทึกการเปลี่ยนแปลง",
+				}
+			: {
+					addUser: "Add User",
+					editUser: "Edit User",
+					createDesc: "Create a new user account.",
+					editDesc: "Update user details.",
+					name: "Name",
+					email: "Email",
+					username: "Username",
+					usernamePlaceholder: "lowercase, 3-31 chars",
+					password: "Password",
+					passwordPlaceholder: "6+ characters",
+					role: "Role",
+					create: "Create",
+					saveChanges: "Save Changes",
+				}
+	);
 
-const title = $derived(mode === "create" ? copy.addUser : copy.editUser);
+	const title = $derived(mode === "create" ? copy.addUser : copy.editUser);
 	const action = $derived(mode === "create" ? "?/create" : "?/update");
 
 	const uiLabels = $derived(getUiLabels(locale));
@@ -84,12 +84,16 @@ const title = $derived(mode === "create" ? copy.addUser : copy.editUser);
 		<form
 			method="POST"
 			{action}
-			use:enhance={pendingEnhance((v) => (savePending = v), () => async ({ result, update }) => {
-				if (result.type === "success" || result.type === "redirect") {
-					open = false;
-				}
-				await update();
-			})}
+			use:enhance={pendingEnhance(
+				(v) => (savePending = v),
+				() =>
+					async ({ result, update }) => {
+						if (result.type === "success" || result.type === "redirect") {
+							open = false;
+						}
+						await update();
+					}
+			)}
 		>
 			{#if mode === "edit" && user}
 				<input type="hidden" name="id" value={user.id} />
@@ -110,7 +114,13 @@ const title = $derived(mode === "create" ? copy.addUser : copy.editUser);
 					</div>
 					<div class="grid gap-2">
 						<Label for="password">{copy.password}</Label>
-						<Input id="password" name="password" type="password" placeholder={copy.passwordPlaceholder} required />
+						<Input
+							id="password"
+							name="password"
+							type="password"
+							placeholder={copy.passwordPlaceholder}
+							required
+						/>
 					</div>
 				{/if}
 				<div class="grid gap-2">

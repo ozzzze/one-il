@@ -1,13 +1,17 @@
 <svelte:head>
 	<title>User Management - ONE-IL Documentation</title>
-	<meta name="description" content="User management backed by Supabase (auth.users + public.users)." />
+	<meta
+		name="description"
+		content="User management backed by Supabase (auth.users + public.users)."
+	/>
 </svelte:head>
 
 <div class="prose dark:prose-invert max-w-none">
 	<h1>User Management</h1>
 
 	<p class="lead">
-		ผู้ใช้ถูกจัดการโดย <strong>Supabase Auth</strong> (บัญชี) และตาราง <code>public.users</code> (โปรไฟล์/role สำหรับแอป).
+		ผู้ใช้ถูกจัดการโดย <strong>Supabase Auth</strong> (บัญชี) และตาราง <code>public.users</code> (โปรไฟล์/role
+		สำหรับแอป).
 	</p>
 
 	<h2>Data model</h2>
@@ -17,6 +21,8 @@
 	</ul>
 
 	<p>
-		การเพิ่ม/แก้ไข/ลบผู้ใช้ฝั่ง admin ใช้ service role client ใน <code>src/lib/server/supabase-admin.ts</code>.
+		การเพิ่ม/แก้ไข/ลบผู้ใช้ฝั่ง admin ใช้ service role client ใน <code
+			>src/lib/server/supabase-admin.ts</code
+		>.
 	</p>
 </div>

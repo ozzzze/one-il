@@ -49,7 +49,11 @@ export const actions: Actions = {
 		}
 
 		// Prevent demotion of last admin
-		const { data: target } = await admin.from("users").select("role").eq("id", userId).maybeSingle();
+		const { data: target } = await admin
+			.from("users")
+			.select("role")
+			.eq("id", userId)
+			.maybeSingle();
 		if (target?.role === "admin" && newRole !== "admin") {
 			const { count: adminCount } = await admin
 				.from("users")

@@ -6,6 +6,8 @@
 	import { onNavigate } from "$app/navigation";
 	import "../app.css";
 
+	import LoadingIndicator from "$lib/components/loading-indicator.svelte";
+
 	let { children } = $props();
 
 	onNavigate((navigation) => {
@@ -49,6 +51,7 @@
 />
 
 <ModeWatcher />
+<LoadingIndicator />
 
 <svelte:head>
 	<link rel="icon" href={ilLogo} />

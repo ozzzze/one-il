@@ -26,14 +26,14 @@ export function isPathActive(pathname: string, href: string): boolean {
 export function isNavSubItemActive(
 	pathname: string,
 	href: string,
-	siblingHrefs: readonly string[],
+	siblingHrefs: readonly string[]
 ): boolean {
 	if (!isPathActive(pathname, href)) return false;
 	const hasMoreSpecificSibling = siblingHrefs.some(
 		(siblingHref) =>
 			siblingHref !== href &&
 			siblingHref.startsWith(`${href}/`) &&
-			isPathActive(pathname, siblingHref),
+			isPathActive(pathname, siblingHref)
 	);
 	return !hasMoreSpecificSibling;
 }
@@ -41,7 +41,7 @@ export function isNavSubItemActive(
 /** Apply route-based auto-expand (pathname change only — must not read current expanded flags). */
 export function applySidebarAutoExpand(
 	pathname: string,
-	menuBranchExpanded: Readonly<Record<string, boolean>>,
+	menuBranchExpanded: Readonly<Record<string, boolean>>
 ): { hrHubExpanded: boolean; menuBranchExpanded: Record<string, boolean> } {
 	let hrHubExpanded = false;
 	let nextBranches = { ...menuBranchExpanded };

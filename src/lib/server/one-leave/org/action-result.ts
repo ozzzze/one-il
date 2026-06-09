@@ -1,9 +1,9 @@
-import { fail } from '@sveltejs/kit';
+import { fail } from "@sveltejs/kit";
 
 export function actionFail(
 	status: number,
 	message: string,
-	variant: 'error' | 'warning' = 'error'
+	variant: "error" | "warning" = "error"
 ): ReturnType<typeof fail> {
 	return fail(status, { error: message, toastVariant: variant });
 }

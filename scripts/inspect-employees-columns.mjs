@@ -1,8 +1,6 @@
 import pg from "pg";
 
-const connectionString =
-	process.env.SELF_HOSTED_DATABASE_URL ||
-	process.env.DATABASE_URL;
+const connectionString = process.env.SELF_HOSTED_DATABASE_URL || process.env.DATABASE_URL;
 
 if (!connectionString) {
 	console.error("SELF_HOSTED_DATABASE_URL or DATABASE_URL is required");

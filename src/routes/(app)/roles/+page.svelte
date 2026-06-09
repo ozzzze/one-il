@@ -40,7 +40,11 @@
 	);
 
 	let roleChangeOpen = $state(false);
-	let roleChangeUser = $state<{ id: string; name: string; role: Role }>({ id: "", name: "", role: "user" });
+	let roleChangeUser = $state<{ id: string; name: string; role: Role }>({
+		id: "",
+		name: "",
+		role: "user",
+	});
 
 	$effect(() => {
 		if (form?.message) toast.error(form.message);
@@ -94,7 +98,9 @@
 				<Card.Header>
 					<div class="flex items-center justify-between">
 						<div class="flex items-center gap-3">
-							<div class="bg-primary/10 text-primary flex size-10 items-center justify-center rounded-lg">
+							<div
+								class="bg-primary/10 text-primary flex size-10 items-center justify-center rounded-lg"
+							>
 								<ShieldIcon class="size-5" />
 							</div>
 							<div>
@@ -104,13 +110,16 @@
 						</div>
 						<Badge variant="secondary" class="gap-1">
 							<UsersIcon class="size-3" />
-							{role.count} {copy.user}{role.count !== 1 && data.locale !== "th" ? "s" : ""}
+							{role.count}
+							{copy.user}{role.count !== 1 && data.locale !== "th" ? "s" : ""}
 						</Badge>
 					</div>
 				</Card.Header>
 				<Card.Content class="space-y-4">
 					<div>
-						<p class="text-muted-foreground mb-2 text-xs font-medium uppercase tracking-wider">{copy.permissions}</p>
+						<p class="text-muted-foreground mb-2 text-xs font-medium tracking-wider uppercase">
+							{copy.permissions}
+						</p>
 						<div class="flex flex-wrap gap-2">
 							{#each role.permissions as perm, i (perm)}
 								<Badge variant="outline" class="gap-1">
@@ -123,7 +132,9 @@
 
 					{#if role.users.length > 0}
 						<div>
-							<p class="text-muted-foreground mb-2 text-xs font-medium uppercase tracking-wider">{copy.users}</p>
+							<p class="text-muted-foreground mb-2 text-xs font-medium tracking-wider uppercase">
+								{copy.users}
+							</p>
 							<div class="space-y-2">
 								{#each role.users as user (user.id)}
 									<div class="flex items-center justify-between rounded-lg border p-3">
@@ -139,7 +150,8 @@
 										<Button
 											variant="ghost"
 											size="sm"
-											onclick={() => openRoleChange({ id: user.id, name: user.name, role: role.name })}
+											onclick={() =>
+												openRoleChange({ id: user.id, name: user.name, role: role.name })}
 										>
 											<PencilIcon class="mr-1 size-3" />
 											{copy.change}

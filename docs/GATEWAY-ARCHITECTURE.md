@@ -14,19 +14,19 @@ Decisions in effect for this milestone:
 
 ## What the gateway owns
 
-| Area | Location |
-|------|----------|
-| Auth entry (gateway login + optional one-leave UI) | `src/routes/(auth)/login/`; link ไป `/leave/login` |
-| Session | Cookie `one_leave_session` (HMAC, `SESSION_SECRET` shared with one-leave) |
-| Auth implementation | `src/lib/server/one-leave/*` |
-| App launcher (home) | `src/routes/(app)/+page.svelte` (renders `navigation.homeNavCards`) |
-| App launcher (waffle menu) | `src/lib/components/apps-menu.svelte` |
-| Profile / settings | `src/routes/(app)/settings/` |
-| User change request | `src/routes/(app)/account/change-request/` |
-| Role center | `src/routes/(app)/roles/` |
-| Menu catalog admin | `src/routes/(app)/menu-catalog/` |
-| Central RBAC catalog | `src/lib/auth/roles.ts` (all apps' permission keys) |
-| DB-driven menu | tables `menu_groups`, `menu_items` — seed: `pnpm db:seed:menu-catalog` (`20260601140000_gateway_menu_catalog_seed.sql`) |
+| Area                                               | Location                                                                                                                |
+| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Auth entry (gateway login + optional one-leave UI) | `src/routes/(auth)/login/`; link ไป `/leave/login`                                                                      |
+| Session                                            | Cookie `one_leave_session` (HMAC, `SESSION_SECRET` shared with one-leave)                                               |
+| Auth implementation                                | `src/lib/server/one-leave/*`                                                                                            |
+| App launcher (home)                                | `src/routes/(app)/+page.svelte` (renders `navigation.homeNavCards`)                                                     |
+| App launcher (waffle menu)                         | `src/lib/components/apps-menu.svelte`                                                                                   |
+| Profile / settings                                 | `src/routes/(app)/settings/`                                                                                            |
+| User change request                                | `src/routes/(app)/account/change-request/`                                                                              |
+| Role center                                        | `src/routes/(app)/roles/`                                                                                               |
+| Menu catalog admin                                 | `src/routes/(app)/menu-catalog/`                                                                                        |
+| Central RBAC catalog                               | `src/lib/auth/roles.ts` (all apps' permission keys)                                                                     |
+| DB-driven menu                                     | tables `menu_groups`, `menu_items` — seed: `pnpm db:seed:menu-catalog` (`20260601140000_gateway_menu_catalog_seed.sql`) |
 
 The gateway knows about **every** app's permission keys and menu entries so it can show the
 right tiles per role. Each menu item's `href` is just a path string — point it at an external
@@ -99,9 +99,9 @@ behind the proxy. In the sub-app's `svelte.config.js`:
 ```js
 // one-leave/svelte.config.js
 const config = {
-    kit: {
-        paths: { base: process.env.NODE_ENV === "production" ? "/leave" : "" },
-    },
+	kit: {
+		paths: { base: process.env.NODE_ENV === "production" ? "/leave" : "" },
+	},
 };
 ```
 
@@ -122,4 +122,4 @@ submodule/package and have every app consume the same copy:
 - `src/lib/i18n/*`, `src/lib/content/labels.ts` — locale + shared labels
 
 DB types (`src/lib/database.types.ts`) are **not** shared — each repo regenerates them from the
-single source of truth (the Supabase schema) via `pnpm supabase:types`.
+single source of truth (the Supabase schema) via `pnpm db:types`.

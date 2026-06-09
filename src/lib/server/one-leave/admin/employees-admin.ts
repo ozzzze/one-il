@@ -71,7 +71,7 @@ export async function listLeaveEmployees(): Promise<AdminEmployeeRow[]> {
 		FROM one_leave.employees AS e
 		LEFT JOIN one_leave.org_units AS o ON o.id = e.org_unit_id
 		ORDER BY e.first_name_th, e.last_name_th
-		`,
+		`
 	);
 	return rows.map(mapEmployeeRow);
 }
@@ -86,7 +86,7 @@ export async function listOrgUnits(): Promise<OrgUnitOption[]> {
 		`SELECT id, code, name_th, name_en
 		 FROM one_leave.org_units
 		 WHERE is_active = true
-		 ORDER BY sort_order, name_th`,
+		 ORDER BY sort_order, name_th`
 	);
 	return rows.map((r) => ({
 		id: toInt(r.id) ?? 0,
@@ -99,14 +99,14 @@ export async function listOrgUnits(): Promise<OrgUnitOption[]> {
 async function employeeCodeExists(code: string, excludeId?: number): Promise<boolean> {
 	const { rows } = await leaveQuery<{ id: number }>(
 		`SELECT id FROM one_leave.employees WHERE employee_code = $1 AND ($2::bigint IS NULL OR id <> $2) LIMIT 1`,
-		[code, excludeId ?? null],
+		[code, excludeId ?? null]
 	);
 	return rows.length > 0;
 }
 
 export async function createLeaveEmployee(
 	actor: AdminActor,
-	input: CreateEmployeeInput,
+	input: CreateEmployeeInput
 ): Promise<{ id: number }> {
 	const code = input.employeeCode.trim();
 	if (!code) throw new AdminActionError("invalid_code", "Employee code is required");
@@ -136,7 +136,7 @@ export async function createLeaveEmployee(
 				input.hireDate,
 				input.email ?? null,
 				input.isActive ?? true,
-			],
+			]
 		);
 		const id = toInt(inserted.rows[0]?.id);
 		if (id === null) throw new Error("Failed to create employee");
@@ -156,7 +156,7 @@ export async function createLeaveEmployee(
 export async function updateLeaveEmployee(
 	actor: AdminActor,
 	employeeId: number,
-	input: UpdateEmployeeInput,
+	input: UpdateEmployeeInput
 ): Promise<void> {
 	await withLeaveTransaction(async (client) => {
 		await client.query(
@@ -186,7 +186,7 @@ export async function updateLeaveEmployee(
 				input.email !== undefined,
 				input.email ?? null,
 				input.isActive ?? null,
-			],
+			]
 		);
 		await writeAdminAudit(client, {
 			actorUserId: actor.leaveUserId,

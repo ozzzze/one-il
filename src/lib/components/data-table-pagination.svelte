@@ -43,13 +43,9 @@
 	const pageNumbers = $derived.by(() => {
 		const numbers: (number | string)[] = [];
 		const delta = 1; // number of pages to show before and after current page
-		
+
 		for (let i = 1; i <= totalPages; i++) {
-			if (
-				i === 1 ||
-				i === totalPages ||
-				(i >= currentPage - delta && i <= currentPage + delta)
-			) {
+			if (i === 1 || i === totalPages || (i >= currentPage - delta && i <= currentPage + delta)) {
 				numbers.push(i);
 			} else if (
 				(i === currentPage - delta - 1 && i > 1) ||
@@ -58,7 +54,7 @@
 				numbers.push("...");
 			}
 		}
-		
+
 		return numbers.filter((val, idx, arr) => {
 			if (val === "...") {
 				return arr.indexOf("...") === idx;
@@ -68,13 +64,13 @@
 	});
 </script>
 
-<div class="flex items-center justify-between border-t p-4 bg-muted/20">
+<div class="bg-muted/20 flex items-center justify-between border-t p-4">
 	<div class="flex flex-1 justify-between sm:hidden">
 		<button
 			type="button"
 			disabled={currentPage <= 1}
-			onclick={() => currentPage = Math.max(1, currentPage - 1)}
-			class="border bg-clip-padding font-medium border-border bg-background hover:bg-muted text-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 h-7 gap-1 rounded-[min(var(--radius-md),12px)] px-2.5 text-[0.8rem] inline-flex shrink-0 items-center justify-center whitespace-nowrap transition-all outline-none select-none disabled:pointer-events-none disabled:opacity-50"
+			onclick={() => (currentPage = Math.max(1, currentPage - 1))}
+			class="border-border bg-background hover:bg-muted text-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 inline-flex h-7 shrink-0 items-center justify-center gap-1 rounded-[min(var(--radius-md),12px)] border bg-clip-padding px-2.5 text-[0.8rem] font-medium whitespace-nowrap transition-all outline-none select-none disabled:pointer-events-none disabled:opacity-50"
 		>
 			<ChevronLeftIcon class="size-4 shrink-0" />
 			{copy.prev}
@@ -82,8 +78,8 @@
 		<button
 			type="button"
 			disabled={currentPage >= totalPages}
-			onclick={() => currentPage = Math.min(totalPages, currentPage + 1)}
-			class="border bg-clip-padding font-medium border-border bg-background hover:bg-muted text-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 h-7 gap-1 rounded-[min(var(--radius-md),12px)] px-2.5 text-[0.8rem] inline-flex shrink-0 items-center justify-center whitespace-nowrap transition-all outline-none select-none disabled:pointer-events-none disabled:opacity-50"
+			onclick={() => (currentPage = Math.min(totalPages, currentPage + 1))}
+			class="border-border bg-background hover:bg-muted text-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 inline-flex h-7 shrink-0 items-center justify-center gap-1 rounded-[min(var(--radius-md),12px)] border bg-clip-padding px-2.5 text-[0.8rem] font-medium whitespace-nowrap transition-all outline-none select-none disabled:pointer-events-none disabled:opacity-50"
 		>
 			{copy.next}
 			<ChevronRightIcon class="size-4 shrink-0" />
@@ -93,7 +89,10 @@
 		<div>
 			<p class="text-muted-foreground text-xs">
 				{#if totalItems > 0}
-					{copy.showing} <span class="font-semibold text-foreground">{startItem}</span> {copy.to} <span class="font-semibold text-foreground">{endItem}</span> {copy.of} <span class="font-semibold text-foreground">{totalItems}</span> {copy.items}
+					{copy.showing} <span class="text-foreground font-semibold">{startItem}</span>
+					{copy.to} <span class="text-foreground font-semibold">{endItem}</span>
+					{copy.of} <span class="text-foreground font-semibold">{totalItems}</span>
+					{copy.items}
 				{:else}
 					{copy.noResults}
 				{/if}
@@ -104,25 +103,26 @@
 				<button
 					type="button"
 					disabled={currentPage <= 1}
-					onclick={() => currentPage = Math.max(1, currentPage - 1)}
-					class="border bg-clip-padding font-medium border-border bg-background hover:bg-muted text-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 h-7 gap-1 rounded-[min(var(--radius-md),12px)] rounded-r-none px-2.5 text-[0.8rem] inline-flex shrink-0 items-center justify-center whitespace-nowrap transition-all outline-none select-none disabled:pointer-events-none disabled:opacity-50"
+					onclick={() => (currentPage = Math.max(1, currentPage - 1))}
+					class="border-border bg-background hover:bg-muted text-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 inline-flex h-7 shrink-0 items-center justify-center gap-1 rounded-[min(var(--radius-md),12px)] rounded-r-none border bg-clip-padding px-2.5 text-[0.8rem] font-medium whitespace-nowrap transition-all outline-none select-none disabled:pointer-events-none disabled:opacity-50"
 				>
 					<ChevronLeftIcon class="size-4 shrink-0" />
 					{copy.prev}
 				</button>
 				{#each pageNumbers as page (page)}
 					{#if page === "..."}
-						<span class="border border-border bg-background dark:bg-input/30 dark:border-input h-7 px-2.5 text-[0.8rem] text-muted-foreground inline-flex shrink-0 items-center justify-center whitespace-nowrap select-none rounded-none border-l-0">
+						<span
+							class="border-border bg-background dark:bg-input/30 dark:border-input text-muted-foreground inline-flex h-7 shrink-0 items-center justify-center rounded-none border border-l-0 px-2.5 text-[0.8rem] whitespace-nowrap select-none"
+						>
 							...
 						</span>
 					{:else}
 						<button
 							type="button"
-							onclick={() => currentPage = Number(page)}
+							onclick={() => (currentPage = Number(page))}
 							class={page === currentPage
-								? "border border-transparent bg-clip-padding font-medium bg-sky-500 text-white hover:bg-sky-600 h-7 gap-1 px-2.5 text-[0.8rem] inline-flex shrink-0 items-center justify-center whitespace-nowrap transition-all outline-none select-none rounded-none border-l-0"
-								: "border bg-clip-padding font-medium border-border bg-background hover:bg-muted text-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 h-7 gap-1 px-2.5 text-[0.8rem] inline-flex shrink-0 items-center justify-center whitespace-nowrap transition-all outline-none select-none rounded-none border-l-0"
-							}
+								? "inline-flex h-7 shrink-0 items-center justify-center gap-1 rounded-none border border-l-0 border-transparent bg-sky-500 bg-clip-padding px-2.5 text-[0.8rem] font-medium whitespace-nowrap text-white transition-all outline-none select-none hover:bg-sky-600"
+								: "border-border bg-background hover:bg-muted text-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 inline-flex h-7 shrink-0 items-center justify-center gap-1 rounded-none border border-l-0 bg-clip-padding px-2.5 text-[0.8rem] font-medium whitespace-nowrap transition-all outline-none select-none"}
 						>
 							{page}
 						</button>
@@ -131,8 +131,8 @@
 				<button
 					type="button"
 					disabled={currentPage >= totalPages}
-					onclick={() => currentPage = Math.min(totalPages, currentPage + 1)}
-					class="border bg-clip-padding font-medium border-border bg-background hover:bg-muted text-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 h-7 gap-1 rounded-[min(var(--radius-md),12px)] rounded-l-none border-l-0 px-2.5 text-[0.8rem] inline-flex shrink-0 items-center justify-center whitespace-nowrap transition-all outline-none select-none disabled:pointer-events-none disabled:opacity-50"
+					onclick={() => (currentPage = Math.min(totalPages, currentPage + 1))}
+					class="border-border bg-background hover:bg-muted text-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 inline-flex h-7 shrink-0 items-center justify-center gap-1 rounded-[min(var(--radius-md),12px)] rounded-l-none border border-l-0 bg-clip-padding px-2.5 text-[0.8rem] font-medium whitespace-nowrap transition-all outline-none select-none disabled:pointer-events-none disabled:opacity-50"
 				>
 					{copy.next}
 					<ChevronRightIcon class="size-4 shrink-0" />

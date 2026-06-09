@@ -37,7 +37,10 @@ function encodePayload(payload: LeaveSessionPayload): string {
 }
 
 /** Set shared SSO cookie after gateway login. */
-export async function createLeaveSessionCookie(cookies: Cookies, user: LeaveAuthUser): Promise<void> {
+export async function createLeaveSessionCookie(
+	cookies: Cookies,
+	user: LeaveAuthUser
+): Promise<void> {
 	const pwdAt = isMockLeaveUserId(user.id)
 		? getMockPasswordChangedAt(user.id)
 		: await getPasswordChangedAt(user.id);
@@ -74,7 +77,9 @@ function decodeToken(token: string): LeaveSessionPayload | null {
 	}
 
 	try {
-		const parsed = JSON.parse(Buffer.from(body, "base64url").toString("utf8")) as LeaveSessionPayload;
+		const parsed = JSON.parse(
+			Buffer.from(body, "base64url").toString("utf8")
+		) as LeaveSessionPayload;
 		const userId = typeof parsed.userId === "number" ? parsed.userId : Number(parsed.userId);
 		const exp = typeof parsed.exp === "number" ? parsed.exp : Number(parsed.exp);
 		if (!Number.isFinite(userId) || !Number.isFinite(exp)) return null;

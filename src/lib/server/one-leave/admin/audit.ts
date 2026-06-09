@@ -23,6 +23,6 @@ export async function writeAdminAudit(client: PoolClient, entry: AdminAuditEntry
 			entry.action,
 			entry.targetUserId,
 			entry.detail ? JSON.stringify(entry.detail) : null,
-		],
+		]
 	);
 }

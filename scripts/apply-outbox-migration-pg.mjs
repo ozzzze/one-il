@@ -41,17 +41,13 @@ const root = resolve(import.meta.dirname, "..");
 const env = loadEnvFile(resolve(root, ".env"));
 const tenantId = env.POOLER_TENANT_ID;
 const selfHosted = isSelfHostedSupabaseUrl(env.PUBLIC_SUPABASE_URL);
-const supabaseHost = env.PUBLIC_SUPABASE_URL
-	? supabaseHostFromUrl(env.PUBLIC_SUPABASE_URL)
-	: null;
+const supabaseHost = env.PUBLIC_SUPABASE_URL ? supabaseHostFromUrl(env.PUBLIC_SUPABASE_URL) : null;
 
 /** @type {import('pg').ClientConfig[]} */
 const configs = [];
 
 if (env.SELF_HOSTED_DATABASE_URL) {
-	configs.push(
-		pgClientConfigFromEnv(env.SELF_HOSTED_DATABASE_URL, { tenantId }),
-	);
+	configs.push(pgClientConfigFromEnv(env.SELF_HOSTED_DATABASE_URL, { tenantId }));
 }
 
 if (env.SELF_HOSTED_DB_PASSWORD && supabaseHost) {
@@ -82,7 +78,7 @@ function readMigrationSql(filePath) {
 }
 
 const sql = readMigrationSql(
-	resolve(root, "supabase/migrations/20260518140000_notifications_outbox.sql"),
+	resolve(root, "supabase/migrations/20260518140000_notifications_outbox.sql")
 );
 
 const seen = new Set();
@@ -104,7 +100,7 @@ for (const config of configs) {
 		await client.query(sql);
 		await client.query("notify pgrst, 'reload schema';");
 		const check = await client.query(
-			"select to_regclass('public.notifications_outbox') as outbox_table",
+			"select to_regclass('public.notifications_outbox') as outbox_table"
 		);
 		await client.end();
 		console.log(
@@ -115,8 +111,8 @@ for (const config of configs) {
 					used: redactPgConfig(config),
 				},
 				null,
-				2,
-			),
+				2
+			)
 		);
 		process.exit(0);
 	} catch (err) {
@@ -128,7 +124,7 @@ for (const config of configs) {
 
 if (configs.length === 0) {
 	console.error(
-		"No database config. Set SELF_HOSTED_DATABASE_URL (postgres.your-tenant-id:PASSWORD@host:5432/postgres) or SELF_HOSTED_DB_PASSWORD.",
+		"No database config. Set SELF_HOSTED_DATABASE_URL (postgres.your-tenant-id:PASSWORD@host:5432/postgres) or SELF_HOSTED_DB_PASSWORD."
 	);
 	process.exit(1);
 }
@@ -149,7 +145,7 @@ console.error(
 			attempts: failures,
 		},
 		null,
-		2,
-	),
+		2
+	)
 );
 process.exit(1);

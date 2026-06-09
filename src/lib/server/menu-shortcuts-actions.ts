@@ -25,7 +25,10 @@ export async function countShortcuts(userId: string): Promise<number> {
 	return count ?? 0;
 }
 
-export async function insertShortcut(userId: string, menuItemId: string): Promise<{ ok: true } | { ok: false; reason: "limit" | "duplicate" }> {
+export async function insertShortcut(
+	userId: string,
+	menuItemId: string
+): Promise<{ ok: true } | { ok: false; reason: "limit" | "duplicate" }> {
 	const n = await countShortcuts(userId);
 	if (n >= MAX_MENU_SHORTCUTS) return { ok: false, reason: "limit" };
 	const admin = getServiceRoleClient();
@@ -57,7 +60,10 @@ export async function deleteShortcut(userId: string, menuItemId: string): Promis
 
 export async function deleteAllShortcuts(userId: string): Promise<void> {
 	const admin = getServiceRoleClient();
-	const { error: delError } = await admin.from("user_menu_shortcuts").delete().eq("user_id", userId);
+	const { error: delError } = await admin
+		.from("user_menu_shortcuts")
+		.delete()
+		.eq("user_id", userId);
 	if (delError) {
 		console.error(delError);
 		error(500, "Failed to clear shortcuts");

@@ -85,3 +85,4 @@ Identity/auth schema: `one_leave.*` (users, user_roles, employees, leave tables)
 - Dark/light mode via `mode-watcher` — use `mode.current` (runes object), NOT `$mode`
 - App shell layout: sidebar (`app-sidebar.svelte`) + topbar with breadcrumbs (generated from URL pathname)
 - `App.Locals` typed in `src/app.d.ts` — includes Supabase client and session/user types as defined there
+- **Global Loading Indicator**: The global loading screen overlay automatically triggers on SvelteKit routing navigations. For client-side manual data fetching (e.g. Supabase queries triggered by button click events), import `globalLoading` from `$lib/utils/loading.svelte` and call `globalLoading.show()` and `globalLoading.hide()` within a `try...finally` block to display/hide the premium Clock Loader.

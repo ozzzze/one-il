@@ -1,19 +1,22 @@
-import { PgTransaction, PgRequest } from '$lib/server/one-leave/db/pool.js';
-import sql from '$lib/server/one-leave/db/pool.js';
-import { formatEmployeeName } from '$lib/org/labels.js';
-import type { AuthUser } from '$lib/server/one-leave/auth/types.js';
-import { writeAuditLog } from '$lib/server/one-leave/audit/repository.js';
-import type { AuditContext } from '$lib/server/one-leave/audit/types.js';
-import { getDbPool } from '$lib/server/one-leave/db/pool.js';
+import { PgTransaction, PgRequest } from "$lib/server/one-leave/db/pool.js";
+import sql from "$lib/server/one-leave/db/pool.js";
+import { formatEmployeeName } from "$lib/org/labels.js";
+import type { AuthUser } from "$lib/server/one-leave/auth/types.js";
+import { writeAuditLog } from "$lib/server/one-leave/audit/repository.js";
+import type { AuditContext } from "$lib/server/one-leave/audit/types.js";
+import { getDbPool } from "$lib/server/one-leave/db/pool.js";
 import {
 	insertScrApprovalRow,
 	rollbackTransaction,
-	toSqlDateTime
-} from '$lib/server/one-leave/change-request/db-helpers.js';
-import { getEmployeeById } from '$lib/server/one-leave/org/repository.js';
-import { canViewAllScr } from '$lib/server/one-leave/change-request/access.js';
-import { labelChangeCategory, labelScrStatus } from '$lib/server/one-leave/change-request/labels.js';
-import { truncateForExport } from '$lib/server/one-leave/change-request/registry-export.js';
+	toSqlDateTime,
+} from "$lib/server/one-leave/change-request/db-helpers.js";
+import { getEmployeeById } from "$lib/server/one-leave/org/repository.js";
+import { canViewAllScr } from "$lib/server/one-leave/change-request/access.js";
+import {
+	labelChangeCategory,
+	labelScrStatus,
+} from "$lib/server/one-leave/change-request/labels.js";
+import { truncateForExport } from "$lib/server/one-leave/change-request/registry-export.js";
 import type {
 	ApprovalHistoryItem,
 	ChangeCategory,
@@ -24,12 +27,12 @@ import type {
 	ExceptionTypeOption,
 	ItSystemOption,
 	ScrQueueCounts,
-	ScrStatus
-} from '$lib/server/one-leave/change-request/types.js';
+	ScrStatus,
+} from "$lib/server/one-leave/change-request/types.js";
 
 function toInt(value: number | string | null | undefined): number | null {
 	if (value === null || value === undefined) return null;
-	const n = typeof value === 'number' ? value : Number.parseInt(String(value), 10);
+	const n = typeof value === "number" ? value : Number.parseInt(String(value), 10);
 	return Number.isFinite(n) ? n : null;
 }
 
@@ -46,21 +49,21 @@ function toIsoDateTime(value: Date | string | null | undefined): string | null {
 }
 
 function asChangeCategory(code: string): ChangeCategory {
-	if (code === 'standard' || code === 'normal' || code === 'emergency') return code;
-	return 'normal';
+	if (code === "standard" || code === "normal" || code === "emergency") return code;
+	return "normal";
 }
 
 function asScrStatus(code: string): ScrStatus {
 	const valid: ScrStatus[] = [
-		'draft',
-		'submitted',
-		'supervisor_approved',
-		'denied',
-		'implemented',
-		'closed',
-		'withdrawn'
+		"draft",
+		"submitted",
+		"supervisor_approved",
+		"denied",
+		"implemented",
+		"closed",
+		"withdrawn",
 	];
-	return valid.includes(code as ScrStatus) ? (code as ScrStatus) : 'draft';
+	return valid.includes(code as ScrStatus) ? (code as ScrStatus) : "draft";
 }
 
 function applyListFilter(
@@ -110,7 +113,7 @@ export async function listItSystems(): Promise<ItSystemOption[]> {
 				id,
 				code: row.code,
 				nameTh: row.name_th,
-				nameEn: row.name_en
+				nameEn: row.name_en,
 			};
 		})
 		.filter((r): r is ItSystemOption => r !== null);
@@ -136,7 +139,7 @@ export async function listExceptionTypes(): Promise<ExceptionTypeOption[]> {
 			return {
 				id,
 				code: row.code,
-				nameTh: row.name_th
+				nameTh: row.name_th,
 			};
 		})
 		.filter((r): r is ExceptionTypeOption => r !== null);
@@ -176,9 +179,9 @@ function mapListRow(row: ListRow): ChangeRequestListItem | null {
 		exceptionTypeName: row.exception_type_name,
 		requesterEmployeeCode: row.employee_code ?? null,
 		requesterName: formatEmployeeName(row.title_th, row.first_name_th, row.last_name_th),
-		exceptionStartDate: toDateString(row.exception_start_date) ?? '',
-		exceptionEndDate: toDateString(row.exception_end_date) ?? '',
-		submittedAt: toIsoDateTime(row.submitted_at)
+		exceptionStartDate: toDateString(row.exception_start_date) ?? "",
+		exceptionEndDate: toDateString(row.exception_end_date) ?? "",
+		submittedAt: toIsoDateTime(row.submitted_at),
 	};
 }
 
@@ -215,7 +218,7 @@ export async function listChangeRequests(
 
 	if (!viewAll) {
 		if (user.employeeId === null) return [];
-		req.input('employeeId', user.employeeId);
+		req.input("employeeId", user.employeeId);
 		query += `
 			AND (
 				scr.[requester_employee_id] = @employeeId
@@ -225,23 +228,23 @@ export async function listChangeRequests(
 	}
 
 	if (filter.status) {
-		req.input('status', filter.status);
-		query += ' AND scr.[status] = @status';
+		req.input("status", filter.status);
+		query += " AND scr.[status] = @status";
 	}
 	if (filter.changeCategory) {
-		req.input('changeCategory', filter.changeCategory);
-		query += ' AND scr.[change_category] = @changeCategory';
+		req.input("changeCategory", filter.changeCategory);
+		query += " AND scr.[change_category] = @changeCategory";
 	}
 	if (filter.itSystemId !== null) {
-		req.input('itSystemId', filter.itSystemId);
-		query += ' AND scr.[it_system_id] = @itSystemId';
+		req.input("itSystemId", filter.itSystemId);
+		query += " AND scr.[it_system_id] = @itSystemId";
 	}
 	if (filter.exceptionTypeId !== null) {
-		req.input('exceptionTypeId', filter.exceptionTypeId);
-		query += ' AND scr.[exception_type_id] = @exceptionTypeId';
+		req.input("exceptionTypeId", filter.exceptionTypeId);
+		query += " AND scr.[exception_type_id] = @exceptionTypeId";
 	}
 
-	query += ' ORDER BY scr.[created_at] DESC';
+	query += " ORDER BY scr.[created_at] DESC";
 
 	const result = await req.query<ListRow>(query);
 	const items = result.recordset
@@ -388,8 +391,8 @@ function mapDetailRow(row: DetailRow): ChangeRequestDetail | null {
 		riskAssessment: row.risk_assessment,
 		impactDescription: row.impact_description,
 		compensatingControls: row.compensating_controls,
-		exceptionStartDate: toDateString(row.exception_start_date) ?? '',
-		exceptionEndDate: toDateString(row.exception_end_date) ?? '',
+		exceptionStartDate: toDateString(row.exception_start_date) ?? "",
+		exceptionEndDate: toDateString(row.exception_end_date) ?? "",
 		rollbackPlan: row.rollback_plan,
 		plannedImplementationAt: toIsoDateTime(row.planned_implementation_at),
 		status,
@@ -414,12 +417,12 @@ function mapDetailRow(row: DetailRow): ChangeRequestDetail | null {
 				? formatEmployeeName(
 						row.supervisor_title_th,
 						row.supervisor_first_name_th,
-						row.supervisor_last_name_th ?? ''
+						row.supervisor_last_name_th ?? ""
 					)
 				: null,
 		orgUnitName: row.org_unit_name,
-		createdAt: toIsoDateTime(row.created_at) ?? '',
-		updatedAt: toIsoDateTime(row.updated_at) ?? ''
+		createdAt: toIsoDateTime(row.created_at) ?? "",
+		updatedAt: toIsoDateTime(row.updated_at) ?? "",
 	};
 }
 
@@ -427,7 +430,7 @@ export async function getChangeRequestById(id: number): Promise<ChangeRequestDet
 	const pool = await getDbPool();
 	const result = await pool
 		.request()
-		.input('id', id)
+		.input("id", id)
 		.query<DetailRow>(`${DETAIL_SELECT} WHERE scr.[id] = @id`);
 
 	const row = result.recordset[0];
@@ -438,11 +441,11 @@ export async function allocateRequestNumber(
 	transaction: PgTransaction,
 	exceptionStartDate: string
 ): Promise<string> {
-	const [y, m] = exceptionStartDate.split('-');
+	const [y, m] = exceptionStartDate.split("-");
 	const prefix = `SCR-${y}-${m}-`;
-	const result = await new PgRequest(transaction)
-		.input('prefix', `${prefix}%`)
-		.query<{ request_number: string }>(`
+	const result = await new PgRequest(transaction).input("prefix", `${prefix}%`).query<{
+		request_number: string;
+	}>(`
 			SELECT TOP (1) [request_number]
 			FROM [one_leave].[system_change_requests]
 			WHERE [request_number] LIKE @prefix
@@ -456,7 +459,7 @@ export async function allocateRequestNumber(
 		if (Number.isFinite(tail)) seq = tail + 1;
 	}
 
-	return `${prefix}${String(seq).padStart(4, '0')}`;
+	return `${prefix}${String(seq).padStart(4, "0")}`;
 }
 
 function snapshotWrite(
@@ -471,7 +474,7 @@ function snapshotWrite(
 		changeCategory: input.changeCategory,
 		exceptionStartDate: input.exceptionStartDate,
 		exceptionEndDate: input.exceptionEndDate,
-		intent: input.intent
+		intent: input.intent,
 	};
 }
 
@@ -482,18 +485,18 @@ function snapshotDetail(record: ChangeRequestDetail): Record<string, unknown> {
 		status: record.status,
 		changeCategory: record.changeCategory,
 		itSystemId: record.itSystemId,
-		exceptionTypeId: record.exceptionTypeId
+		exceptionTypeId: record.exceptionTypeId,
 	};
 }
 
 function buildSummary(action: string, requestNumber: string, title?: string): string {
 	const ref = title ? `${requestNumber} (${title})` : requestNumber;
 	switch (action) {
-		case 'create':
+		case "create":
 			return `สร้างคำขอเปลี่ยนแปลงระบบ ${ref}`;
-		case 'submit':
+		case "submit":
 			return `ส่งคำขอเปลี่ยนแปลงระบบ ${ref}`;
-		case 'update':
+		case "update":
 			return `แก้ไขคำขอเปลี่ยนแปลงระบบ ${ref}`;
 		default:
 			return `${action} คำขอเปลี่ยนแปลงระบบ ${ref}`;
@@ -510,18 +513,22 @@ export async function createChangeRequest(
 	audit?: AuditContext
 ): Promise<CreateChangeRequestResult> {
 	if (user.employeeId === null) {
-		throw new Error('บัญชีไม่ผูกข้อมูลพนักงาน');
+		throw new Error("บัญชีไม่ผูกข้อมูลพนักงาน");
 	}
 
 	const employee = await getEmployeeById(user.employeeId);
-	if (!employee) throw new Error('ไม่พบข้อมูลพนักงาน');
+	if (!employee) throw new Error("ไม่พบข้อมูลพนักงาน");
 
-	if (input.intent === 'submit' && input.changeCategory !== 'emergency' && employee.supervisorEmployeeId === null) {
-		throw new Error('ไม่พบหัวหน้างาน — ติดต่อ HR ตั้งค่าสายอนุมัติ');
+	if (
+		input.intent === "submit" &&
+		input.changeCategory !== "emergency" &&
+		employee.supervisorEmployeeId === null
+	) {
+		throw new Error("ไม่พบหัวหน้างาน — ติดต่อ HR ตั้งค่าสายอนุมัติ");
 	}
 
-	const status = input.intent === 'submit' ? 'submitted' : 'draft';
-	const submittedAt = input.intent === 'submit' ? new Date() : null;
+	const status = input.intent === "submit" ? "submitted" : "draft";
+	const submittedAt = input.intent === "submit" ? new Date() : null;
 
 	const pool = await getDbPool();
 	const transaction = new PgTransaction(pool);
@@ -531,25 +538,25 @@ export async function createChangeRequest(
 		const requestNumber = await allocateRequestNumber(transaction, input.exceptionStartDate);
 
 		const insert = await new PgRequest(transaction)
-			.input('requestNumber', requestNumber)
-			.input('requesterUserId', user.id)
-			.input('requesterEmployeeId', user.employeeId)
-			.input('supervisorEmployeeId', employee.supervisorEmployeeId)
-			.input('itSystemId', input.itSystemId)
-			.input('exceptionTypeId', input.exceptionTypeId)
-			.input('changeCategory', input.changeCategory)
-			.input('title', input.title)
-			.input('description', input.description)
-			.input('businessJustification', input.businessJustification)
-			.input('riskAssessment', input.riskAssessment)
-			.input('impactDescription', input.impactDescription)
-			.input('compensatingControls', input.compensatingControls)
-			.input('exceptionStartDate', input.exceptionStartDate)
-			.input('exceptionEndDate', input.exceptionEndDate)
-			.input('rollbackPlan', input.rollbackPlan)
-			.input('plannedImplementationAt', sql.DateTime2, toSqlDateTime(input.plannedImplementationAt))
-			.input('status', status)
-			.input('submittedAt', sql.DateTime2, submittedAt).query<{ id: number | string }>(`
+			.input("requestNumber", requestNumber)
+			.input("requesterUserId", user.id)
+			.input("requesterEmployeeId", user.employeeId)
+			.input("supervisorEmployeeId", employee.supervisorEmployeeId)
+			.input("itSystemId", input.itSystemId)
+			.input("exceptionTypeId", input.exceptionTypeId)
+			.input("changeCategory", input.changeCategory)
+			.input("title", input.title)
+			.input("description", input.description)
+			.input("businessJustification", input.businessJustification)
+			.input("riskAssessment", input.riskAssessment)
+			.input("impactDescription", input.impactDescription)
+			.input("compensatingControls", input.compensatingControls)
+			.input("exceptionStartDate", input.exceptionStartDate)
+			.input("exceptionEndDate", input.exceptionEndDate)
+			.input("rollbackPlan", input.rollbackPlan)
+			.input("plannedImplementationAt", sql.DateTime2, toSqlDateTime(input.plannedImplementationAt))
+			.input("status", status)
+			.input("submittedAt", sql.DateTime2, submittedAt).query<{ id: number | string }>(`
 				INSERT INTO [one_leave].[system_change_requests] (
 					[request_number], [requester_user_id], [requester_employee_id], [supervisor_employee_id],
 					[it_system_id], [exception_type_id], [change_category], [title], [description],
@@ -569,34 +576,34 @@ export async function createChangeRequest(
 
 		const id = toInt(insert.recordset[0]?.id);
 		if (id === null) {
-			throw new Error('สร้างคำขอไม่สำเร็จ');
+			throw new Error("สร้างคำขอไม่สำเร็จ");
 		}
 
-		if (input.intent === 'submit') {
+		if (input.intent === "submit") {
 			await insertScrApprovalRow(transaction, {
 				scrId: id,
 				actorUserId: user.id,
-				actorRole: 'requester',
-				actionType: 'submit',
-				fromStatus: 'draft',
-				toStatus: 'submitted',
+				actorRole: "requester",
+				actionType: "submit",
+				fromStatus: "draft",
+				toStatus: "submitted",
 				stepOrder: 1,
 				comment: null,
-				ipAddress: audit?.ipAddress ?? null
+				ipAddress: audit?.ipAddress ?? null,
 			});
 		}
 
 		if (audit) {
-			const action = input.intent === 'submit' ? 'submit' : 'create';
+			const action = input.intent === "submit" ? "submit" : "create";
 			await writeAuditLog(
 				audit,
 				{
-					entityType: 'system_change_request',
+					entityType: "system_change_request",
 					entityId: id,
 					action,
 					before: null,
 					after: { ...snapshotWrite(requestNumber, input), status },
-					summary: buildSummary(action, requestNumber, input.title)
+					summary: buildSummary(action, requestNumber, input.title),
 				},
 				transaction
 			);
@@ -617,16 +624,16 @@ export async function updateChangeRequest(
 	audit?: AuditContext
 ): Promise<void> {
 	const existing = await getChangeRequestById(id);
-	if (!existing) throw new Error('ไม่พบคำขอเปลี่ยนแปลงระบบ');
-	if (existing.status !== 'draft') {
-		throw new Error('แก้ไขได้เฉพาะคำขอร่าง');
+	if (!existing) throw new Error("ไม่พบคำขอเปลี่ยนแปลงระบบ");
+	if (existing.status !== "draft") {
+		throw new Error("แก้ไขได้เฉพาะคำขอร่าง");
 	}
 	if (user.employeeId === null || user.employeeId !== existing.requesterEmployeeId) {
-		throw new Error('แก้ไขได้เฉพาะคำขอร่างของตนเอง');
+		throw new Error("แก้ไขได้เฉพาะคำขอร่างของตนเอง");
 	}
 
 	const employee = await getEmployeeById(user.employeeId);
-	if (!employee) throw new Error('ไม่พบข้อมูลพนักงาน');
+	if (!employee) throw new Error("ไม่พบข้อมูลพนักงาน");
 
 	const pool = await getDbPool();
 	const transaction = new PgTransaction(pool);
@@ -634,21 +641,22 @@ export async function updateChangeRequest(
 
 	try {
 		await new PgRequest(transaction)
-			.input('id', id)
-			.input('supervisorEmployeeId', employee.supervisorEmployeeId)
-			.input('itSystemId', input.itSystemId)
-			.input('exceptionTypeId', input.exceptionTypeId)
-			.input('changeCategory', input.changeCategory)
-			.input('title', input.title)
-			.input('description', input.description)
-			.input('businessJustification', input.businessJustification)
-			.input('riskAssessment', input.riskAssessment)
-			.input('impactDescription', input.impactDescription)
-			.input('compensatingControls', input.compensatingControls)
-			.input('exceptionStartDate', input.exceptionStartDate)
-			.input('exceptionEndDate', input.exceptionEndDate)
-			.input('rollbackPlan', input.rollbackPlan)
-			.input('plannedImplementationAt', sql.DateTime2, toSqlDateTime(input.plannedImplementationAt)).query(`
+			.input("id", id)
+			.input("supervisorEmployeeId", employee.supervisorEmployeeId)
+			.input("itSystemId", input.itSystemId)
+			.input("exceptionTypeId", input.exceptionTypeId)
+			.input("changeCategory", input.changeCategory)
+			.input("title", input.title)
+			.input("description", input.description)
+			.input("businessJustification", input.businessJustification)
+			.input("riskAssessment", input.riskAssessment)
+			.input("impactDescription", input.impactDescription)
+			.input("compensatingControls", input.compensatingControls)
+			.input("exceptionStartDate", input.exceptionStartDate)
+			.input("exceptionEndDate", input.exceptionEndDate)
+			.input("rollbackPlan", input.rollbackPlan)
+			.input("plannedImplementationAt", sql.DateTime2, toSqlDateTime(input.plannedImplementationAt))
+			.query(`
 				UPDATE [one_leave].[system_change_requests]
 				SET
 					[supervisor_employee_id] = @supervisorEmployeeId,
@@ -673,12 +681,12 @@ export async function updateChangeRequest(
 			await writeAuditLog(
 				audit,
 				{
-					entityType: 'system_change_request',
+					entityType: "system_change_request",
 					entityId: id,
-					action: 'update',
+					action: "update",
 					before: snapshotDetail(existing),
 					after: snapshotWrite(existing.requestNumber, input),
-					summary: buildSummary('update', existing.requestNumber, input.title)
+					summary: buildSummary("update", existing.requestNumber, input.title),
 				},
 				transaction
 			);
@@ -693,7 +701,7 @@ export async function updateChangeRequest(
 
 export async function listApprovalHistory(scrId: number): Promise<ApprovalHistoryItem[]> {
 	const pool = await getDbPool();
-	const result = await pool.request().input('scrId', scrId).query<{
+	const result = await pool.request().input("scrId", scrId).query<{
 		id: number | string;
 		step_order: number | string;
 		actor_role: string;
@@ -739,7 +747,7 @@ export async function listApprovalHistory(scrId: number): Promise<ApprovalHistor
 			fromStatusLabel: labelScrStatus(fromStatus),
 			toStatusLabel: labelScrStatus(toStatus),
 			comment: row.comment,
-			actedAt: toIsoDateTime(row.acted_at) ?? ''
+			actedAt: toIsoDateTime(row.acted_at) ?? "",
 		};
 	});
 }
@@ -750,9 +758,9 @@ export async function countByStatus(user: AuthUser): Promise<ScrQueueCounts> {
 	let itPending = 0;
 
 	if (user.employeeId !== null) {
-		const supResult = await pool
-			.request()
-			.input('supervisorEmployeeId', user.employeeId).query<{ n: number | string }>(`
+		const supResult = await pool.request().input("supervisorEmployeeId", user.employeeId).query<{
+			n: number | string;
+		}>(`
 				SELECT COUNT(*) AS n
 				FROM [one_leave].[system_change_requests]
 				WHERE [status] = N'submitted'
@@ -762,15 +770,15 @@ export async function countByStatus(user: AuthUser): Promise<ScrQueueCounts> {
 		supervisorPending = Number(supResult.recordset[0]?.n ?? 0);
 	}
 
-	if (canViewAllScr(user) || user.roles.includes('admin')) {
+	if (canViewAllScr(user) || user.roles.includes("admin")) {
 		const req = pool.request();
-		let sodFilter = '';
+		let sodFilter = "";
 		if (user.employeeId !== null) {
-			req.input('actorEmployeeId', user.employeeId);
-			sodFilter = ' AND [requester_employee_id] <> @actorEmployeeId';
+			req.input("actorEmployeeId", user.employeeId);
+			sodFilter = " AND [requester_employee_id] <> @actorEmployeeId";
 		}
-		req.input('actorUserId', user.id);
-		sodFilter += ' AND [requester_user_id] <> @actorUserId';
+		req.input("actorUserId", user.id);
+		sodFilter += " AND [requester_user_id] <> @actorUserId";
 
 		const itResult = await req.query<{ n: number | string }>(`
 			SELECT COUNT(*) AS n
@@ -787,7 +795,7 @@ export async function countByStatus(user: AuthUser): Promise<ScrQueueCounts> {
 export async function listChangeRequestsForExport(
 	user: AuthUser,
 	filter: ChangeRequestListFilter
-): Promise<import('$lib/server/one-leave/change-request/types.js').ChangeRequestExportRow[]> {
+): Promise<import("$lib/server/one-leave/change-request/types.js").ChangeRequestExportRow[]> {
 	const pool = await getDbPool();
 	const viewAll = canViewAllScr(user);
 	const req = pool.request();
@@ -832,7 +840,7 @@ export async function listChangeRequestsForExport(
 
 	if (!viewAll) {
 		if (user.employeeId === null) return [];
-		req.input('employeeId', user.employeeId);
+		req.input("employeeId", user.employeeId);
 		query += `
 			AND (
 				scr.[requester_employee_id] = @employeeId
@@ -842,23 +850,23 @@ export async function listChangeRequestsForExport(
 	}
 
 	if (filter.status) {
-		req.input('status', filter.status);
-		query += ' AND scr.[status] = @status';
+		req.input("status", filter.status);
+		query += " AND scr.[status] = @status";
 	}
 	if (filter.changeCategory) {
-		req.input('changeCategory', filter.changeCategory);
-		query += ' AND scr.[change_category] = @changeCategory';
+		req.input("changeCategory", filter.changeCategory);
+		query += " AND scr.[change_category] = @changeCategory";
 	}
 	if (filter.itSystemId) {
-		req.input('itSystemId', filter.itSystemId);
-		query += ' AND scr.[it_system_id] = @itSystemId';
+		req.input("itSystemId", filter.itSystemId);
+		query += " AND scr.[it_system_id] = @itSystemId";
 	}
 	if (filter.exceptionTypeId) {
-		req.input('exceptionTypeId', filter.exceptionTypeId);
-		query += ' AND scr.[exception_type_id] = @exceptionTypeId';
+		req.input("exceptionTypeId", filter.exceptionTypeId);
+		query += " AND scr.[exception_type_id] = @exceptionTypeId";
 	}
 	if (filter.q) {
-		req.input('q', `%${filter.q}%`);
+		req.input("q", `%${filter.q}%`);
 		query += `
 			AND (
 				scr.[request_number] LIKE @q
@@ -871,7 +879,7 @@ export async function listChangeRequestsForExport(
 		`;
 	}
 
-	query += ' ORDER BY scr.[submitted_at] DESC, scr.[id] DESC';
+	query += " ORDER BY scr.[submitted_at] DESC, scr.[id] DESC";
 
 	const result = await req.query<{
 		request_number: string;
@@ -910,7 +918,7 @@ export async function listChangeRequestsForExport(
 						row.supervisor_first_name,
 						row.supervisor_last_name
 					)
-				: '';
+				: "";
 		return {
 			requestNumber: row.request_number,
 			title: row.title,
@@ -927,13 +935,13 @@ export async function listChangeRequestsForExport(
 			requesterEmployeeCode: row.employee_code,
 			requesterName: formatEmployeeName(row.title_th, row.first_name_th, row.last_name_th),
 			supervisorName,
-			exceptionStartDate: toDateString(row.exception_start_date) ?? '',
-			exceptionEndDate: toDateString(row.exception_end_date) ?? '',
-			submittedAt: toIsoDateTime(row.submitted_at) ?? '',
-			supervisorApprovedAt: toIsoDateTime(row.supervisor_approved_at) ?? '',
-			implementedAt: toIsoDateTime(row.implemented_at) ?? '',
-			closedAt: toIsoDateTime(row.closed_at) ?? '',
-			hasTestEvidence: row.has_test_evidence ? 'ใช่' : 'ไม่'
+			exceptionStartDate: toDateString(row.exception_start_date) ?? "",
+			exceptionEndDate: toDateString(row.exception_end_date) ?? "",
+			submittedAt: toIsoDateTime(row.submitted_at) ?? "",
+			supervisorApprovedAt: toIsoDateTime(row.supervisor_approved_at) ?? "",
+			implementedAt: toIsoDateTime(row.implemented_at) ?? "",
+			closedAt: toIsoDateTime(row.closed_at) ?? "",
+			hasTestEvidence: row.has_test_evidence ? "ใช่" : "ไม่",
 		};
 	});
 }

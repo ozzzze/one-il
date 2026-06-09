@@ -13,14 +13,14 @@
 
 ### ทำแล้วใน one-il
 
-| หัวข้อ | รายละเอียด |
-|--------|-------------|
-| Gateway + auth | ล็อกอิน `/login` → `one_leave.users` (Postgres), cookie `one_leave_session` |
-| one-leave bridge | `src/lib/server/one-leave/*`, proxy dev `/leave` → พอร์ต `5174` |
-| Launcher | `gateway-launcher.ts` + menu catalog migrations (รัน DB เอง) |
-| ฟอนต์ | PK Nonthaburi (local, **gitignore**) + Chulabhorn Likit (ใน repo) — `src/app.css` |
-| License note | `static/fonts/LICENSE-PK-NONTHABURI.md` (Education / non-profit) |
-| Push | `main` @ `309dc0f` — **ไม่** commit `.env`, **ไม่** commit `pk-nonthaburi/` |
+| หัวข้อ           | รายละเอียด                                                                        |
+| ---------------- | --------------------------------------------------------------------------------- |
+| Gateway + auth   | ล็อกอิน `/login` → `one_leave.users` (Postgres), cookie `one_leave_session`       |
+| one-leave bridge | `src/lib/server/one-leave/*`, proxy dev `/leave` → พอร์ต `5174`                   |
+| Launcher         | `gateway-launcher.ts` + menu catalog migrations (รัน DB เอง)                      |
+| ฟอนต์            | PK Nonthaburi (local, **gitignore**) + Chulabhorn Likit (ใน repo) — `src/app.css` |
+| License note     | `static/fonts/LICENSE-PK-NONTHABURI.md` (Education / non-profit)                  |
+| Push             | `main` @ `309dc0f` — **ไม่** commit `.env`, **ไม่** commit `pk-nonthaburi/`       |
 
 ### ยังไม่ทำ (รอรอบถัดไป)
 
@@ -32,20 +32,20 @@
 
 ### ทำใน session นี้ (2026-06-01 ต่อ)
 
-| หัวข้อ | รายละเอียด |
-|--------|-------------|
-| Proxy fix | `vite.config.ts` ใช้ `localhost` แทน `127.0.0.1` (Windows + Vite bind `[::1]`) |
-| `isOneLeaveAppPath` | รวม `/leave` (ไม่มี slash ท้าย) |
-| one-leave | `kit.paths.base` + อัปเดต `.env.example` (Postgres, OAuth callback ผ่าน gateway) |
+| หัวข้อ              | รายละเอียด                                                                       |
+| ------------------- | -------------------------------------------------------------------------------- |
+| Proxy fix           | `vite.config.ts` ใช้ `localhost` แทน `127.0.0.1` (Windows + Vite bind `[::1]`)   |
+| `isOneLeaveAppPath` | รวม `/leave` (ไม่มี slash ท้าย)                                                  |
+| one-leave           | `kit.paths.base` + อัปเดต `.env.example` (Postgres, OAuth callback ผ่าน gateway) |
 
 ### Path mapping (จำไว้)
 
-| URL บน browser (ผ่าน gateway) | ไปที่ one-leave (หลัง proxy ตัด `/leave`) |
-|------------------------------|----------------------------------------|
-| `/leave` | `/` (home แอปลา) |
-| `/leave/leave` | `/leave` (รายการใบลา) |
-| `/leave/login` | `/login` |
-| `/login` | หน้า login **ของ gateway** (ไม่ต้องรัน one-leave แค่เพื่อล็อกอิน) |
+| URL บน browser (ผ่าน gateway) | ไปที่ one-leave (หลัง proxy ตัด `/leave`)                         |
+| ----------------------------- | ----------------------------------------------------------------- |
+| `/leave`                      | `/` (home แอปลา)                                                  |
+| `/leave/leave`                | `/leave` (รายการใบลา)                                             |
+| `/leave/login`                | `/login`                                                          |
+| `/login`                      | หน้า login **ของ gateway** (ไม่ต้องรัน one-leave แค่เพื่อล็อกอิน) |
 
 ---
 
@@ -80,11 +80,11 @@ pnpm dev
 
 ## A. สภาพแวดล้อม (ทั้งสอง repo)
 
-| รายการ | one-il | one-leave (`apps/web`) |
-|--------|--------|-------------------------|
-| `DATABASE_URL` | Postgres เดียวกัน (`one_leave.*`) | เหมือนกัน (หรือ `PG_*` + `SELF_HOSTED_DB_PASSWORD`) |
-| `SESSION_SECRET` | ค่าเดียวกัน 32+ ตัวอักษร | **ต้องตรงทุกตัวอักษร** |
-| `.env` | ไม่ commit | ไม่ commit |
+| รายการ           | one-il                            | one-leave (`apps/web`)                              |
+| ---------------- | --------------------------------- | --------------------------------------------------- |
+| `DATABASE_URL`   | Postgres เดียวกัน (`one_leave.*`) | เหมือนกัน (หรือ `PG_*` + `SELF_HOSTED_DB_PASSWORD`) |
+| `SESSION_SECRET` | ค่าเดียวกัน 32+ ตัวอักษร          | **ต้องตรงทุกตัวอักษร**                              |
+| `.env`           | ไม่ commit                        | ไม่ commit                                          |
 
 ```bash
 # สร้าง secret (รันครั้งเดียว แล้ว copy ไปทั้งสอง .env)
@@ -125,12 +125,12 @@ pnpm install
 pnpm dev    # http://localhost:5173
 ```
 
-| ขั้น | URL | คาดหวัง |
-|------|-----|---------|
-| ล็อกอิน | http://localhost:5173/login | เข้าได้ → redirect `/` |
-| เปิดแอปลา | http://localhost:5173/leave | หน้า home one-leave (proxy) |
-| รายการลา | http://localhost:5173/leave/leave | หน้า `/leave` ในแอปลา |
-| SSO | ล็อกอินที่ gateway แล้วเปิด `/leave/...` | ไม่ถาม login ซ้ำ |
+| ขั้น      | URL                                      | คาดหวัง                     |
+| --------- | ---------------------------------------- | --------------------------- |
+| ล็อกอิน   | http://localhost:5173/login              | เข้าได้ → redirect `/`      |
+| เปิดแอปลา | http://localhost:5173/leave              | หน้า home one-leave (proxy) |
+| รายการลา  | http://localhost:5173/leave/leave        | หน้า `/leave` ในแอปลา       |
+| SSO       | ล็อกอินที่ gateway แล้วเปิด `/leave/...` | ไม่ถาม login ซ้ำ            |
 
 ---
 
@@ -142,7 +142,8 @@ pnpm dev    # http://localhost:5173
 
 ```js
 paths: {
-  base: process.env.PUBLIC_LEAVE_BASE_PATH ?? (process.env.NODE_ENV === 'production' ? '/leave' : '')
+	base: process.env.PUBLIC_LEAVE_BASE_PATH ??
+		(process.env.NODE_ENV === "production" ? "/leave" : "");
 }
 ```
 
@@ -195,22 +196,22 @@ Browser → Reverse proxy (same origin)
 
 ## ปัญหาที่พบบ่อย
 
-| อาการ | สาเหตุที่เป็นไปได้ |
-|--------|-------------------|
-| `/leave` 502 / blank | one-leave ไม่รัน หรือ proxy/port ผิด |
-| ล็อกอิน gateway ได้ แต่ `/leave` ให้ login ใหม่ | `SESSION_SECRET` ไม่ตรงกัน |
-| DB error ตอน login | `DATABASE_URL` ผิด หรือไม่มี `one_leave.users` |
-| CSS/JS 404 บน production | ยังไม่ตั้ง `paths.base: '/leave'` ที่ one-leave |
-| เมนู gateway ว่าง | ไม่มี role ใน `user_roles` หรือ permission ไม่ map |
+| อาการ                                           | สาเหตุที่เป็นไปได้                                 |
+| ----------------------------------------------- | -------------------------------------------------- |
+| `/leave` 502 / blank                            | one-leave ไม่รัน หรือ proxy/port ผิด               |
+| ล็อกอิน gateway ได้ แต่ `/leave` ให้ login ใหม่ | `SESSION_SECRET` ไม่ตรงกัน                         |
+| DB error ตอน login                              | `DATABASE_URL` ผิด หรือไม่มี `one_leave.users`     |
+| CSS/JS 404 บน production                        | ยังไม่ตั้ง `paths.base: '/leave'` ที่ one-leave    |
+| เมนู gateway ว่าง                               | ไม่มี role ใน `user_roles` หรือ permission ไม่ map |
 
 ---
 
 ## ไฟล์สำคัญ (one-il)
 
-| ไฟล์ | บทบาท |
-|------|--------|
-| `src/hooks.server.ts` | auth guard, ไม่ redirect ซ้ำบน `/leave/*` |
-| `src/lib/server/one-leave/session.ts` | cookie HMAC |
-| `src/lib/server/gateway-launcher.ts` | เมนู/การ์ด launcher |
-| `vite.config.ts` | proxy `/leave` |
-| `.env.example` | ตัวแปรที่ต้อง sync กับ one-leave |
+| ไฟล์                                  | บทบาท                                     |
+| ------------------------------------- | ----------------------------------------- |
+| `src/hooks.server.ts`                 | auth guard, ไม่ redirect ซ้ำบน `/leave/*` |
+| `src/lib/server/one-leave/session.ts` | cookie HMAC                               |
+| `src/lib/server/gateway-launcher.ts`  | เมนู/การ์ด launcher                       |
+| `vite.config.ts`                      | proxy `/leave`                            |
+| `.env.example`                        | ตัวแปรที่ต้อง sync กับ one-leave          |

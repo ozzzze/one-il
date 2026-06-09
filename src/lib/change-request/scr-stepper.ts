@@ -1,6 +1,6 @@
-import type { ScrStatus } from '$lib/change-request/types.js';
+import type { ScrStatus } from "$lib/change-request/types.js";
 
-export type ApprovalStepperState = 'completed' | 'current' | 'pending';
+export type ApprovalStepperState = "completed" | "current" | "pending";
 
 export interface ApprovalStepperItem {
 	order: number;
@@ -19,11 +19,11 @@ export function formatStepperDateTime(iso: string): { dateLabel: string; timeLab
 	const d = new Date(iso);
 	const buddhistYear = (d.getFullYear() + 543) % 100;
 	const dateLabel = `${d.getDate()}/${d.getMonth() + 1}/${buddhistYear}`;
-	const timeLabel = `${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')} น.`;
+	const timeLabel = `${d.getHours()}:${String(d.getMinutes()).padStart(2, "0")} น.`;
 	return { dateLabel, timeLabel };
 }
 
-const SCR_STEP_LABELS = ['ส่งเรื่อง', 'หัวหน้าอนุมัติ', 'IT ดำเนินการ', 'ปิดเรื่อง'] as const;
+const SCR_STEP_LABELS = ["ส่งเรื่อง", "หัวหน้าอนุมัติ", "IT ดำเนินการ", "ปิดเรื่อง"] as const;
 
 const STATUS_TO_DONE_COUNT: Record<ScrStatus, number> = {
 	draft: 0,
@@ -32,14 +32,14 @@ const STATUS_TO_DONE_COUNT: Record<ScrStatus, number> = {
 	implemented: 3,
 	closed: 4,
 	denied: 1,
-	withdrawn: 0
+	withdrawn: 0,
 };
 
 const HISTORY_STATUS_INDEX: Record<string, number> = {
 	submitted: 0,
 	supervisor_approved: 1,
 	implemented: 2,
-	closed: 3
+	closed: 3,
 };
 
 function historyTimestamp(
@@ -49,7 +49,7 @@ function historyTimestamp(
 	for (const entry of history) {
 		const mapped = HISTORY_STATUS_INDEX[entry.toStatus];
 		if (mapped === stepIndex) return entry.actedAt;
-		if (entry.toStatus === 'closed' && stepIndex === 3) return entry.actedAt;
+		if (entry.toStatus === "closed" && stepIndex === 3) return entry.actedAt;
 	}
 	return undefined;
 }
@@ -63,13 +63,18 @@ export function buildScrApprovalStepper(options: {
 	const history = options.history ?? [];
 	const labels = [...SCR_STEP_LABELS];
 	let doneCount = STATUS_TO_DONE_COUNT[status] ?? 0;
-	if (status === 'denied') doneCount = 1;
+	if (status === "denied") doneCount = 1;
 
 	return labels.map((label, index) => {
-		let state: ApprovalStepperState = 'pending';
-		if (index < doneCount) state = 'completed';
-		else if (index === doneCount && status !== 'closed' && status !== 'denied' && status !== 'withdrawn') {
-			state = 'current';
+		let state: ApprovalStepperState = "pending";
+		if (index < doneCount) state = "completed";
+		else if (
+			index === doneCount &&
+			status !== "closed" &&
+			status !== "denied" &&
+			status !== "withdrawn"
+		) {
+			state = "current";
 		}
 
 		let actedAt = historyTimestamp(history, index);
@@ -77,11 +82,11 @@ export function buildScrApprovalStepper(options: {
 			actedAt = options.submittedAt;
 		}
 
-		if (!actedAt || state === 'pending') {
+		if (!actedAt || state === "pending") {
 			return { order: index + 1, label, state };
 		}
 
 		const { dateLabel, timeLabel } = formatStepperDateTime(actedAt);
-		return { order: index + 1, label, state: 'completed', dateLabel, timeLabel };
+		return { order: index + 1, label, state: "completed", dateLabel, timeLabel };
 	});
 }

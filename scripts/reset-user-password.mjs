@@ -32,7 +32,9 @@ const username = process.argv[2]?.trim().toLowerCase();
 const newPassword = process.argv[3];
 
 if (!username || !newPassword) {
-	console.error("Usage: node --env-file=.env scripts/reset-user-password.mjs <username> <password>");
+	console.error(
+		"Usage: node --env-file=.env scripts/reset-user-password.mjs <username> <password>"
+	);
 	process.exit(1);
 }
 
@@ -49,7 +51,7 @@ const pool = new pg.Pool(
 		port: env.PG_PORT,
 		user: env.PG_USER,
 		password: env.SELF_HOSTED_DB_PASSWORD,
-	}),
+	})
 );
 
 try {
@@ -65,7 +67,7 @@ try {
 		WHERE LOWER(username) = $1 AND is_active = true
 		RETURNING id, username
 		`,
-		[username, hash],
+		[username, hash]
 	);
 
 	if (rows.length === 0) {

@@ -88,6 +88,6 @@ console.log(
 			sample: tables.rows.slice(0, 15),
 		},
 		null,
-		2,
-	),
+		2
+	)
 );

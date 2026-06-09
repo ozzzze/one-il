@@ -14,13 +14,28 @@ const roleCopy = {
 	en: {
 		admin: {
 			label: "Admin",
-			description: "Full system access. Can manage users, roles, content, settings, database info, and all requests.",
-			permissions: ["Manage users", "Manage roles", "Manage content", "Manage settings", "View database", "Manage all requests"],
+			description:
+				"Full system access. Can manage users, roles, content, settings, database info, and all requests.",
+			permissions: [
+				"Manage users",
+				"Manage roles",
+				"Manage content",
+				"Manage settings",
+				"View database",
+				"Manage all requests",
+			],
 		},
 		editor: {
 			label: "Editor",
-			description: "Can manage content, view analytics, and work with request queues without system administration.",
-			permissions: ["Create content", "Edit content", "Delete content", "View analytics", "Review requests"],
+			description:
+				"Can manage content, view analytics, and work with request queues without system administration.",
+			permissions: [
+				"Create content",
+				"Edit content",
+				"Delete content",
+				"View analytics",
+				"Review requests",
+			],
 		},
 		viewer: {
 			label: "Viewer",
@@ -30,13 +45,20 @@ const roleCopy = {
 		user: {
 			label: "User",
 			description: "Standard user access for all modules and their own requests.",
-			permissions: ["View all modules", "Create own requests", "Edit own requests", "Cancel own requests", "Edit own profile"],
+			permissions: [
+				"View all modules",
+				"Create own requests",
+				"Edit own requests",
+				"Cancel own requests",
+				"Edit own profile",
+			],
 		},
 	},
 	th: {
 		admin: {
 			label: "ผู้ดูแลระบบ",
-			description: "เข้าถึงระบบทั้งหมด จัดการผู้ใช้ บทบาท เนื้อหา การตั้งค่า ข้อมูลฐานข้อมูล และคำขอทั้งหมดได้",
+			description:
+				"เข้าถึงระบบทั้งหมด จัดการผู้ใช้ บทบาท เนื้อหา การตั้งค่า ข้อมูลฐานข้อมูล และคำขอทั้งหมดได้",
 			permissions: [
 				"จัดการผู้ใช้",
 				"จัดการบทบาท",
@@ -49,20 +71,36 @@ const roleCopy = {
 		editor: {
 			label: "บรรณาธิการ",
 			description: "จัดการเนื้อหา ดูข้อมูลวิเคราะห์ และทำงานกับคิวคำขอได้ โดยไม่ต้องดูแลระบบ",
-			permissions: ["สร้างเนื้อหา", "แก้ไขเนื้อหา", "ลบเนื้อหา", "ดูข้อมูลวิเคราะห์", "ตรวจสอบคำขอ"],
+			permissions: [
+				"สร้างเนื้อหา",
+				"แก้ไขเนื้อหา",
+				"ลบเนื้อหา",
+				"ดูข้อมูลวิเคราะห์",
+				"ตรวจสอบคำขอ",
+			],
 		},
 		viewer: {
 			label: "ผู้ดู",
-			description: "สิทธิ์แบบอ่านอย่างเดียวสำหรับแดชบอร์ด ข้อมูลวิเคราะห์ เนื้อหา และการตั้งค่าส่วนตัว",
+			description:
+				"สิทธิ์แบบอ่านอย่างเดียวสำหรับแดชบอร์ด ข้อมูลวิเคราะห์ เนื้อหา และการตั้งค่าส่วนตัว",
 			permissions: ["ดูแดชบอร์ด", "ดูข้อมูลวิเคราะห์", "ดูเนื้อหา", "แก้ไขโปรไฟล์ตนเอง"],
 		},
 		user: {
 			label: "ผู้ใช้งาน",
 			description: "สิทธิ์ใช้งานทั่วไปสำหรับทุกโมดูลและคำขอของตนเอง",
-			permissions: ["ดูทุกโมดูล", "สร้างคำขอของตนเอง", "แก้ไขคำขอของตนเอง", "ยกเลิกคำขอของตนเอง", "แก้ไขโปรไฟล์ตนเอง"],
+			permissions: [
+				"ดูทุกโมดูล",
+				"สร้างคำขอของตนเอง",
+				"แก้ไขคำขอของตนเอง",
+				"ยกเลิกคำขอของตนเอง",
+				"แก้ไขโปรไฟล์ตนเอง",
+			],
 		},
 	},
-} satisfies Record<Locale, Record<Role, { label: string; description: string; permissions: string[] }>>;
+} satisfies Record<
+	Locale,
+	Record<Role, { label: string; description: string; permissions: string[] }>
+>;
 
 export function getRoleOptions(locale: Locale): { value: Role; label: string }[] {
 	return roles.map((role) => ({ value: role, label: roleCopy[locale][role].label }));
@@ -185,6 +223,9 @@ export function hasPermission(role: Role, permission: PermissionKey): boolean {
 	return (rolePermissions[role] as readonly PermissionKey[]).includes(permission);
 }
 
-export function hasEveryPermission(role: Role, permissions: readonly PermissionKey[] = []): boolean {
+export function hasEveryPermission(
+	role: Role,
+	permissions: readonly PermissionKey[] = []
+): boolean {
 	return permissions.every((permission) => hasPermission(role, permission));
 }

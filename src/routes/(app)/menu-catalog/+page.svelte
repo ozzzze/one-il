@@ -41,7 +41,8 @@
 				}
 			: {
 					title: "Menu catalog",
-					subtitle: "Control which role sees which app/menu, and where each link points (e.g. /leave).",
+					subtitle:
+						"Control which role sees which app/menu, and where each link points (e.g. /leave).",
 					backToRoles: "Back to roles",
 					group: "Group",
 					active: "Active",
@@ -64,13 +65,15 @@
 					live: "Live",
 					planned: "Planned",
 					availableKeys: "Available permission keys",
-				},
+				}
 	);
 
 	const groupsSorted = $derived([...data.groups].sort((a, b) => a.sort_order - b.sort_order));
 
 	function itemsForGroup(code: string): RawMenuItemRow[] {
-		return [...data.items].filter((item) => item.group_id === code).sort((a, b) => a.sort_order - b.sort_order);
+		return [...data.items]
+			.filter((item) => item.group_id === code)
+			.sort((a, b) => a.sort_order - b.sort_order);
 	}
 
 	function groupLabel(code: string): string {
@@ -149,7 +152,12 @@
 						</div>
 						<div class="space-y-1">
 							<Label for={`href-${item.id}`}>{t.href}</Label>
-							<Input id={`href-${item.id}`} name="href" value={item.href ?? ""} placeholder="/leave" />
+							<Input
+								id={`href-${item.id}`}
+								name="href"
+								value={item.href ?? ""}
+								placeholder="/leave"
+							/>
 						</div>
 						<div class="space-y-1">
 							<Label for={`icon_key-${item.id}`}>{t.iconKey}</Label>
@@ -193,7 +201,12 @@
 						<div class="flex items-end gap-3">
 							<div class="w-24 space-y-1">
 								<Label for={`sort-${item.id}`}>{t.sortOrder}</Label>
-								<Input id={`sort-${item.id}`} name="sort_order" type="number" value={item.sort_order} />
+								<Input
+									id={`sort-${item.id}`}
+									name="sort_order"
+									type="number"
+									value={item.sort_order}
+								/>
 							</div>
 							<Button type="submit" size="sm">{t.save}</Button>
 						</div>

@@ -41,7 +41,7 @@ try {
 
 if (url.includes("your-tenant-id")) {
 	console.error(
-		"\nFix .env: replace your-tenant-id with POOLER_TENANT_ID from VPS supabase/docker/.env",
+		"\nFix .env: replace your-tenant-id with POOLER_TENANT_ID from VPS supabase/docker/.env"
 	);
 	process.exit(1);
 }
@@ -86,23 +86,25 @@ try {
 		from one_leave.users u
 		where lower(u.username) = any($1::text[])
 		`,
-		[["nopparat.jap@mahidol.ac.th", "nopparat.jap@mahidol.edu"]],
+		[["nopparat.jap@mahidol.ac.th", "nopparat.jap@mahidol.edu"]]
 	);
 	console.log("\nnopparat user:", nopparat.rows);
 
 	if (nopparat.rows[0]) {
 		const roleRows = await pool.query(
 			`select role_code from one_leave.user_roles where user_id = $1`,
-			[nopparat.rows[0].id],
+			[nopparat.rows[0].id]
 		);
-		console.log("nopparat roles:", roleRows.rows.map((r) => r.role_code));
+		console.log(
+			"nopparat roles:",
+			roleRows.rows.map((r) => r.role_code)
+		);
 	}
 
 	if (sample.rows[0]) {
-		const row = await pool.query(
-			`select password_hash from one_leave.users where id = $1`,
-			[sample.rows[0].id],
-		);
+		const row = await pool.query(`select password_hash from one_leave.users where id = $1`, [
+			sample.rows[0].id,
+		]);
 		const hash = row.rows[0]?.password_hash;
 		console.log("\nhash starts with $2:", hash?.startsWith("$2"));
 	}

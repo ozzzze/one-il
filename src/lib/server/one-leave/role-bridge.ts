@@ -22,10 +22,34 @@ const leaveRolePermissions: Record<LeaveRoleCode, readonly PermissionKey[]> = {
 		"roles:manage",
 		"notifications:view",
 	],
-	grantor_director: ["dashboard:view", "gateway:access", "leave:view", "profile:manage", "notifications:view"],
-	grantor_deputy: ["dashboard:view", "gateway:access", "leave:view", "profile:manage", "notifications:view"],
-	grantor_head_l1: ["dashboard:view", "gateway:access", "leave:view", "profile:manage", "notifications:view"],
-	employee: ["dashboard:view", "gateway:access", "leave:view", "profile:manage", "notifications:view"],
+	grantor_director: [
+		"dashboard:view",
+		"gateway:access",
+		"leave:view",
+		"profile:manage",
+		"notifications:view",
+	],
+	grantor_deputy: [
+		"dashboard:view",
+		"gateway:access",
+		"leave:view",
+		"profile:manage",
+		"notifications:view",
+	],
+	grantor_head_l1: [
+		"dashboard:view",
+		"gateway:access",
+		"leave:view",
+		"profile:manage",
+		"notifications:view",
+	],
+	employee: [
+		"dashboard:view",
+		"gateway:access",
+		"leave:view",
+		"profile:manage",
+		"notifications:view",
+	],
 };
 
 export function permissionsForLeaveRoles(roles: readonly LeaveRoleCode[]): PermissionKey[] {
@@ -38,6 +62,9 @@ export function permissionsForLeaveRoles(roles: readonly LeaveRoleCode[]): Permi
 	return [...set];
 }
 
-export function hasLeavePermission(roles: readonly LeaveRoleCode[], permission: PermissionKey): boolean {
+export function hasLeavePermission(
+	roles: readonly LeaveRoleCode[],
+	permission: PermissionKey
+): boolean {
 	return permissionsForLeaveRoles(roles).includes(permission);
 }

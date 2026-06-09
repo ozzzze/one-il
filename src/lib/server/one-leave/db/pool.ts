@@ -21,10 +21,10 @@
  *   SYSUTCDATETIME()   →  NOW()
  */
 
-import pg from 'pg';
+import pg from "pg";
 pg.types.setTypeParser(1082, (value) => value); // return DATE (OID 1082) as plain string to prevent timezone offset shifts
-import { env } from '$env/dynamic/private';
-import { buildLeavePgPoolConfig } from '$lib/server/one-leave/pg-config.js';
+import { env } from "$env/dynamic/private";
+import { buildLeavePgPoolConfig } from "$lib/server/one-leave/pg-config.js";
 
 // ─── connection pool ──────────────────────────────────────────────────────────
 
@@ -33,11 +33,11 @@ let pgPool: pg.Pool | null = null;
 function getPgPool(): pg.Pool {
 	if (pgPool) return pgPool;
 
-	const url = env.DATABASE_URL?.trim() ?? '';
+	const url = env.DATABASE_URL?.trim() ?? "";
 
-	if (url.startsWith('sqlserver://') || !url) {
-		const host = env.PG_HOST ?? '187.77.137.14';
-		const port = env.PG_PORT ?? '5432';
+	if (url.startsWith("sqlserver://") || !url) {
+		const host = env.PG_HOST ?? "187.77.137.14";
+		const port = env.PG_PORT ?? "5432";
 		const syntheticUrl = `postgresql://postgres@${host}:${port}/postgres`;
 		pgPool = new pg.Pool(
 			buildLeavePgPoolConfig(syntheticUrl, {
@@ -45,13 +45,13 @@ function getPgPool(): pg.Pool {
 				host: env.PG_HOST,
 				port: env.PG_PORT,
 				user: env.PG_USER,
-				password: env.SELF_HOSTED_DB_PASSWORD ?? env.PG_PASSWORD
+				password: env.SELF_HOSTED_DB_PASSWORD ?? env.PG_PASSWORD,
 			})
 		);
 	} else {
-		if (url.includes('your-tenant-id')) {
+		if (url.includes("your-tenant-id")) {
 			console.error(
-				'[one-leave pg] DATABASE_URL uses placeholder your-tenant-id — set POOLER_TENANT_ID in .env (root) or postgres.<tenant> in the URL'
+				"[one-leave pg] DATABASE_URL uses placeholder your-tenant-id — set POOLER_TENANT_ID in .env (root) or postgres.<tenant> in the URL"
 			);
 		}
 		pgPool = new pg.Pool(
@@ -60,13 +60,13 @@ function getPgPool(): pg.Pool {
 				host: env.PG_HOST,
 				port: env.PG_PORT,
 				user: env.PG_USER,
-				password: env.SELF_HOSTED_DB_PASSWORD ?? env.PG_PASSWORD
+				password: env.SELF_HOSTED_DB_PASSWORD ?? env.PG_PASSWORD,
 			})
 		);
 	}
 
-	pgPool.on('error', (err) => {
-		console.error('[pg pool error]', err.message);
+	pgPool.on("error", (err) => {
+		console.error("[pg pool error]", err.message);
 	});
 
 	return pgPool;
@@ -84,37 +84,37 @@ function translateSql(
 	text = text.replace(/\bN'((?:[^']|'')*)'/g, "'$1'");
 
 	// [schema].[table] → schema.table, [col] → "col"
-	text = text.replace(/\[(\w+)\]\.\[(\w+)\]/g, '$1.$2');
+	text = text.replace(/\[(\w+)\]\.\[(\w+)\]/g, "$1.$2");
 	text = text.replace(/\[(\w+)\]/g, '"$1"');
 
 	// TOP (N) / TOP N → mark for later
-	text = text.replace(/\bTOP\s*\(\s*(\d+)\s*\)/gi, '/*TOP:$1*/');
-	text = text.replace(/\bTOP\s+(\d+)\b/gi, '/*TOP:$1*/');
+	text = text.replace(/\bTOP\s*\(\s*(\d+)\s*\)/gi, "/*TOP:$1*/");
+	text = text.replace(/\bTOP\s+(\d+)\b/gi, "/*TOP:$1*/");
 
 	// OUTPUT INSERTED.[col] or OUTPUT INSERTED.col → extract and append to end
 	const outputMatch = text.match(/\bOUTPUT\s+INSERTED\.(?:"?(\w+)"?)/i);
 	if (outputMatch) {
 		const col = outputMatch[1];
-		text = text.replace(/\bOUTPUT\s+INSERTED\.(?:"?\w+"?)/gi, '');
-		text = text.trimEnd().replace(/;?\s*$/, '') + ` RETURNING "${col}"`;
+		text = text.replace(/\bOUTPUT\s+INSERTED\.(?:"?\w+"?)/gi, "");
+		text = text.trimEnd().replace(/;?\s*$/, "") + ` RETURNING "${col}"`;
 	}
 
 	// SYSUTCDATETIME() → NOW()
-	text = text.replace(/\bSYSUTCDATETIME\(\)/gi, 'NOW()');
+	text = text.replace(/\bSYSUTCDATETIME\(\)/gi, "NOW()");
 
 	// ISNULL(x, y) → COALESCE(x, y)
-	text = text.replace(/\bISNULL\s*\(/gi, 'COALESCE(');
+	text = text.replace(/\bISNULL\s*\(/gi, "COALESCE(");
 
 	// LTRIM(RTRIM(...)) → TRIM(...)
-	text = text.replace(/\bLTRIM\s*\(\s*RTRIM\s*\(([^)]+)\)\s*\)/gi, 'TRIM($1)');
+	text = text.replace(/\bLTRIM\s*\(\s*RTRIM\s*\(([^)]+)\)\s*\)/gi, "TRIM($1)");
 
 	// LEN(str) → LENGTH(str)
-	text = text.replace(/\bLEN\s*\(/gi, 'LENGTH(');
+	text = text.replace(/\bLEN\s*\(/gi, "LENGTH(");
 
 	// OFFSET ... ROWS FETCH NEXT ... ROWS ONLY → LIMIT ... OFFSET ...
 	text = text.replace(
 		/OFFSET\s+\$(\d+)\s+ROWS?\s+FETCH\s+NEXT\s+\$(\d+)\s+ROWS?\s+ONLY/gi,
-		'LIMIT $$2 OFFSET $$1'
+		"LIMIT $$2 OFFSET $$1"
 	);
 
 	// Replace @param with $N
@@ -141,42 +141,51 @@ function translateSql(
 	const topMatch = [...text.matchAll(/\/\*TOP:(\d+)\*\//g)];
 	if (topMatch.length > 0) {
 		const n = topMatch[topMatch.length - 1][1];
-		text = text.replace(/\/\*TOP:\d+\*\//g, '');
-		text = text.trimEnd().replace(/;?\s*$/, '') + ` LIMIT ${n}`;
+		text = text.replace(/\/\*TOP:\d+\*\//g, "");
+		text = text.trimEnd().replace(/;?\s*$/, "") + ` LIMIT ${n}`;
 	}
 
 	// @@ROWCOUNT → handled via special marker
 	const hasRowCount = /SELECT\s+@@ROWCOUNT\s+AS\s+(\w+)/i.test(text);
 	const rowCountAlias = hasRowCount
-		? (text.match(/SELECT\s+@@ROWCOUNT\s+AS\s+(\w+)/i)?.[1] ?? 'n')
+		? (text.match(/SELECT\s+@@ROWCOUNT\s+AS\s+(\w+)/i)?.[1] ?? "n")
 		: null;
 	if (hasRowCount) {
-		text = text.replace(/;?\s*SELECT\s+@@ROWCOUNT\s+AS\s+\w+\s*;?/gi, '');
+		text = text.replace(/;?\s*SELECT\s+@@ROWCOUNT\s+AS\s+\w+\s*;?/gi, "");
 	}
 
 	// ─── Boolean column auto-translation ─────────────────────────────────────
 	const BOOL_COLS = new Set([
-		'enabled', 'send_empty_batch', 'skip_non_working_days',
-		'is_active', 'secure',
-		'has_teacher_license', 'is_office_unit_head',
-		'is_closed', 'is_current',
-		'health_data_consent', 'is_half_day', 'urgent_flag',
-		'deducts_quota', 'mvp_enabled', 'requires_reason',
-		'success',
-		'post_review_required',
-		'must_change_password',
+		"enabled",
+		"send_empty_batch",
+		"skip_non_working_days",
+		"is_active",
+		"secure",
+		"has_teacher_license",
+		"is_office_unit_head",
+		"is_closed",
+		"is_current",
+		"health_data_consent",
+		"is_half_day",
+		"urgent_flag",
+		"deducts_quota",
+		"mvp_enabled",
+		"requires_reason",
+		"success",
+		"post_review_required",
+		"must_change_password",
 	]);
 
 	text = text.replace(/"(\w+)"\s*=\s*(0|1)\b/g, (_m, col: string, val: string) => {
 		if (BOOL_COLS.has(col)) {
-			return `"${col}" = ${val === '1' ? 'true' : 'false'}`;
+			return `"${col}" = ${val === "1" ? "true" : "false"}`;
 		}
 		return _m;
 	});
 
 	text = text.replace(/\b(\w+)\s*=\s*(0|1)\b/g, (_m, col: string, val: string) => {
 		if (BOOL_COLS.has(col)) {
-			return `${col} = ${val === '1' ? 'true' : 'false'}`;
+			return `${col} = ${val === "1" ? "true" : "false"}`;
 		}
 		return _m;
 	});
@@ -205,12 +214,12 @@ export class PgTransaction {
 
 	async begin(): Promise<void> {
 		this.client = await this._pool._pgPool.connect();
-		await this.client.query('BEGIN');
+		await this.client.query("BEGIN");
 	}
 
 	async commit(): Promise<void> {
-		if (!this.client) throw new Error('Transaction not started');
-		await this.client.query('COMMIT');
+		if (!this.client) throw new Error("Transaction not started");
+		await this.client.query("COMMIT");
 		this.client.release();
 		this.client = null;
 	}
@@ -218,7 +227,7 @@ export class PgTransaction {
 	async rollback(): Promise<void> {
 		if (!this.client) return;
 		try {
-			await this.client.query('ROLLBACK');
+			await this.client.query("ROLLBACK");
 		} finally {
 			this.client?.release();
 			this.client = null;
@@ -226,7 +235,7 @@ export class PgTransaction {
 	}
 
 	get _client(): pg.PoolClient {
-		if (!this.client) throw new Error('Transaction not started — call begin() first');
+		if (!this.client) throw new Error("Transaction not started — call begin() first");
 		return this.client;
 	}
 }
@@ -300,14 +309,14 @@ export class PgRequest {
 export const sql = {
 	Transaction: PgTransaction,
 	Request: PgRequest,
-	DateTime2: 'datetime2' as const,
-	NVarChar: 'nvarchar' as const,
-	Int: 'int' as const,
-	BigInt: 'bigint' as const,
-	Bit: 'bit' as const,
-	Decimal: 'decimal' as const,
-	Date: 'date' as const,
-	VarChar: 'varchar' as const,
+	DateTime2: "datetime2" as const,
+	NVarChar: "nvarchar" as const,
+	Int: "int" as const,
+	BigInt: "bigint" as const,
+	Bit: "bit" as const,
+	Decimal: "decimal" as const,
+	Date: "date" as const,
+	VarChar: "varchar" as const,
 	RequestError: class RequestError extends Error {
 		precedingErrors?: Array<{ message?: string }>;
 	},

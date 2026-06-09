@@ -114,10 +114,8 @@
 									</Button>
 								</div>
 								<pre
-									class="max-h-28 overflow-auto whitespace-pre-wrap wrap-break-word font-mono text-[11px] leading-snug"
-								>{entry.message}{#if entry.stack}
-
-{entry.stack}{/if}</pre>
+									class="max-h-28 overflow-auto font-mono text-[11px] leading-snug wrap-break-word whitespace-pre-wrap">{entry.message}{#if entry.stack}
+										{entry.stack}{/if}</pre>
 							</li>
 						{/each}
 					</ul>

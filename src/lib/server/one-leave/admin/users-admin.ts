@@ -77,7 +77,7 @@ export async function listLeaveUsers(): Promise<AdminUserRow[]> {
 		LEFT JOIN one_leave.user_roles AS ur ON ur.user_id = u.id
 		GROUP BY u.id, e.employee_code, e.first_name_th, e.last_name_th
 		ORDER BY u.username
-		`,
+		`
 	);
 	return rows.map(mapUserRow);
 }
@@ -85,14 +85,14 @@ export async function listLeaveUsers(): Promise<AdminUserRow[]> {
 async function usernameExists(username: string, excludeId?: number): Promise<boolean> {
 	const { rows } = await leaveQuery<{ id: number }>(
 		`SELECT id FROM one_leave.users WHERE LOWER(username) = $1 AND ($2::bigint IS NULL OR id <> $2) LIMIT 1`,
-		[username, excludeId ?? null],
+		[username, excludeId ?? null]
 	);
 	return rows.length > 0;
 }
 
 export async function createLeaveUser(
 	actor: AdminActor,
-	input: CreateUserInput,
+	input: CreateUserInput
 ): Promise<{ id: number }> {
 	const username = normalizeUsername(input.username);
 	if (!username) throw new AdminActionError("invalid_username", "Username is required");
@@ -121,7 +121,7 @@ export async function createLeaveUser(
 				input.mustChangePassword ?? true,
 				input.employeeId ?? null,
 				input.isActive ?? true,
-			],
+			]
 		);
 		const id = toInt(inserted.rows[0]?.id);
 		if (id === null) throw new Error("Failed to create user");
@@ -131,7 +131,7 @@ export async function createLeaveUser(
 				`INSERT INTO one_leave.user_roles (user_id, role_code)
 				 VALUES ($1, $2)
 				 ON CONFLICT (user_id, role_code) DO NOTHING`,
-				[id, role],
+				[id, role]
 			);
 		}
 
@@ -150,7 +150,7 @@ export async function createLeaveUser(
 export async function updateLeaveUser(
 	actor: AdminActor,
 	userId: number,
-	input: UpdateUserInput,
+	input: UpdateUserInput
 ): Promise<void> {
 	const username = input.username !== undefined ? normalizeUsername(input.username) : undefined;
 	if (username !== undefined) {
@@ -173,7 +173,7 @@ export async function updateLeaveUser(
 				input.employeeId !== undefined,
 				input.employeeId ?? null,
 				input.isActive ?? null,
-			],
+			]
 		);
 		await writeAdminAudit(client, {
 			actorUserId: actor.leaveUserId,
@@ -188,7 +188,7 @@ export async function updateLeaveUser(
 export async function setLeaveUserActive(
 	actor: AdminActor,
 	userId: number,
-	isActive: boolean,
+	isActive: boolean
 ): Promise<void> {
 	if (actor.leaveUserId === userId && !isActive) {
 		throw new AdminActionError("self_deactivate", "You cannot deactivate your own account");
@@ -211,7 +211,7 @@ export async function setLeaveUserActive(
 export async function resetLeaveUserPassword(
 	actor: AdminActor,
 	userId: number,
-	newPassword: string,
+	newPassword: string
 ): Promise<void> {
 	if (!newPassword || newPassword.length < 8) {
 		throw new AdminActionError("weak_password", "Password must be at least 8 characters");
@@ -224,7 +224,7 @@ export async function resetLeaveUserPassword(
 				must_change_password = true,
 				password_changed_at = now()
 			 WHERE id = $1`,
-			[userId, passwordHash],
+			[userId, passwordHash]
 		);
 		await writeAdminAudit(client, {
 			actorUserId: actor.leaveUserId,
@@ -239,7 +239,7 @@ export async function resetLeaveUserPassword(
 export async function getLeaveUserRoles(userId: number): Promise<LeaveRoleCode[]> {
 	const { rows } = await leaveQuery<{ role_code: string }>(
 		`SELECT role_code FROM one_leave.user_roles WHERE user_id = $1`,
-		[userId],
+		[userId]
 	);
 	return rows.map((r) => r.role_code).filter(isLeaveRoleCode);
 }

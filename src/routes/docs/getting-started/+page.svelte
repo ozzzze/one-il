@@ -25,6 +25,7 @@
 	</ol>
 
 	<p>
-		จากนั้นไปที่ <code>/register</code> เพื่อสร้างบัญชีแรก (ระบบจะให้ role <code>admin</code> อัตโนมัติเมื่อเป็น user แรก)
+		จากนั้นไปที่ <code>/register</code> เพื่อสร้างบัญชีแรก (ระบบจะให้ role <code>admin</code> อัตโนมัติเมื่อเป็น
+		user แรก)
 	</p>
 </div>

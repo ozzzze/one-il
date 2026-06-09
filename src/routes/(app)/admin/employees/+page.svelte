@@ -195,10 +195,11 @@
 	const enhanceClose = (close: () => void) =>
 		pendingEnhance(
 			(v) => (savePending = v),
-			() => async ({ result, update }) => {
-				if (result.type === "success") close();
-				await update({ reset: false, invalidateAll: true });
-			}
+			() =>
+				async ({ result, update }) => {
+					if (result.type === "success") close();
+					await update({ reset: false, invalidateAll: true });
+				}
 		);
 </script>
 
@@ -219,11 +220,11 @@
 	</div>
 
 	<div class="relative max-w-sm">
-		<SearchIcon class="text-muted-foreground absolute left-3 top-1/2 size-4 -translate-y-1/2" />
+		<SearchIcon class="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
 		<Input placeholder={t.search} class="pl-9" bind:value={search} />
 	</div>
 
-	<div class="rounded-lg border bg-card shadow-sm overflow-hidden">
+	<div class="bg-card overflow-hidden rounded-lg border shadow-sm">
 		<Table.Root>
 			<Table.Header>
 				<Table.Row>
@@ -242,7 +243,9 @@
 						<Table.Cell class="font-medium">{e.employeeCode}</Table.Cell>
 						<Table.Cell>{e.titleTh ?? ""}{e.firstNameTh} {e.lastNameTh}</Table.Cell>
 						<Table.Cell class="text-muted-foreground">
-							{e.orgUnitName ? localizedDualField(data.locale, e.orgUnitName, e.orgUnitNameEn) : t.none}
+							{e.orgUnitName
+								? localizedDualField(data.locale, e.orgUnitName, e.orgUnitNameEn)
+								: t.none}
 						</Table.Cell>
 						<Table.Cell class="text-muted-foreground">{e.positionTitle ?? t.none}</Table.Cell>
 						<Table.Cell class="text-muted-foreground">{lineText(e.employeeLine)}</Table.Cell>
@@ -297,7 +300,7 @@
 					<Label for="c-last">{t.lastName}</Label>
 					<Input id="c-last" name="lastNameTh" required />
 				</div>
-				<div class="grid gap-2 col-span-2">
+				<div class="col-span-2 grid gap-2">
 					<Label>{t.orgUnit}</Label>
 					<Select.Root name="orgUnitId" type="single" bind:value={createOrg}>
 						<Select.Trigger><span>{orgLabel(createOrg)}</span></Select.Trigger>
@@ -338,7 +341,7 @@
 						</Select.Content>
 					</Select.Root>
 				</div>
-				<div class="grid gap-2 col-span-2">
+				<div class="col-span-2 grid gap-2">
 					<Label for="c-email">{t.email}</Label>
 					<Input id="c-email" name="email" type="email" />
 				</div>
@@ -375,7 +378,7 @@
 					<Label for="e-last">{t.lastName}</Label>
 					<Input id="e-last" name="lastNameTh" bind:value={editLast} required />
 				</div>
-				<div class="grid gap-2 col-span-2">
+				<div class="col-span-2 grid gap-2">
 					<Label>{t.orgUnit}</Label>
 					<Select.Root name="orgUnitId" type="single" bind:value={editOrg}>
 						<Select.Trigger><span>{orgLabel(editOrg)}</span></Select.Trigger>
@@ -408,12 +411,12 @@
 						</Select.Content>
 					</Select.Root>
 				</div>
-				<div class="grid gap-2 col-span-2">
+				<div class="col-span-2 grid gap-2">
 					<Label for="e-email">{t.email}</Label>
 					<Input id="e-email" name="email" type="email" bind:value={editEmail} />
 				</div>
 				<input type="hidden" name="isActive" value={String(editActive)} />
-				<label class="flex items-center gap-2 text-sm col-span-2">
+				<label class="col-span-2 flex items-center gap-2 text-sm">
 					<input type="checkbox" bind:checked={editActive} class="accent-primary size-4" />
 					{t.isActive}
 				</label>

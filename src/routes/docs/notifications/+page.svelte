@@ -7,7 +7,8 @@
 	<h1>Notifications</h1>
 
 	<p class="lead">
-		ระบบแจ้งเตือนเก็บในตาราง <code>public.notifications</code> บน <strong>Supabase Postgres</strong> และแสดงผลผ่าน SvelteKit load/action.
+		ระบบแจ้งเตือนเก็บในตาราง <code>public.notifications</code> บน <strong>Supabase Postgres</strong> และแสดงผลผ่าน
+		SvelteKit load/action.
 	</p>
 
 	<h2>Notes</h2>

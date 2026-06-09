@@ -52,7 +52,12 @@
 					pageTitle: "ตั้งค่า - ONE-IL",
 					title: "ตั้งค่า",
 					description: "จัดการโปรไฟล์และค่ากำหนดของแอปพลิเคชัน",
-					tabs: { profile: "โปรไฟล์", sessions: "เซสชัน", notifications: "การแจ้งเตือน", application: "แอปพลิเคชัน" },
+					tabs: {
+						profile: "โปรไฟล์",
+						sessions: "เซสชัน",
+						notifications: "การแจ้งเตือน",
+						application: "แอปพลิเคชัน",
+					},
 					toast: {
 						profile: "อัปเดตโปรไฟล์แล้ว",
 						password: "เปลี่ยนรหัสผ่านแล้ว",
@@ -118,7 +123,12 @@
 					pageTitle: "Settings - ONE-IL",
 					title: "Settings",
 					description: "Manage your profile and application preferences.",
-					tabs: { profile: "Profile", sessions: "Sessions", notifications: "Notifications", application: "Application" },
+					tabs: {
+						profile: "Profile",
+						sessions: "Sessions",
+						notifications: "Notifications",
+						application: "Application",
+					},
 					toast: {
 						profile: "Profile updated",
 						password: "Password changed",
@@ -217,36 +227,36 @@
 	const notifLabels = $derived.by(
 		() =>
 			({
-			notif_new_user: {
-				label: copy.notifLabel.notif_new_user,
-				description: copy.notifDesc.notif_new_user,
-				icon: UserPlusIcon,
-			},
-			notif_content_published: {
-				label: copy.notifLabel.notif_content_published,
-				description: copy.notifDesc.notif_content_published,
-				icon: FileTextIcon,
-			},
-			notif_security_alert: {
-				label: copy.notifLabel.notif_security_alert,
-				description: copy.notifDesc.notif_security_alert,
-				icon: ShieldAlertIcon,
-			},
-			notif_system_warning: {
-				label: copy.notifLabel.notif_system_warning,
-				description: copy.notifDesc.notif_system_warning,
-				icon: AlertTriangleIcon,
-			},
-			notif_weekly_digest: {
-				label: copy.notifLabel.notif_weekly_digest,
-				description: copy.notifDesc.notif_weekly_digest,
-				icon: CalendarIcon,
-			},
-			notif_maintenance: {
-				label: copy.notifLabel.notif_maintenance,
-				description: copy.notifDesc.notif_maintenance,
-				icon: WrenchIcon,
-			},
+				notif_new_user: {
+					label: copy.notifLabel.notif_new_user,
+					description: copy.notifDesc.notif_new_user,
+					icon: UserPlusIcon,
+				},
+				notif_content_published: {
+					label: copy.notifLabel.notif_content_published,
+					description: copy.notifDesc.notif_content_published,
+					icon: FileTextIcon,
+				},
+				notif_security_alert: {
+					label: copy.notifLabel.notif_security_alert,
+					description: copy.notifDesc.notif_security_alert,
+					icon: ShieldAlertIcon,
+				},
+				notif_system_warning: {
+					label: copy.notifLabel.notif_system_warning,
+					description: copy.notifDesc.notif_system_warning,
+					icon: AlertTriangleIcon,
+				},
+				notif_weekly_digest: {
+					label: copy.notifLabel.notif_weekly_digest,
+					description: copy.notifDesc.notif_weekly_digest,
+					icon: CalendarIcon,
+				},
+				notif_maintenance: {
+					label: copy.notifLabel.notif_maintenance,
+					description: copy.notifDesc.notif_maintenance,
+					icon: WrenchIcon,
+				},
 			}) satisfies Record<string, { label: string; description: string; icon: typeof BellIcon }>
 	);
 </script>
@@ -325,7 +335,13 @@
 						<Separator />
 						<div class="grid gap-2">
 							<Label for="newPassword">{copy.newPassword}</Label>
-							<Input id="newPassword" name="newPassword" type="password" placeholder={copy.passwordPlaceholder} required />
+							<Input
+								id="newPassword"
+								name="newPassword"
+								type="password"
+								placeholder={copy.passwordPlaceholder}
+								required
+							/>
 						</div>
 						<div class="grid gap-2">
 							<Label for="confirmPassword">{copy.confirmNewPassword}</Label>
@@ -351,7 +367,8 @@
 						</div>
 						{#if data.sessions.length > 1}
 							<form method="POST" action="?/revokeAllOtherSessions" use:enhance>
-								<Button type="submit" variant="destructive" size="sm">{copy.revokeAllOthers}</Button>
+								<Button type="submit" variant="destructive" size="sm">{copy.revokeAllOthers}</Button
+								>
 							</form>
 						{/if}
 					</div>
@@ -492,10 +509,7 @@
 										{copy.maintenanceModeDesc}
 									</p>
 								</div>
-								<Switch
-									name="maintenanceMode"
-									checked={data.settings.maintenanceMode === "true"}
-								/>
+								<Switch name="maintenanceMode" checked={data.settings.maintenanceMode === "true"} />
 							</div>
 
 							<SaveSubmitButton

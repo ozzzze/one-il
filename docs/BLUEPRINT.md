@@ -14,7 +14,7 @@
 **ห้ามคิดโครงใหม่** — ทุกโมดูลใหม่ให้ลอกแพทเทิร์นจากนี่:
 
 - Server logic: [`src/lib/server/one-leave/change-request/`](../src/lib/server/one-leave/change-request/)
-- Routes: [`src/routes/(app)/change-requests/`](../src/routes/(app)/change-requests/)
+- Routes: [`src/routes/(app)/change-requests/`](<../src/routes/(app)/change-requests/>)
 
 > เหตุผลที่ SCR เป็นต้นแบบ: แยกชั้นชัด, มี Separation of Duties แบบ explicit, มี audit trail,
 > validation ครบ และ authz 2 ชั้น — ครบทุกแกนที่ audit ต้องการ
@@ -27,15 +27,15 @@
 
 ### 1.1 Server logic — `src/lib/server/one-leave/<module>/`
 
-| ไฟล์ | หน้าที่ | กฎ |
-|------|---------|-----|
-| `types.ts` | interface/type ทั้งหมดของโดเมน | ไม่มี `any`; เป็น source of truth ของ shape |
-| `schemas.ts` | Zod schema + `parse*Form()` / `parse*Filter()` | validate **ทุก** input ก่อนแตะ DB; cross-field check ในนี้ |
-| `repository.ts` | query DB ทั้งหมด (อ่าน/เขียน) | ที่เดียวที่คุยกับ DB; รับ/คืน type จาก `types.ts` |
-| `access.ts` | permission **pure functions** (`canX`, `assertX`) | ไม่มี side-effect; เป็นหัวใจที่ audit ตรวจ → **ต้องมีเทสต์** |
-| `labels.ts` | map enum/status → ข้อความแสดงผล (i18n-ready) | ไม่ปน logic |
-| `db-helpers.ts` | `formatDbError()` ฯลฯ | ไม่โยน error ดิบ(technical) ออกหน้า user |
-| (option) `filters.ts`, `*-actions.ts`, `*-queue.ts`, `attachments.ts`, `*-export.ts` | logic เฉพาะทาง | แยกตามหน้าที่เดียว/ไฟล์ |
+| ไฟล์                                                                                 | หน้าที่                                           | กฎ                                                           |
+| ------------------------------------------------------------------------------------ | ------------------------------------------------- | ------------------------------------------------------------ |
+| `types.ts`                                                                           | interface/type ทั้งหมดของโดเมน                    | ไม่มี `any`; เป็น source of truth ของ shape                  |
+| `schemas.ts`                                                                         | Zod schema + `parse*Form()` / `parse*Filter()`    | validate **ทุก** input ก่อนแตะ DB; cross-field check ในนี้   |
+| `repository.ts`                                                                      | query DB ทั้งหมด (อ่าน/เขียน)                     | ที่เดียวที่คุยกับ DB; รับ/คืน type จาก `types.ts`            |
+| `access.ts`                                                                          | permission **pure functions** (`canX`, `assertX`) | ไม่มี side-effect; เป็นหัวใจที่ audit ตรวจ → **ต้องมีเทสต์** |
+| `labels.ts`                                                                          | map enum/status → ข้อความแสดงผล (i18n-ready)      | ไม่ปน logic                                                  |
+| `db-helpers.ts`                                                                      | `formatDbError()` ฯลฯ                             | ไม่โยน error ดิบ(technical) ออกหน้า user                     |
+| (option) `filters.ts`, `*-actions.ts`, `*-queue.ts`, `attachments.ts`, `*-export.ts` | logic เฉพาะทาง                                    | แยกตามหน้าที่เดียว/ไฟล์                                      |
 
 ### 1.2 Routes — `src/routes/(app)/<module>/`
 
@@ -55,7 +55,7 @@
 
 > **ห้าม** วาง business logic/DB query ใน `.svelte` หรือใน `+page.server.ts` ตรง ๆ —
 > ให้เรียกผ่าน `repository.ts` / `access.ts` / `schemas.ts` เสมอ (`+page.server.ts` แค่ wire เข้าด้วยกัน)
-> ดูตัวอย่างการ wire ที่ [`change-requests/new/+page.server.ts`](../src/routes/(app)/change-requests/new/+page.server.ts)
+> ดูตัวอย่างการ wire ที่ [`change-requests/new/+page.server.ts`](<../src/routes/(app)/change-requests/new/+page.server.ts>)
 
 ---
 
@@ -64,10 +64,10 @@
 ปิดงานโมดูลไม่ได้จนกว่าจะติ๊กครบ **แกน A (Security/Audit)** และ **แกน B (Code Quality)**
 แกน C/D เป็น baseline ที่ต้องผ่านอยู่แล้ว
 
-### 🔐 แกน A — Security / Audit (E&Y) — *สำคัญสูงสุด*
+### 🔐 แกน A — Security / Audit (E&Y) — _สำคัญสูงสุด_
 
 - [ ] **Authz 2 ชั้น** — เช็คสิทธิ์ทั้งใน `load` และในทุก `action` (zero-trust)
-      → ดู [`new/+page.server.ts:21,47`](../src/routes/(app)/change-requests/new/+page.server.ts)
+      → ดู [`new/+page.server.ts:21,47`](<../src/routes/(app)/change-requests/new/+page.server.ts>)
 - [ ] **Separation of Duties** — ผู้ยื่น ≠ ผู้อนุมัติ ≠ ผู้ดำเนินการ บังคับด้วย `assert*Separation()`
       → ดู [`access.ts:84-103`](../src/lib/server/one-leave/change-request/access.ts)
 - [ ] **State machine** — การเปลี่ยนสถานะถูกคุมด้วย `canX(user, record)` ตามสถานะปัจจุบัน ห้ามข้ามขั้น
@@ -84,7 +84,7 @@
 - [ ] **Server-first** — fetch/mutate ผ่าน `+page.server.ts` ไม่ fetch Supabase จาก client (ยกเว้น Realtime)
 - [ ] **Svelte 5 Runes** — `$props/$state/$derived/{@render}` เท่านั้น (ห้าม `export let`, `writable` สำหรับ local state, `$:`)
 - [ ] **แยกชั้นตามข้อ 1** — DB อยู่ใน `repository.ts`, สิทธิ์อยู่ใน `access.ts`, validate อยู่ใน `schemas.ts`
-- [ ] **DB types** generate จาก schema (`pnpm supabase:types`) ไม่เขียน type ของตาราง DB เอง
+- [ ] **DB types** generate จาก schema (`pnpm db:types`) ไม่เขียน type ของตาราง DB เอง
 - [ ] **Form PE** — `use:enhance` ทำตาม skill `sveltekit-forms-enhance` (`update({ reset: false })`)
 
 ### 🧪 แกน C — Testing (baseline)
@@ -139,11 +139,11 @@
 
 จัดเรียงจาก "ลอกง่าย/ต้นทุนต่ำ" → "ซับซ้อน":
 
-| กลุ่ม | โมดูล | ความซับซ้อน |
-|-------|-------|-------------|
-| CRUD ล้วน | Asset · Supply · Lab Stock · WorkSheet | ⭐ ลอก SCR ตรง ๆ ตัด workflow |
-| CRUD + relation | Student/Advisor · Research · Product-from-research | ⭐⭐ |
-| Workflow + อนุมัติ | Welfare · Academic Service · Borrow/Return | ⭐⭐⭐ ใช้ workflow SCR เต็มรูป |
-| เฉพาะทาง | Room Booking (+AI chat) · Executive Dashboard | ⭐⭐⭐⭐ ดู PRD เฉพาะโมดูล |
+| กลุ่ม              | โมดูล                                              | ความซับซ้อน                     |
+| ------------------ | -------------------------------------------------- | ------------------------------- |
+| CRUD ล้วน          | Asset · Supply · Lab Stock · WorkSheet             | ⭐ ลอก SCR ตรง ๆ ตัด workflow   |
+| CRUD + relation    | Student/Advisor · Research · Product-from-research | ⭐⭐                            |
+| Workflow + อนุมัติ | Welfare · Academic Service · Borrow/Return         | ⭐⭐⭐ ใช้ workflow SCR เต็มรูป |
+| เฉพาะทาง           | Room Booking (+AI chat) · Executive Dashboard      | ⭐⭐⭐⭐ ดู PRD เฉพาะโมดูล      |
 
 > แนะนำเริ่ม **Asset** เป็นตัวพิสูจน์ recipe — ถ้าลอกแล้วลื่น แปลว่า blueprint ใช้ได้จริง

@@ -7,7 +7,10 @@ import {
 } from "$lib/navigation/catalog.js";
 import { buildGatewayNavigationFromLeave } from "$lib/server/gateway-launcher.js";
 import { effectivePermissions } from "$lib/server/guards.js";
-import { tryLoadMenuCatalogRows, tryLoadUserMenuShortcutIds } from "$lib/server/navigation-menu-load.js";
+import {
+	tryLoadMenuCatalogRows,
+	tryLoadUserMenuShortcutIds,
+} from "$lib/server/navigation-menu-load.js";
 import { getServiceRoleClient, isServiceRoleConfigured } from "$lib/server/supabase-admin.js";
 import { isOneLeaveAppPath, sanitizePostLoginRedirect } from "$lib/server/one-leave/paths.js";
 import type { LayoutServerLoad } from "./$types.js";

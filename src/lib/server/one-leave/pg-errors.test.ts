@@ -5,7 +5,7 @@ describe("isTransientPgError", () => {
 	it("detects ECONNRESET", () => {
 		expect(isTransientPgError(new Error("read ECONNRESET"))).toBe(true);
 		expect(isTransientPgError(Object.assign(new Error("reset"), { code: "ECONNRESET" }))).toBe(
-			true,
+			true
 		);
 	});
 
@@ -15,7 +15,7 @@ describe("isTransientPgError", () => {
 
 	it("ignores credential errors", () => {
 		expect(isTransientPgError(Object.assign(new Error("auth failed"), { code: "28P01" }))).toBe(
-			false,
+			false
 		);
 	});
 });

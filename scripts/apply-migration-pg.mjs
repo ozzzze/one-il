@@ -78,7 +78,12 @@ if (env.DATABASE_URL) {
 	configs.push(pgClientConfigFromEnv(env.DATABASE_URL, { tenantId }));
 }
 
-if (env.SELF_HOSTED_DB_PASSWORD && supabaseHost && !env.DATABASE_URL && !env.SELF_HOSTED_DATABASE_URL) {
+if (
+	env.SELF_HOSTED_DB_PASSWORD &&
+	supabaseHost &&
+	!env.DATABASE_URL &&
+	!env.SELF_HOSTED_DATABASE_URL
+) {
 	const pass = env.SELF_HOSTED_DB_PASSWORD;
 	const user = poolerUsername(tenantId);
 	configs.push({
@@ -124,8 +129,8 @@ for (const config of configs) {
 					used: redactPgConfig(config),
 				},
 				null,
-				2,
-			),
+				2
+			)
 		);
 		process.exit(0);
 	} catch (err) {
@@ -137,7 +142,7 @@ for (const config of configs) {
 
 if (configs.length === 0) {
 	console.error(
-		"No database config. Set SELF_HOSTED_DATABASE_URL or SELF_HOSTED_DB_PASSWORD (+ PUBLIC_SUPABASE_URL) in .env",
+		"No database config. Set SELF_HOSTED_DATABASE_URL or SELF_HOSTED_DB_PASSWORD (+ PUBLIC_SUPABASE_URL) in .env"
 	);
 	process.exit(1);
 }
@@ -151,7 +156,7 @@ console.error(
 			attempts: failures,
 		},
 		null,
-		2,
-	),
+		2
+	)
 );
 process.exit(1);

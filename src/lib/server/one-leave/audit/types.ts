@@ -1,4 +1,4 @@
-import type { RoleCode } from '$lib/server/one-leave/auth/types.js';
+import type { RoleCode } from "$lib/server/one-leave/auth/types.js";
 
 export interface AuditContext {
 	userId: number;

@@ -29,7 +29,7 @@ const pool = new pg.Pool(
 		port: env.PG_PORT,
 		user: env.PG_USER,
 		password: env.SELF_HOSTED_DB_PASSWORD,
-	}),
+	})
 );
 
 try {

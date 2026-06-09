@@ -1,39 +1,39 @@
 <script lang="ts">
-	import { Badge } from '$lib/components/ui/badge/index.js';
-	import { Button } from '$lib/components/ui/button/index.js';
-	import { Input } from '$lib/components/ui/input/index.js';
-	import { Label } from '$lib/components/ui/label/index.js';
-	import { labelChangeCategory, labelScrStatus } from '$lib/change-request/labels.js';
+	import { Badge } from "$lib/components/ui/badge/index.js";
+	import { Button } from "$lib/components/ui/button/index.js";
+	import { Input } from "$lib/components/ui/input/index.js";
+	import { Label } from "$lib/components/ui/label/index.js";
+	import { labelChangeCategory, labelScrStatus } from "$lib/change-request/labels.js";
 	import type {
 		ChangeRequestListFilter,
-		ScrQueueCounts
-	} from '$lib/server/one-leave/change-request/types.js';
-	import type { PageData } from './$types';
-	import DownloadIcon from '@lucide/svelte/icons/download';
-	import InboxIcon from '@lucide/svelte/icons/inbox';
-	import PlusIcon from '@lucide/svelte/icons/plus';
-	import RotateCcwIcon from '@lucide/svelte/icons/rotate-ccw';
-	import SearchIcon from '@lucide/svelte/icons/search';
-	import ChevronLeftIcon from '@lucide/svelte/icons/chevron-left';
-	import ChevronRightIcon from '@lucide/svelte/icons/chevron-right';
-	import { resolve } from '$app/paths';
-	import { SvelteURLSearchParams } from 'svelte/reactivity';
+		ScrQueueCounts,
+	} from "$lib/server/one-leave/change-request/types.js";
+	import type { PageData } from "./$types";
+	import DownloadIcon from "@lucide/svelte/icons/download";
+	import InboxIcon from "@lucide/svelte/icons/inbox";
+	import PlusIcon from "@lucide/svelte/icons/plus";
+	import RotateCcwIcon from "@lucide/svelte/icons/rotate-ccw";
+	import SearchIcon from "@lucide/svelte/icons/search";
+	import ChevronLeftIcon from "@lucide/svelte/icons/chevron-left";
+	import ChevronRightIcon from "@lucide/svelte/icons/chevron-right";
+	import { resolve } from "$app/paths";
+	import { SvelteURLSearchParams } from "svelte/reactivity";
 
 	let { data }: { data: PageData } = $props();
 
 	const emptyFilter: ChangeRequestListFilter = {
-		status: '',
-		q: '',
-		changeCategory: '',
+		status: "",
+		q: "",
+		changeCategory: "",
 		itSystemId: null,
-		exceptionTypeId: null
+		exceptionTypeId: null,
 	};
 	const emptyQueue: ScrQueueCounts = { supervisorPending: 0, itPending: 0 };
 
-	const requests = $derived('requests' in data ? (data.requests ?? []) : []);
-	const filter = $derived(('filter' in data ? data.filter : undefined) ?? emptyFilter);
+	const requests = $derived("requests" in data ? (data.requests ?? []) : []);
+	const filter = $derived(("filter" in data ? data.filter : undefined) ?? emptyFilter);
 	const queueCounts = $derived(
-		('queueCounts' in data ? data.queueCounts : undefined) ?? emptyQueue
+		("queueCounts" in data ? data.queueCounts : undefined) ?? emptyQueue
 	);
 
 	let currentPage = $state(1);
@@ -53,15 +53,15 @@
 
 	function exportHref(): string {
 		const params = new SvelteURLSearchParams();
-		if (filter.status) params.set('status', filter.status);
-		if (filter.q) params.set('q', filter.q);
-		if (filter.changeCategory) params.set('changeCategory', filter.changeCategory);
-		if (filter.itSystemId) params.set('itSystemId', String(filter.itSystemId));
+		if (filter.status) params.set("status", filter.status);
+		if (filter.q) params.set("q", filter.q);
+		if (filter.changeCategory) params.set("changeCategory", filter.changeCategory);
+		if (filter.itSystemId) params.set("itSystemId", String(filter.itSystemId));
 		if (filter.exceptionTypeId) {
-			params.set('exceptionTypeId', String(filter.exceptionTypeId));
+			params.set("exceptionTypeId", String(filter.exceptionTypeId));
 		}
-		params.set('export', 'csv');
-		return resolve(`/change-requests?${params.toString()}` as '/');
+		params.set("export", "csv");
+		return resolve(`/change-requests?${params.toString()}` as "/");
 	}
 </script>
 
@@ -83,18 +83,18 @@
 		</div>
 		<div class="flex flex-wrap gap-2">
 			{#if queueCounts.supervisorPending > 0 || queueCounts.itPending > 0}
-				<Button href={resolve('/change-requests/approvals' as '/')} variant="outline">
+				<Button href={resolve("/change-requests/approvals" as "/")} variant="outline">
 					<InboxIcon class="mr-2 size-4" />
 					คิวอนุมัติ
 				</Button>
 			{/if}
-			{#if 'canExport' in data && data.canExport}
+			{#if "canExport" in data && data.canExport}
 				<Button href={exportHref()} variant="outline">
 					<DownloadIcon class="mr-2 size-4" />
 					ส่งออก CSV
 				</Button>
 			{/if}
-			<Button href={resolve('/change-requests/new' as '/')} variant="default">
+			<Button href={resolve("/change-requests/new" as "/")} variant="default">
 				<PlusIcon class="mr-2 size-4" />
 				ยื่นคำขอเปลี่ยนแปลงระบบ
 			</Button>
@@ -102,7 +102,7 @@
 	</div>
 
 	<!-- Search & Filters (Flat Panel) -->
-	<div class="rounded-lg border bg-card p-4 shadow-sm">
+	<div class="bg-card rounded-lg border p-4 shadow-sm">
 		<form method="GET" class="flex flex-col gap-4">
 			<div class="flex flex-wrap items-end gap-3">
 				<div class="flex min-w-[160px] flex-col gap-1.5">
@@ -112,8 +112,8 @@
 						name="status"
 						class="border-input bg-background h-8 rounded-lg border px-2.5 text-sm"
 					>
-						<option value="" selected={filter.status === ''}>ทุกสถานะ</option>
-						{#if 'statusOptions' in data}
+						<option value="" selected={filter.status === ""}>ทุกสถานะ</option>
+						{#if "statusOptions" in data}
 							{#each data.statusOptions as opt (opt.value)}
 								<option value={opt.value} selected={filter.status === opt.value}>
 									{opt.label}
@@ -129,8 +129,8 @@
 						name="changeCategory"
 						class="border-input bg-background h-8 rounded-lg border px-2.5 text-sm"
 					>
-						<option value="" selected={filter.changeCategory === ''}>ทุกหมวด</option>
-						{#if 'categoryOptions' in data}
+						<option value="" selected={filter.changeCategory === ""}>ทุกหมวด</option>
+						{#if "categoryOptions" in data}
 							{#each data.categoryOptions as opt (opt.value)}
 								<option value={opt.value} selected={filter.changeCategory === opt.value}>
 									{opt.label}
@@ -147,7 +147,7 @@
 						class="border-input bg-background h-8 rounded-lg border px-2.5 text-sm"
 					>
 						<option value="" selected={filter.itSystemId === null}>ทุกระบบ</option>
-						{#if 'itSystems' in data}
+						{#if "itSystems" in data}
 							{#each data.itSystems as sys (sys.id)}
 								<option value={String(sys.id)} selected={filter.itSystemId === sys.id}>
 									{sys.nameTh}
@@ -164,7 +164,7 @@
 						class="border-input bg-background h-8 rounded-lg border px-2.5 text-sm"
 					>
 						<option value="" selected={filter.exceptionTypeId === null}>ทุกประเภท</option>
-						{#if 'exceptionTypes' in data}
+						{#if "exceptionTypes" in data}
 							{#each data.exceptionTypes as et (et.id)}
 								<option value={String(et.id)} selected={filter.exceptionTypeId === et.id}>
 									{et.nameTh}
@@ -185,7 +185,7 @@
 				</div>
 			</div>
 			<div class="flex flex-col gap-2 sm:flex-row sm:justify-end">
-				<Button variant="outline" type="button" href={resolve('/change-requests' as '/')}>
+				<Button variant="outline" type="button" href={resolve("/change-requests" as "/")}>
 					<RotateCcwIcon class="mr-2 size-4" />
 					ล้างตัวกรอง
 				</Button>
@@ -198,12 +198,12 @@
 	</div>
 
 	<!-- Data Table (Flat Bordered) -->
-	<div class="rounded-lg border bg-card overflow-x-auto shadow-sm">
+	<div class="bg-card overflow-x-auto rounded-lg border shadow-sm">
 		<table class="w-full min-w-[800px] text-sm">
 			<thead>
-				<tr class="border-b bg-muted/50 text-left">
+				<tr class="bg-muted/50 border-b text-left">
 					<th class="px-4 py-3 font-medium">เลขที่</th>
-					{#if 'viewAll' in data && data.viewAll}
+					{#if "viewAll" in data && data.viewAll}
 						<th class="px-4 py-3 font-medium">ผู้ยื่น</th>
 					{/if}
 					<th class="px-4 py-3 font-medium">หัวข้อ</th>
@@ -215,16 +215,16 @@
 			</thead>
 			<tbody>
 				{#each paginatedRequests as row (row.id)}
-					<tr class="border-b last:border-0 hover:bg-muted/30">
+					<tr class="hover:bg-muted/30 border-b last:border-0">
 						<td class="px-4 py-3 font-mono text-xs">
 							<a
-								href={resolve(`/change-requests/${row.id}` as '/')}
+								href={resolve(`/change-requests/${row.id}` as "/")}
 								class="text-primary hover:underline"
 							>
 								{row.requestNumber}
 							</a>
 						</td>
-						{#if 'viewAll' in data && data.viewAll}
+						{#if "viewAll" in data && data.viewAll}
 							<td class="px-4 py-3">
 								{row.requesterName}
 								{#if row.requesterEmployeeCode}
@@ -252,7 +252,7 @@
 				{:else}
 					<tr>
 						<td
-							colspan={'viewAll' in data && data.viewAll ? 7 : 6}
+							colspan={"viewAll" in data && data.viewAll ? 7 : 6}
 							class="text-muted-foreground px-4 py-8 text-center"
 						>
 							ยังไม่มีคำขอ — กด「ยื่นคำขอเปลี่ยนแปลงระบบ」เพื่อสร้างรายการแรก
@@ -263,7 +263,7 @@
 		</table>
 
 		{#if totalPages > 1}
-			<div class="flex items-center justify-between border-t p-4 bg-muted/20">
+			<div class="bg-muted/20 flex items-center justify-between border-t p-4">
 				<div class="flex flex-1 justify-between sm:hidden">
 					<Button
 						variant="outline"
@@ -287,9 +287,9 @@
 				<div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
 					<div>
 						<p class="text-muted-foreground text-xs">
-							แสดงรายการที่ <span class="font-semibold text-foreground">{startItem}</span> ถึง
-							<span class="font-semibold text-foreground">{endItem}</span> จากทั้งหมด
-							<span class="font-semibold text-foreground">{requests.length}</span> รายการ
+							แสดงรายการที่ <span class="text-foreground font-semibold">{startItem}</span> ถึง
+							<span class="text-foreground font-semibold">{endItem}</span> จากทั้งหมด
+							<span class="text-foreground font-semibold">{requests.length}</span> รายการ
 							{#if requests.length === 50}
 								<span class="text-muted-foreground/80"> (สูงสุด 50 รายการล่าสุด)</span>
 							{/if}
@@ -309,7 +309,7 @@
 							</Button>
 							{#each Array.from({ length: totalPages }, (_, i) => i + 1) as page (page)}
 								<Button
-									variant={currentPage === page ? 'secondary' : 'outline'}
+									variant={currentPage === page ? "secondary" : "outline"}
 									size="sm"
 									class="rounded-none border-l-0"
 									onclick={() => (currentPage = page)}

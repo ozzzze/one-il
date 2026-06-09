@@ -72,7 +72,9 @@ type EmployeeJoinRow = {
 	app_role: string | null;
 };
 
-function normalizeEmployeeJoin(raw: EmployeeJoinRow[] | EmployeeJoinRow | null): SessionEmployee | null {
+function normalizeEmployeeJoin(
+	raw: EmployeeJoinRow[] | EmployeeJoinRow | null
+): SessionEmployee | null {
 	if (raw == null) return null;
 	const row = Array.isArray(raw) ? raw[0] : raw;
 	if (!row?.id) return null;

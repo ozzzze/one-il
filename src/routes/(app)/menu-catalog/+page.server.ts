@@ -32,7 +32,7 @@ const updateItemSchema = z.object({
 			value
 				.split(",")
 				.map((key) => key.trim())
-				.filter((key) => key.length > 0 && permissionKeySet.has(key)),
+				.filter((key) => key.length > 0 && permissionKeySet.has(key))
 		),
 });
 
@@ -81,7 +81,10 @@ export const actions: Actions = {
 		const invalid = locals.locale === "th" ? "ข้อมูลไม่ถูกต้อง" : "Invalid data";
 		const fd = await request.formData();
 		const parsed = z
-			.object({ code: z.string().min(1), is_active: z.union([z.literal("true"), z.literal("false")]) })
+			.object({
+				code: z.string().min(1),
+				is_active: z.union([z.literal("true"), z.literal("false")]),
+			})
 			.safeParse({ code: fd.get("code"), is_active: fd.get("is_active") });
 		if (!parsed.success) {
 			return fail(400, { message: invalid });

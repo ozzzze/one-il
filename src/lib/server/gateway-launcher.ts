@@ -168,7 +168,11 @@ function canSeeModule(mod: LauncherModule, leaveRoles: readonly LeaveRoleCode[])
 	return mod.leaveRoles.some((r) => leaveRoles.includes(r));
 }
 
-function moduleAccessible(mod: LauncherModule, role: Role, leaveRoles: readonly LeaveRoleCode[]): boolean {
+function moduleAccessible(
+	mod: LauncherModule,
+	role: Role,
+	leaveRoles: readonly LeaveRoleCode[]
+): boolean {
 	if (mod.gatewayOnly && mod.id === "gateway-roles") {
 		return hasPermission(role, "roles:manage") || leaveRoles.includes("admin");
 	}
@@ -183,7 +187,7 @@ function moduleAccessible(mod: LauncherModule, role: Role, leaveRoles: readonly 
 export function buildGatewayNavigationFromLeave(
 	locale: Locale,
 	role: Role,
-	leaveRoles: readonly LeaveRoleCode[],
+	leaveRoles: readonly LeaveRoleCode[]
 ): {
 	sidebarGroups: NavMenuGroup[];
 	commandPaletteNav: CommandNavEntry[];

@@ -35,8 +35,7 @@
 			.slice(0, 2);
 	}
 
-	const uuidRegex =
-		/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+	const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 	function isUuidSegment(segment: string): boolean {
 		return uuidRegex.test(segment);
@@ -44,8 +43,10 @@
 
 	/** Employee detail route merges `employee` into page data — prefer employee no. over raw id in breadcrumbs */
 	function employeeDetailCrumbLabel(segment: string, segments: string[]): string | null {
-		if (segments.length !== 2 || segments[0] !== "employees" || !isUuidSegment(segment)) return null;
-		const emp = (page.data as { employee?: { employeeNo?: string | null; fullName?: string } }).employee;
+		if (segments.length !== 2 || segments[0] !== "employees" || !isUuidSegment(segment))
+			return null;
+		const emp = (page.data as { employee?: { employeeNo?: string | null; fullName?: string } })
+			.employee;
 		if (!emp) return null;
 		const no = emp.employeeNo?.trim();
 		if (no && no.length > 0) return no;
@@ -123,7 +124,7 @@
 			class="shell-header bg-background sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 border-b px-4"
 		>
 			<Sidebar.Trigger class="-ml-1" />
-			<Separator orientation="vertical" class="mr-2 h-4! size-4" />
+			<Separator orientation="vertical" class="mr-2 size-4 h-4!" />
 			<Breadcrumb.Root>
 				<Breadcrumb.List>
 					{#each getBreadcrumbs() as crumb, i (crumb.href)}
@@ -161,7 +162,7 @@
 						{#snippet child({ props })}
 							<button
 								type="button"
-								class="focus-visible:ring-ring border-input bg-background hover:bg-accent hover:text-accent-foreground ml-1 inline-flex size-9 shrink-0 items-center justify-center rounded-full border shadow-none outline-none transition-colors focus-visible:ring-2 focus-visible:ring-offset-2"
+								class="focus-visible:ring-ring border-input bg-background hover:bg-accent hover:text-accent-foreground ml-1 inline-flex size-9 shrink-0 items-center justify-center rounded-full border shadow-none transition-colors outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
 								aria-label={ui.myAccount}
 								{...props}
 							>
@@ -169,7 +170,9 @@
 									{#if data.user.avatarUrl}
 										<Avatar.Image src={data.user.avatarUrl} alt="" />
 									{:else}
-										<Avatar.Fallback class="text-xs font-medium">{userInitials(data.user.name)}</Avatar.Fallback>
+										<Avatar.Fallback class="text-xs font-medium"
+											>{userInitials(data.user.name)}</Avatar.Fallback
+										>
 									{/if}
 								</Avatar.Root>
 							</button>
@@ -178,8 +181,11 @@
 					<DropdownMenu.Content class="w-56" align="end" sideOffset={8}>
 						<DropdownMenu.Label class="flex flex-col gap-0.5">
 							<span class="truncate font-semibold">{data.user.name}</span>
-							<span class="text-muted-foreground truncate text-xs font-normal">{data.user.email}</span>
-							<Badge variant="outline" class="mt-1 w-fit text-xs capitalize">{data.user.role}</Badge>
+							<span class="text-muted-foreground truncate text-xs font-normal"
+								>{data.user.email}</span
+							>
+							<Badge variant="outline" class="mt-1 w-fit text-xs capitalize">{data.user.role}</Badge
+							>
 						</DropdownMenu.Label>
 						<DropdownMenu.Separator />
 						<DropdownMenu.Item>
@@ -210,13 +216,20 @@
 						<DropdownMenu.Item
 							variant="destructive"
 							onclick={() =>
-								(document.getElementById("app-header-logout-form") as HTMLFormElement | null)?.requestSubmit()}
+								(
+									document.getElementById("app-header-logout-form") as HTMLFormElement | null
+								)?.requestSubmit()}
 						>
 							<LogOutIcon class="mr-2 size-4" />
 							{ui.logOut}
 						</DropdownMenu.Item>
 					</DropdownMenu.Content>
-					<form id="app-header-logout-form" method="POST" action={resolve("/logout")} class="hidden"></form>
+					<form
+						id="app-header-logout-form"
+						method="POST"
+						action={resolve("/logout")}
+						class="hidden"
+					></form>
 				</DropdownMenu.Root>
 			</div>
 		</header>

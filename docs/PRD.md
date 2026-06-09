@@ -42,7 +42,7 @@
 
 - **Office**
   - Human Resource / Employee
-  - Leave *(one-leave)*
+  - Leave _(one-leave)_
   - Welfare
   - Dashboard for Executive
   - Supply
@@ -56,10 +56,12 @@
 - **Office & Academic**
   - Academic Service
   - Borrow/Return Equipment
-  - Room Booking *(one-il)*
+  - Room Booking _(one-il)_
 - **My Account**
 
 ## 7. Milestone
+
     - Create ONE-IL
     - Create User management & permisssion
+
 ## 8. Plan before code

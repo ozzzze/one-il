@@ -35,7 +35,7 @@ const reviewSchema = z.object({
 
 function currentValueFor(
 	field: RequestableField,
-	current: { name: string; email: string; username: string; role: string },
+	current: { name: string; email: string; username: string; role: string }
 ): string | null {
 	switch (field) {
 		case "name":
@@ -158,7 +158,7 @@ export const actions: Actions = {
 					}),
 					parsed.data.requested_value,
 					parsed.data.reason,
-				],
+				]
 			);
 		} catch (err) {
 			const message = err instanceof Error ? err.message : invalid;
@@ -179,7 +179,7 @@ export const actions: Actions = {
 		const pool = getLeavePgPool();
 		const { rowCount } = await pool.query(
 			`DELETE FROM public.user_change_requests WHERE id = $1::uuid AND user_id = $2 AND status = 'pending'`,
-			[id, leaveUserId],
+			[id, leaveUserId]
 		);
 		if ((rowCount ?? 0) === 0) {
 			return fail(400, { message: invalid });
@@ -213,7 +213,7 @@ export const actions: Actions = {
 			SET status = $2, review_note = $3, reviewed_by = $4, reviewed_at = $5, updated_at = $5
 			WHERE id = $1::uuid AND status = 'pending'
 			`,
-			[parsed.data.id, parsed.data.decision, parsed.data.review_note, leaveUserId, now],
+			[parsed.data.id, parsed.data.decision, parsed.data.review_note, leaveUserId, now]
 		);
 		if ((rowCount ?? 0) === 0) {
 			return fail(400, { message: invalid });

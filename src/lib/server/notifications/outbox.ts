@@ -21,7 +21,7 @@ type OutboxRow = {
  */
 export async function enqueueNotification(
 	admin: AppSupabaseClient,
-	input: EnqueueNotificationInput,
+	input: EnqueueNotificationInput
 ): Promise<{ id: string; skipped: boolean }> {
 	if (input.correlationId) {
 		const { data: existing } = await admin

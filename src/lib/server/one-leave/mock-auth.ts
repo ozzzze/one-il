@@ -32,7 +32,7 @@ export function isLeaveAuthMockEnabled(): boolean {
 
 export function authenticateLeaveMockUser(
 	username: string,
-	password: string,
+	password: string
 ): LeaveAuthUser | null {
 	const norm = username.trim().toLowerCase();
 	const user = DEV_MOCK_USERS.find((u) => u.username.toLowerCase() === norm);

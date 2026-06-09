@@ -1,7 +1,6 @@
 /**
- * Generated manually from Postgres schema / migrations.
- * Regenerate from hosted project when `SUPABASE_ACCESS_TOKEN` is set:
- * `pnpm run supabase:types`
+ * Generated from VPS Postgres schema.
+ * Regenerate: `pnpm db:types` (uses DATABASE_URL / SELF_HOSTED_DATABASE_URL in .env)
  */
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
@@ -839,4 +838,5 @@ export type Database = {
 	};
 };
 
-export type Tables<T extends keyof Database["public"]["Tables"]> = Database["public"]["Tables"][T]["Row"];
+export type Tables<T extends keyof Database["public"]["Tables"]> =
+	Database["public"]["Tables"][T]["Row"];

@@ -22,7 +22,7 @@ export async function listMyChangeRequests(userId: number): Promise<ChangeReques
 		WHERE user_id = $1
 		ORDER BY created_at DESC
 		`,
-		[userId],
+		[userId]
 	);
 	return rows;
 }
@@ -35,13 +35,13 @@ export async function listPendingChangeRequests(): Promise<ChangeRequestRow[]> {
 		FROM public.user_change_requests
 		WHERE status = 'pending'
 		ORDER BY created_at ASC
-		`,
+		`
 	);
 	return rows;
 }
 
 export async function getLeaveUserLabels(
-	userIds: number[],
+	userIds: number[]
 ): Promise<Map<number, { name: string; email: string }>> {
 	if (userIds.length === 0) return new Map();
 	const pool = getLeavePgPool();
@@ -57,7 +57,7 @@ export async function getLeaveUserLabels(
 		LEFT JOIN one_leave.employees e ON e.id = u.employee_id
 		WHERE u.id = ANY($1::bigint[])
 		`,
-		[userIds],
+		[userIds]
 	);
 	const map = new Map<number, { name: string; email: string }>();
 	for (const row of rows) {

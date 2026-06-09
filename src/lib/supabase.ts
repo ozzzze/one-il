@@ -5,8 +5,7 @@ import type { Database } from "$lib/database.types.js";
 
 function browserSupabaseConfig(): { url: string; key: string } | null {
 	const url = env.PUBLIC_SUPABASE_URL?.trim() ?? "";
-	const key =
-		(env.PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? env.PUBLIC_SUPABASE_ANON_KEY)?.trim() ?? "";
+	const key = (env.PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? env.PUBLIC_SUPABASE_ANON_KEY)?.trim() ?? "";
 	if (!url || !key) return null;
 	return { url, key };
 }

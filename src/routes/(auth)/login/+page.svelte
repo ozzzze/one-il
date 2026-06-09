@@ -47,8 +47,7 @@
 					heroSubtitle: "Institute for Innovative Learning, Mahidol University",
 					quote:
 						'"ONE-IL is the unified gateway for IL systems at Mahidol University — one account for leave, administration, and other modules."',
-					copyright:
-						"© Institute for Innovative Learning, Mahidol University · IL Mahidol",
+					copyright: "© Institute for Innovative Learning, Mahidol University · IL Mahidol",
 					title: "Sign in",
 					desc: "Institute for Innovative Learning, Mahidol University",
 					username: "Email / username",
@@ -65,7 +64,7 @@
 					mockDesc: "No DATABASE_URL — in-memory demo accounts (password Demo@2569)",
 					demoTitle: "Demo accounts:",
 					demoPassword: "Default password:",
-				},
+				}
 	);
 </script>
 
@@ -88,7 +87,7 @@
 			class="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(99,102,241,0.15),transparent_50%)]"
 		></div>
 		<div
-			class="absolute inset-0 bg-[linear-gradient(to_right,#80808007_1px,transparent_1px),linear-gradient(to_bottom,#80808007_1px,transparent_1px)] bg-size-[24px_24px] mask-[radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)]"
+			class="absolute inset-0 bg-[linear-gradient(to_right,#80808007_1px,transparent_1px),linear-gradient(to_bottom,#80808007_1px,transparent_1px)] mask-[radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] bg-size-[24px_24px]"
 		></div>
 
 		<div class="relative z-20 flex items-center gap-3 text-lg font-bold tracking-tight">
@@ -139,7 +138,7 @@
 		></div>
 
 		<div class="relative z-10 mx-auto w-full sm:max-w-md">
-			<Card.Root class="border-0 bg-background shadow-none">
+			<Card.Root class="bg-background border-0 shadow-none">
 				<Card.Header class="space-y-1 text-center">
 					<div class="mb-2 flex justify-center lg:hidden">
 						<img src={logo} alt={copy.brand} class="size-14 object-contain" />
@@ -203,9 +202,8 @@
 							<div class="flex items-center justify-between">
 								<Label for="password" class="text-sm font-semibold">
 									{copy.password}
-									<span
-										class="text-destructive ms-0.5 text-[10px] leading-none"
-										aria-hidden="true">*</span
+									<span class="text-destructive ms-0.5 text-[10px] leading-none" aria-hidden="true"
+										>*</span
 									>
 								</Label>
 								<a

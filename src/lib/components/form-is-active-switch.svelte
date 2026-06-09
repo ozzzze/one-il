@@ -24,9 +24,5 @@
 
 <div class={cn("flex items-center gap-2", className)}>
 	<input type="hidden" name="isActive" value={checked ? "true" : "false"} />
-	<Switch
-		{id}
-		bind:checked
-		aria-label={checked ? activeLabel : inactiveLabel}
-	/>
+	<Switch {id} bind:checked aria-label={checked ? activeLabel : inactiveLabel} />
 </div>

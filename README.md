@@ -112,16 +112,16 @@ Loved ONE-IL? Supercharge your workflow with our premium templates on [Dashboard
 
 ## Tech Stack
 
-| Layer | Technology |
-| --- | --- |
-| **Framework** | SvelteKit 2.50 + Svelte 5 (runes API) |
-| **Styling** | Tailwind CSS 4 + shadcn-svelte |
-| **Database** | Supabase Postgres (`@supabase/ssr` + service role on the server) |
-| **Auth** | Custom sessions (@oslojs/crypto) + Argon2id password hashing |
-| **OAuth** | Arctic (Google + GitHub) -- optional, environment-driven |
-| **Charts** | LayerChart v2 (D3-based) |
-| **Testing** | Vitest (unit) + Playwright (E2E) |
-| **Linting** | ESLint 9 + Prettier |
+| Layer         | Technology                                                       |
+| ------------- | ---------------------------------------------------------------- |
+| **Framework** | SvelteKit 2.50 + Svelte 5 (runes API)                            |
+| **Styling**   | Tailwind CSS 4 + shadcn-svelte                                   |
+| **Database**  | Supabase Postgres (`@supabase/ssr` + service role on the server) |
+| **Auth**      | Custom sessions (@oslojs/crypto) + Argon2id password hashing     |
+| **OAuth**     | Arctic (Google + GitHub) -- optional, environment-driven         |
+| **Charts**    | LayerChart v2 (D3-based)                                         |
+| **Testing**   | Vitest (unit) + Playwright (E2E)                                 |
+| **Linting**   | ESLint 9 + Prettier                                              |
 
 ---
 
@@ -145,11 +145,11 @@ Product requirements, handoff notes, and module drafts are under [`docs/`](docs/
 
 Three built-in roles with different permission levels:
 
-| Role | Capabilities |
-| --- | --- |
-| **Admin** | Full access -- manage users, change roles, delete accounts, access all settings |
-| **Editor** | Create and manage content, view analytics and notifications |
-| **Viewer** | Read-only access to dashboard and content |
+| Role       | Capabilities                                                                    |
+| ---------- | ------------------------------------------------------------------------------- |
+| **Admin**  | Full access -- manage users, change roles, delete accounts, access all settings |
+| **Editor** | Create and manage content, view analytics and notifications                     |
+| **Viewer** | Read-only access to dashboard and content                                       |
 
 - First registered user automatically gets the `admin` role.
 - Admins can promote/demote users between roles.
@@ -388,15 +388,15 @@ src/
 
 ## Database Schema
 
-| Table | Description |
-| --- | --- |
-| `users` | User accounts (id, email, username, password hash, name, avatar, role) |
-| `sessions` | Active sessions (hashed token ID, user agent, IP, expiry) |
-| `pages` | CMS content (title, slug, content, template, status, author) |
-| `notifications` | In-app notifications (title, message, type, read status) |
-| `password_reset_tokens` | Time-limited password reset tokens (hashed) |
-| `oauth_accounts` | OAuth provider links (Google, GitHub to user mapping) |
-| `app_settings` | Key-value application settings |
+| Table                   | Description                                                            |
+| ----------------------- | ---------------------------------------------------------------------- |
+| `users`                 | User accounts (id, email, username, password hash, name, avatar, role) |
+| `sessions`              | Active sessions (hashed token ID, user agent, IP, expiry)              |
+| `pages`                 | CMS content (title, slug, content, template, status, author)           |
+| `notifications`         | In-app notifications (title, message, type, read status)               |
+| `password_reset_tokens` | Time-limited password reset tokens (hashed)                            |
+| `oauth_accounts`        | OAuth provider links (Google, GitHub to user mapping)                  |
+| `app_settings`          | Key-value application settings                                         |
 
 ---
 

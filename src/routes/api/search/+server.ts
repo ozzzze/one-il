@@ -19,27 +19,32 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 	const canSearchUsers = hasPermission(locals.user.role, "users:manage");
 	const canSearchEmployees = hasPermission(locals.user.role, "employees:manage");
 	const canSearchPages = hasPermission(locals.user.role, "content:view");
-	const [userResultsRes, employeeResultsRes, pageResultsRes, notificationResultsRes] = await Promise.all([
-		canSearchUsers
-			? admin.from("users").select("id,name,email").or(`name.ilike.%${q}%,email.ilike.%${q}%`).limit(5)
-			: Promise.resolve({ data: [] }),
-		canSearchEmployees
-			? admin
-					.from("employees")
-					.select("id,first_name,last_name,email,employee_no")
-					.or(`first_name.ilike.%${q}%,last_name.ilike.%${q}%,employee_no.ilike.%${q}%`)
-					.limit(5)
-			: Promise.resolve({ data: [] }),
-		canSearchPages
-			? admin.from("pages").select("id,title,slug").ilike("title", `%${q}%`).limit(5)
-			: Promise.resolve({ data: [] }),
-		admin
-			.from("notifications")
-			.select("id,title,message")
-			.ilike("title", `%${q}%`)
-			.or(`user_id.eq.${locals.user.id},user_id.is.null`)
-			.limit(5),
-	]);
+	const [userResultsRes, employeeResultsRes, pageResultsRes, notificationResultsRes] =
+		await Promise.all([
+			canSearchUsers
+				? admin
+						.from("users")
+						.select("id,name,email")
+						.or(`name.ilike.%${q}%,email.ilike.%${q}%`)
+						.limit(5)
+				: Promise.resolve({ data: [] }),
+			canSearchEmployees
+				? admin
+						.from("employees")
+						.select("id,first_name,last_name,email,employee_no")
+						.or(`first_name.ilike.%${q}%,last_name.ilike.%${q}%,employee_no.ilike.%${q}%`)
+						.limit(5)
+				: Promise.resolve({ data: [] }),
+			canSearchPages
+				? admin.from("pages").select("id,title,slug").ilike("title", `%${q}%`).limit(5)
+				: Promise.resolve({ data: [] }),
+			admin
+				.from("notifications")
+				.select("id,title,message")
+				.ilike("title", `%${q}%`)
+				.or(`user_id.eq.${locals.user.id},user_id.is.null`)
+				.limit(5),
+		]);
 	const userResults = userResultsRes.data ?? [];
 	const employeeResults = employeeResultsRes.data ?? [];
 	const pageResults = pageResultsRes.data ?? [];

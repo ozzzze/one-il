@@ -1,13 +1,13 @@
 # PK Nonthaburi — font license (ONE-IL)
 
-| Field | Value |
-| --- | --- |
-| Product | PK Nonthaburi |
-| License type | Education |
-| Issuer | Pocket Fonts |
-| Reference | ORD-2026-7552 |
-| Granted to | นพรัตน์ (Nopparat) |
-| Issued | 27 May 2026 (27/5/2569 BE) |
+| Field        | Value                      |
+| ------------ | -------------------------- |
+| Product      | PK Nonthaburi              |
+| License type | Education                  |
+| Issuer       | Pocket Fonts               |
+| Reference    | ORD-2026-7552              |
+| Granted to   | นพรัตน์ (Nopparat)         |
+| Issued       | 27 May 2026 (27/5/2569 BE) |
 
 ## Use in this repository
 

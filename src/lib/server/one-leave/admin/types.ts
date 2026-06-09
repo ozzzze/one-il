@@ -114,7 +114,7 @@ export const BUSINESS_ROLE_CODES: LeaveRoleCode[] = [
 export class AdminActionError extends Error {
 	constructor(
 		public readonly code: string,
-		message: string,
+		message: string
 	) {
 		super(message);
 		this.name = "AdminActionError";

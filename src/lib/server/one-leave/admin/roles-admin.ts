@@ -17,7 +17,10 @@ function assertValidRole(roleCode: string): asserts roleCode is LeaveRoleCode {
  */
 function assertCanModifyRole(actor: AdminActor, roleCode: LeaveRoleCode): void {
 	if (roleCode === "admin" && !actor.canGrantAdmin) {
-		throw new AdminActionError("forbidden_admin_grant", "You cannot grant or revoke the admin role");
+		throw new AdminActionError(
+			"forbidden_admin_grant",
+			"You cannot grant or revoke the admin role"
+		);
 	}
 }
 
@@ -29,7 +32,7 @@ function assertNotSelf(actor: AdminActor, targetUserId: number): void {
 
 async function countAdmins(client: PoolClient): Promise<number> {
 	const { rows } = await client.query<{ n: string }>(
-		`SELECT COUNT(*)::text AS n FROM one_leave.user_roles WHERE role_code = 'admin'`,
+		`SELECT COUNT(*)::text AS n FROM one_leave.user_roles WHERE role_code = 'admin'`
 	);
 	return Number(rows[0]?.n ?? 0);
 }
@@ -37,7 +40,7 @@ async function countAdmins(client: PoolClient): Promise<number> {
 export async function assignLeaveRole(
 	actor: AdminActor,
 	targetUserId: number,
-	roleCode: string,
+	roleCode: string
 ): Promise<void> {
 	assertValidRole(roleCode);
 	assertCanModifyRole(actor, roleCode);
@@ -48,7 +51,7 @@ export async function assignLeaveRole(
 			`INSERT INTO one_leave.user_roles (user_id, role_code)
 			 VALUES ($1, $2)
 			 ON CONFLICT (user_id, role_code) DO NOTHING`,
-			[targetUserId, roleCode],
+			[targetUserId, roleCode]
 		);
 		if (result.rowCount === 0) return; // already had the role; no-op, no audit noise
 		await writeAdminAudit(client, {
@@ -64,7 +67,7 @@ export async function assignLeaveRole(
 export async function revokeLeaveRole(
 	actor: AdminActor,
 	targetUserId: number,
-	roleCode: string,
+	roleCode: string
 ): Promise<void> {
 	assertValidRole(roleCode);
 	assertCanModifyRole(actor, roleCode);
@@ -77,7 +80,7 @@ export async function revokeLeaveRole(
 				`SELECT EXISTS(
 					SELECT 1 FROM one_leave.user_roles WHERE user_id = $1 AND role_code = 'admin'
 				) AS exists`,
-				[targetUserId],
+				[targetUserId]
 			);
 			if (has[0]?.exists && admins <= 1) {
 				throw new AdminActionError("last_admin", "Cannot revoke the last admin");
@@ -85,7 +88,7 @@ export async function revokeLeaveRole(
 		}
 		const result = await client.query(
 			`DELETE FROM one_leave.user_roles WHERE user_id = $1 AND role_code = $2`,
-			[targetUserId, roleCode],
+			[targetUserId, roleCode]
 		);
 		if (result.rowCount === 0) return;
 		await writeAdminAudit(client, {

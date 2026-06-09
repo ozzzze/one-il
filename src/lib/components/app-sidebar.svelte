@@ -86,9 +86,7 @@
 
 	function subItemActive(href: string | null, siblings: readonly NavMenuItem[]): boolean {
 		if (!href) return false;
-		const siblingHrefs = siblings
-			.map((s) => s.href)
-			.filter((h): h is string => h != null);
+		const siblingHrefs = siblings.map((s) => s.href).filter((h): h is string => h != null);
 		return isNavSubItemActive(page.url.pathname, href, siblingHrefs);
 	}
 
@@ -114,7 +112,9 @@
 	const ui = $derived(getUiLabels(locale));
 
 	function menuBadge(id: string) {
-		return id === "sys-notifications" && notificationCount > 0 ? String(notificationCount) : undefined;
+		return id === "sys-notifications" && notificationCount > 0
+			? String(notificationCount)
+			: undefined;
 	}
 
 	function lockHint(item: NavMenuItem): string {
@@ -145,7 +145,9 @@
 				<Icon class="size-4" />
 				<span class="flex min-w-0 flex-1 flex-col items-start gap-0.5 text-left">
 					<span>{item.label}</span>
-					<span class="text-muted-foreground max-w-full truncate text-[10px] font-normal leading-tight">
+					<span
+						class="text-muted-foreground max-w-full truncate text-[10px] leading-tight font-normal"
+					>
 						{lockHint(item)}
 					</span>
 				</span>
@@ -171,7 +173,7 @@
 						<span class="flex min-w-0 flex-1 flex-col items-start gap-0.5 text-start">
 							<span class="truncate">{menuChild.label}</span>
 							<span
-								class="text-muted-foreground max-w-24 truncate text-[10px] font-normal leading-tight"
+								class="text-muted-foreground max-w-24 truncate text-[10px] leading-tight font-normal"
 							>
 								{lockHint(menuChild)}
 							</span>
@@ -201,7 +203,7 @@
 				<ChevronDownIcon
 					class={cn(
 						"ml-auto size-4 shrink-0 transition-transform duration-200",
-						expanded ? "rotate-180" : "",
+						expanded ? "rotate-180" : ""
 					)}
 				/>
 			</Sidebar.MenuButton>
@@ -215,7 +217,9 @@
 				<BranchIcon class="size-4" />
 				<span class="flex min-w-0 flex-1 flex-col items-start gap-0.5 text-start">
 					<span class="truncate">{item.label}</span>
-					<span class="text-muted-foreground max-w-full truncate text-[10px] font-normal leading-tight">
+					<span
+						class="text-muted-foreground max-w-full truncate text-[10px] leading-tight font-normal"
+					>
 						{lockHint(item)}
 					</span>
 				</span>
@@ -251,7 +255,7 @@
 					<span class="flex min-w-0 flex-1 flex-col items-start gap-0.5 text-left">
 						<span>{menuChild.label}</span>
 						<span
-							class="text-muted-foreground max-w-full truncate text-[10px] font-normal leading-tight"
+							class="text-muted-foreground max-w-full truncate text-[10px] leading-tight font-normal"
 						>
 							{lockHint(menuChild)}
 						</span>
@@ -288,12 +292,12 @@
 	<Sidebar.Content>
 		{#each navMenuGroups as group (group.code)}
 			{@const orgMenuItem =
-				group.code === "office" ? group.items.find((i) => i.id === OFFICE_ORG_ID) ?? null : null}
+				group.code === "office" ? (group.items.find((i) => i.id === OFFICE_ORG_ID) ?? null) : null}
 			<Sidebar.Group>
 				<Sidebar.GroupLabel>{group.label}</Sidebar.GroupLabel>
 				<Sidebar.GroupContent>
 					<Sidebar.Menu>
-						{#each (group.code === "office" && orgMenuItem ? officeItemsWithoutMergedOrg(group.items) : group.items) as item (item.id)}
+						{#each group.code === "office" && orgMenuItem ? officeItemsWithoutMergedOrg(group.items) : group.items as item (item.id)}
 							{#if group.code === "office" && item.id === OFFICE_HR_ID && orgMenuItem}
 								{@const EmployeesIcon = menuIconFor(item.iconKey)}
 								{@const OrganizationIcon = menuIconFor(orgMenuItem.iconKey)}
@@ -311,7 +315,7 @@
 											<ChevronDownIcon
 												class={cn(
 													"ml-auto size-4 shrink-0 transition-transform duration-200",
-													sidebarMenuExpand.hrHubExpanded ? "rotate-180" : "",
+													sidebarMenuExpand.hrHubExpanded ? "rotate-180" : ""
 												)}
 											/>
 										</Sidebar.MenuButton>
@@ -326,7 +330,7 @@
 											<span class="flex min-w-0 flex-1 flex-col items-start gap-0.5 text-start">
 												<span class="truncate">{menuItemLabels.employees}</span>
 												<span
-													class="text-muted-foreground max-w-full truncate text-[10px] font-normal leading-tight"
+													class="text-muted-foreground max-w-full truncate text-[10px] leading-tight font-normal"
 												>
 													{lockHint(item)}
 												</span>
@@ -337,58 +341,62 @@
 										data-testid="sidebar-hr-submenu"
 										class={cn(!sidebarMenuExpand.hrHubExpanded && "hidden")}
 									>
-											<Sidebar.MenuSubItem>
-												{#if item.accessible && item.href}
-													<Sidebar.MenuSubButton
-														href={resolve(item.href as "/")}
-														isActive={isEmployeesPath(page.url.pathname)}
-														size="sm"
-													>
-														{ui.employeeFallback}
-													</Sidebar.MenuSubButton>
-												{:else}
-													<Sidebar.MenuSubButton size="sm">
-														{#snippet child({ props })}
-															<button type="button" disabled {...props}>
-																<span class="flex min-w-0 flex-1 flex-col items-start gap-0.5 text-start">
-																	<span class="truncate">{ui.employeeFallback}</span>
-																	<span
-																		class="text-muted-foreground max-w-24 truncate text-[10px] font-normal leading-tight"
-																	>
-																		{lockHint(item)}
-																	</span>
+										<Sidebar.MenuSubItem>
+											{#if item.accessible && item.href}
+												<Sidebar.MenuSubButton
+													href={resolve(item.href as "/")}
+													isActive={isEmployeesPath(page.url.pathname)}
+													size="sm"
+												>
+													{ui.employeeFallback}
+												</Sidebar.MenuSubButton>
+											{:else}
+												<Sidebar.MenuSubButton size="sm">
+													{#snippet child({ props })}
+														<button type="button" disabled {...props}>
+															<span
+																class="flex min-w-0 flex-1 flex-col items-start gap-0.5 text-start"
+															>
+																<span class="truncate">{ui.employeeFallback}</span>
+																<span
+																	class="text-muted-foreground max-w-24 truncate text-[10px] leading-tight font-normal"
+																>
+																	{lockHint(item)}
 																</span>
-															</button>
-														{/snippet}
-													</Sidebar.MenuSubButton>
-												{/if}
-											</Sidebar.MenuSubItem>
-											<Sidebar.MenuSubItem>
-												{#if orgMenuItem.accessible && orgMenuItem.href}
-													<Sidebar.MenuSubButton
-														href={resolve(orgMenuItem.href as "/")}
-														isActive={isOrgPath(page.url.pathname)}
-														size="sm"
-													>
-														{menuItemLabels.organization}
-													</Sidebar.MenuSubButton>
-												{:else}
-													<Sidebar.MenuSubButton size="sm">
-														{#snippet child({ props })}
-															<button type="button" disabled {...props}>
-																<span class="flex min-w-0 flex-1 flex-col items-start gap-0.5 text-start">
-																	<span class="truncate">{menuItemLabels.organization}</span>
-																	<span
-																		class="text-muted-foreground max-w-24 truncate text-[10px] font-normal leading-tight"
-																	>
-																		{lockHint(orgMenuItem)}
-																	</span>
+															</span>
+														</button>
+													{/snippet}
+												</Sidebar.MenuSubButton>
+											{/if}
+										</Sidebar.MenuSubItem>
+										<Sidebar.MenuSubItem>
+											{#if orgMenuItem.accessible && orgMenuItem.href}
+												<Sidebar.MenuSubButton
+													href={resolve(orgMenuItem.href as "/")}
+													isActive={isOrgPath(page.url.pathname)}
+													size="sm"
+												>
+													{menuItemLabels.organization}
+												</Sidebar.MenuSubButton>
+											{:else}
+												<Sidebar.MenuSubButton size="sm">
+													{#snippet child({ props })}
+														<button type="button" disabled {...props}>
+															<span
+																class="flex min-w-0 flex-1 flex-col items-start gap-0.5 text-start"
+															>
+																<span class="truncate">{menuItemLabels.organization}</span>
+																<span
+																	class="text-muted-foreground max-w-24 truncate text-[10px] leading-tight font-normal"
+																>
+																	{lockHint(orgMenuItem)}
 																</span>
-															</button>
-														{/snippet}
-													</Sidebar.MenuSubButton>
-												{/if}
-											</Sidebar.MenuSubItem>
+															</span>
+														</button>
+													{/snippet}
+												</Sidebar.MenuSubButton>
+											{/if}
+										</Sidebar.MenuSubItem>
 									</Sidebar.MenuSub>
 								</Sidebar.MenuItem>
 								<Sidebar.MenuItem class="hidden group-data-[collapsible=icon]:block">
@@ -430,7 +438,7 @@
 											<span class="flex min-w-0 flex-1 flex-col items-start gap-0.5 text-left">
 												<span>{menuItemLabels.organization}</span>
 												<span
-													class="text-muted-foreground max-w-full truncate text-[10px] font-normal leading-tight"
+													class="text-muted-foreground max-w-full truncate text-[10px] leading-tight font-normal"
 												>
 													{lockHint(orgMenuItem)}
 												</span>
@@ -495,7 +503,9 @@
 									<BellRingIcon class="mr-2 size-4" />
 									{ui.notifications}
 									{#if notificationCount > 0}
-										<Badge variant="secondary" class="ml-auto h-5 px-1.5 text-[10px]">{notificationCount}</Badge>
+										<Badge variant="secondary" class="ml-auto h-5 px-1.5 text-[10px]"
+											>{notificationCount}</Badge
+										>
 									{/if}
 								</a>
 							{/snippet}

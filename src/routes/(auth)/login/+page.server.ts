@@ -82,7 +82,7 @@ export const actions: Actions = {
 		const redirectTo = sanitizePostLoginRedirect(
 			typeof fromForm === "string" && fromForm.length > 0
 				? fromForm
-				: (url.searchParams.get("redirectTo") ?? "/"),
+				: (url.searchParams.get("redirectTo") ?? "/")
 		);
 
 		redirect(303, redirectTo.startsWith("/") ? redirectTo : "/");

@@ -29,7 +29,7 @@ export function getLeavePgPool(): pg.Pool {
 	}
 	if (url.includes("your-tenant-id")) {
 		console.error(
-			"[gateway pg] DATABASE_URL still uses placeholder your-tenant-id — set POOLER_TENANT_ID (VPS supabase/docker/.env) or postgres.<tenant> in the URL",
+			"[gateway pg] DATABASE_URL still uses placeholder your-tenant-id — set POOLER_TENANT_ID (VPS supabase/docker/.env) or postgres.<tenant> in the URL"
 		);
 	}
 	pool = new pg.Pool(
@@ -39,7 +39,7 @@ export function getLeavePgPool(): pg.Pool {
 			port: env.PG_PORT,
 			user: env.PG_USER,
 			password: env.SELF_HOSTED_DB_PASSWORD,
-		}),
+		})
 	);
 	pool.on("error", (err: Error) => {
 		console.error("[gateway pg pool]", err.message);
@@ -57,7 +57,7 @@ export async function withPgRetry<T>(fn: () => Promise<T>, attempts = 2): Promis
 			if (i + 1 >= attempts || !isTransientPgError(err)) throw err;
 			console.warn(
 				"[gateway pg] transient error, retrying",
-				err instanceof Error ? err.message : err,
+				err instanceof Error ? err.message : err
 			);
 		}
 	}
@@ -66,7 +66,7 @@ export async function withPgRetry<T>(fn: () => Promise<T>, attempts = 2): Promis
 
 export async function leaveQuery<R extends QueryResultRow>(
 	text: string,
-	params?: unknown[],
+	params?: unknown[]
 ): Promise<QueryResult<R>> {
 	return withPgRetry(() => getLeavePgPool().query<R>(text, params));
 }
@@ -77,7 +77,7 @@ export async function leaveQuery<R extends QueryResultRow>(
  * mutations (user + roles + audit) that must be atomic.
  */
 export async function withLeaveTransaction<T>(
-	fn: (client: pg.PoolClient) => Promise<T>,
+	fn: (client: pg.PoolClient) => Promise<T>
 ): Promise<T> {
 	const client = await getLeavePgPool().connect();
 	try {

@@ -1,19 +1,17 @@
 <script lang="ts">
-	import FormRequiredNote from '$lib/components/form-required-note.svelte';
-	import { Button } from '$lib/components/ui/button/index.js';
-	import { Input } from '$lib/components/ui/input/index.js';
-	import { Label } from '$lib/components/ui/label/index.js';
-	import {
-		CHANGE_CATEGORY_LABELS
-	} from '$lib/change-request/labels.js';
+	import FormRequiredNote from "$lib/components/form-required-note.svelte";
+	import { Button } from "$lib/components/ui/button/index.js";
+	import { Input } from "$lib/components/ui/input/index.js";
+	import { Label } from "$lib/components/ui/label/index.js";
+	import { CHANGE_CATEGORY_LABELS } from "$lib/change-request/labels.js";
 	import type {
 		ChangeCategory,
 		ChangeRequestDetail,
 		ExceptionTypeOption,
-		ItSystemOption
-	} from '$lib/server/one-leave/change-request/types.js';
-	import NotepadTextDashedIcon from '@lucide/svelte/icons/notepad-text-dashed';
-	import SaveIcon from '@lucide/svelte/icons/save';
+		ItSystemOption,
+	} from "$lib/server/one-leave/change-request/types.js";
+	import NotepadTextDashedIcon from "@lucide/svelte/icons/notepad-text-dashed";
+	import SaveIcon from "@lucide/svelte/icons/save";
 
 	interface Props {
 		itSystems: ItSystemOption[];
@@ -28,31 +26,31 @@
 	const defaultToday = toIsoDate(new Date());
 
 	function toDatetimeLocalValue(iso: string | null | undefined): string {
-		if (!iso) return '';
+		if (!iso) return "";
 		const d = new Date(iso);
 		if (Number.isNaN(d.getTime())) return iso.slice(0, 16);
-		const pad = (n: number) => String(n).padStart(2, '0');
+		const pad = (n: number) => String(n).padStart(2, "0");
 		return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 	}
 
-	let itSystemId = $state(record?.itSystemId ? String(record.itSystemId) : '');
-	let exceptionTypeId = $state(record?.exceptionTypeId ? String(record.exceptionTypeId) : '');
-	let changeCategory = $state<ChangeCategory | ''>(record?.changeCategory ?? '');
-	let title = $state(record?.title ?? '');
-	let description = $state(record?.description ?? '');
-	let businessJustification = $state(record?.businessJustification ?? '');
-	let riskAssessment = $state(record?.riskAssessment ?? '');
-	let compensatingControls = $state(record?.compensatingControls ?? '');
-	let impactDescription = $state(record?.impactDescription ?? '');
+	let itSystemId = $state(record?.itSystemId ? String(record.itSystemId) : "");
+	let exceptionTypeId = $state(record?.exceptionTypeId ? String(record.exceptionTypeId) : "");
+	let changeCategory = $state<ChangeCategory | "">(record?.changeCategory ?? "");
+	let title = $state(record?.title ?? "");
+	let description = $state(record?.description ?? "");
+	let businessJustification = $state(record?.businessJustification ?? "");
+	let riskAssessment = $state(record?.riskAssessment ?? "");
+	let compensatingControls = $state(record?.compensatingControls ?? "");
+	let impactDescription = $state(record?.impactDescription ?? "");
 	let exceptionStartDate = $state(record?.exceptionStartDate ?? defaultToday);
 	let exceptionEndDate = $state(record?.exceptionEndDate ?? defaultToday);
-	let rollbackPlan = $state(record?.rollbackPlan ?? '');
+	let rollbackPlan = $state(record?.rollbackPlan ?? "");
 	let plannedImplementationAt = $state(toDatetimeLocalValue(record?.plannedImplementationAt));
 
 	const categoryOptions = Object.entries(CHANGE_CATEGORY_LABELS) as [ChangeCategory, string][];
 </script>
 
-<div class="flex flex-col gap-4 rounded-xl border bg-card p-4 text-sm shadow-sm">
+<div class="bg-card flex flex-col gap-4 rounded-xl border p-4 text-sm shadow-sm">
 	<p class="text-muted-foreground text-xs font-medium">รายละเอียดคำขอเปลี่ยนแปลงระบบ</p>
 
 	<div class="grid gap-4 sm:grid-cols-2">
@@ -243,7 +241,7 @@
 					name="request_supporting"
 					type="file"
 					accept=".pdf,.png,.jpg,.jpeg,.webp"
-					class="text-sm file:mr-3 file:rounded-md file:border-0 file:bg-muted file:px-3 file:py-1.5 file:text-sm"
+					class="file:bg-muted text-sm file:mr-3 file:rounded-md file:border-0 file:px-3 file:py-1.5 file:text-sm"
 				/>
 			</div>
 		</div>

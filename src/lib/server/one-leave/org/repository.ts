@@ -1,4 +1,4 @@
-import { getDbPool } from '$lib/server/one-leave/db/pool.js';
+import { getDbPool } from "$lib/server/one-leave/db/pool.js";
 
 export async function getEmployeeById(id: number): Promise<{
 	id: number;
@@ -10,7 +10,7 @@ export async function getEmployeeById(id: number): Promise<{
 	affiliationOrgUnitName: string | null;
 } | null> {
 	const pool = await getDbPool();
-	const result = await pool.request().input('id', id).query<{
+	const result = await pool.request().input("id", id).query<{
 		id: string | number;
 		supervisor_employee_id: string | number | null;
 		title_th: string | null;
@@ -41,6 +41,6 @@ export async function getEmployeeById(id: number): Promise<{
 		firstNameTh: row.first_name_th,
 		lastNameTh: row.last_name_th,
 		orgUnitName: row.org_unit_name,
-		affiliationOrgUnitName: row.affiliation_org_unit_name
+		affiliationOrgUnitName: row.affiliation_org_unit_name,
 	};
 }

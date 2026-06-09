@@ -18,16 +18,16 @@
 
 **โค้ดหลัก**
 
-| ส่วน | path |
-|------|------|
-| Migration outbox | `supabase/migrations/20260518140000_notifications_outbox.sql` |
-| Enqueue | `src/lib/server/notifications/outbox.ts` |
-| SMTP config | `src/lib/server/notifications/smtp-config.ts` |
-| ส่งเมล | `src/lib/server/notifications/mailer.ts` + `process-outbox.ts` |
-| แจ้งหลังจอง | `src/lib/server/notifications/room-booking-submitted.ts` |
-| เรียกหลัง submit | `src/lib/server/faculty-requests.ts` → `notifyRoomBookingSubmitted()` |
-| เมนู room booking | migrations `20260518120000_*`, `20260518130000_*` |
-| หน้าคำขอของฉัน | `src/routes/(app)/room-booking/requests/` |
+| ส่วน              | path                                                                  |
+| ----------------- | --------------------------------------------------------------------- |
+| Migration outbox  | `supabase/migrations/20260518140000_notifications_outbox.sql`         |
+| Enqueue           | `src/lib/server/notifications/outbox.ts`                              |
+| SMTP config       | `src/lib/server/notifications/smtp-config.ts`                         |
+| ส่งเมล            | `src/lib/server/notifications/mailer.ts` + `process-outbox.ts`        |
+| แจ้งหลังจอง       | `src/lib/server/notifications/room-booking-submitted.ts`              |
+| เรียกหลัง submit  | `src/lib/server/faculty-requests.ts` → `notifyRoomBookingSubmitted()` |
+| เมนู room booking | migrations `20260518120000_*`, `20260518130000_*`                     |
+| หน้าคำขอของฉัน    | `src/routes/(app)/room-booking/requests/`                             |
 
 **สคริปต์ ops**
 
@@ -41,11 +41,11 @@ node scripts/apply-outbox-migration-pg.mjs   # apply migration ตรง Postgre
 
 ### Infrastructure ที่ใช้จริง (สำคัญ)
 
-| รายการ | ค่า |
-|--------|-----|
-| VPS Hostinger | `srv1663763.hstgr.cloud` / IP **`187.77.137.14`** |
-| Supabase API (self-hosted) | `http://187.77.137.14:8000` |
-| **ไม่ใช้** Supabase Cloud สำหรับ runtime แล้ว | โปรเจกต์ cloud `kcmcqadqsbrhuzekxxlp` แยก DB |
+| รายการ                                        | ค่า                                               |
+| --------------------------------------------- | ------------------------------------------------- |
+| VPS Hostinger                                 | `srv1663763.hstgr.cloud` / IP **`187.77.137.14`** |
+| Supabase API (self-hosted)                    | `http://187.77.137.14:8000`                       |
+| **ไม่ใช้** Supabase Cloud สำหรับ runtime แล้ว | โปรเจกต์ cloud `kcmcqadqsbrhuzekxxlp` แยก DB      |
 
 **`.env` สำหรับรันแอป (เพียงพอ — ไม่ต้องมี DATABASE_URL)**
 
@@ -74,13 +74,13 @@ SMTP_FROM=ONE-IL <il.websystem@gmail.com>
 
 ### สถานะทดสอบเมื่อ 2026-05-18 (ยังไม่จบ)
 
-| รายการ | ผล |
-|--------|-----|
-| `pnpm check` | ผ่าน |
-| โหลด approver email จาก DB | ผ่าน (เช่น `nopparat.jap@mahidol.ac.th`) |
-| ตาราง `notifications_outbox` บน **VPS API** | **ยังไม่มี** — PostgREST 404 (schema cache) |
-| Migration บน Supabase Cloud | apply แล้วผ่าน MCP แต่ **คนละ DB** กับ VPS |
-| Gmail SMTP `pnpm test:email` | **ล้มเหลว** `535 BadCredentials` — ต้องสร้าง App Password ใหม่ |
+| รายการ                                      | ผล                                                             |
+| ------------------------------------------- | -------------------------------------------------------------- |
+| `pnpm check`                                | ผ่าน                                                           |
+| โหลด approver email จาก DB                  | ผ่าน (เช่น `nopparat.jap@mahidol.ac.th`)                       |
+| ตาราง `notifications_outbox` บน **VPS API** | **ยังไม่มี** — PostgREST 404 (schema cache)                    |
+| Migration บน Supabase Cloud                 | apply แล้วผ่าน MCP แต่ **คนละ DB** กับ VPS                     |
+| Gmail SMTP `pnpm test:email`                | **ล้มเหลว** `535 BadCredentials` — ต้องสร้าง App Password ใหม่ |
 
 ---
 
@@ -161,14 +161,14 @@ App .env uses PUBLIC_SUPABASE_URL=http://187.77.137.14:8000 only (no DATABASE_UR
 
 ### โครงสร้างตารางหลัก (personnel)
 
-| ตาราง | หมายเหตุ |
-|-------|----------|
-| `org_units` | ผังหน่วยงาน tree |
-| `positions` | ตำแหน่ง + `role_level`, `can_command_staff`, `deputy_category` |
-| `employees` | ข้อมูลคน (+ `email`, `user_id`) |
-| `employee_assignments` | คน × ตำแหน่ง × หน่วย |
-| `employee_supervisors` | สาย `LINE` |
-| `programs`, `program_chairs` | หลักสูตร + ประธาน |
+| ตาราง                        | หมายเหตุ                                                       |
+| ---------------------------- | -------------------------------------------------------------- |
+| `org_units`                  | ผังหน่วยงาน tree                                               |
+| `positions`                  | ตำแหน่ง + `role_level`, `can_command_staff`, `deputy_category` |
+| `employees`                  | ข้อมูลคน (+ `email`, `user_id`)                                |
+| `employee_assignments`       | คน × ตำแหน่ง × หน่วย                                           |
+| `employee_supervisors`       | สาย `LINE`                                                     |
+| `programs`, `program_chairs` | หลักสูตร + ประธาน                                              |
 
 ### ขั้นถัดไป (personnel — ค้างจากรอบเก่า)
 

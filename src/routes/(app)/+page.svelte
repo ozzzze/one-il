@@ -39,7 +39,7 @@
 			(c) =>
 				c.label.toLowerCase().includes(q) ||
 				c.groupLabel.toLowerCase().includes(q) ||
-				c.keywords.some((k) => k.toLowerCase().includes(q)),
+				c.keywords.some((k) => k.toLowerCase().includes(q))
 		);
 	});
 
@@ -92,7 +92,9 @@
 	<section class="flex flex-col gap-3" aria-labelledby="nav-shortcuts-heading">
 		<div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
 			<div>
-				<h2 id="nav-shortcuts-heading" class="text-lg font-semibold">{copy.navShortcuts.sectionTitle}</h2>
+				<h2 id="nav-shortcuts-heading" class="text-lg font-semibold">
+					{copy.navShortcuts.sectionTitle}
+				</h2>
 				<p class="text-muted-foreground text-sm">
 					{shortcutIds.length > 0 ? copy.navShortcuts.yourShortcuts : copy.navShortcuts.allModules}
 				</p>
@@ -110,7 +112,9 @@
 						{showFullMenu ? copy.navShortcuts.showShortcutsOnly : copy.navShortcuts.showAllLink}
 					</Button>
 					<form method="POST" action="?/clearMenuShortcuts" use:enhance>
-						<Button type="submit" variant="ghost" size="sm">{copy.navShortcuts.clearShortcuts}</Button>
+						<Button type="submit" variant="ghost" size="sm"
+							>{copy.navShortcuts.clearShortcuts}</Button
+						>
 					</form>
 				{/if}
 			</div>
@@ -127,7 +131,11 @@
 		<div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
 			{#each filteredNavCards as card (card.id)}
 				{@const Icon = menuIconFor(card.iconKey)}
-				<Card.Root class={!card.accessible ? "border-muted bg-muted/30" : "transition-colors hover:bg-muted/40"}>
+				<Card.Root
+					class={!card.accessible
+						? "border-muted bg-muted/30"
+						: "hover:bg-muted/40 transition-colors"}
+				>
 					<Card.Header class="pb-2">
 						<div class="flex items-start gap-3">
 							<div class="bg-muted flex size-10 shrink-0 items-center justify-center rounded-lg">
@@ -159,12 +167,16 @@
 								{#if !isPinned(card.id)}
 									<form method="POST" action="?/addMenuShortcut" use:enhance>
 										<input type="hidden" name="menuItemId" value={card.id} />
-										<Button type="submit" variant="secondary" size="sm">{copy.navShortcuts.addShortcut}</Button>
+										<Button type="submit" variant="secondary" size="sm"
+											>{copy.navShortcuts.addShortcut}</Button
+										>
 									</form>
 								{:else}
 									<form method="POST" action="?/removeMenuShortcut" use:enhance>
 										<input type="hidden" name="menuItemId" value={card.id} />
-										<Button type="submit" variant="outline" size="sm">{copy.navShortcuts.removeShortcut}</Button>
+										<Button type="submit" variant="outline" size="sm"
+											>{copy.navShortcuts.removeShortcut}</Button
+										>
 									</form>
 								{/if}
 							{/if}

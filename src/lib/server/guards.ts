@@ -19,7 +19,10 @@ export function userHasPermission(user: SessionUser | null, permission: Permissi
 	return effectivePermissions(user).includes(permission);
 }
 
-export function assertPermission(user: SessionUser | null, permission: PermissionKey): asserts user is SessionUser {
+export function assertPermission(
+	user: SessionUser | null,
+	permission: PermissionKey
+): asserts user is SessionUser {
 	if (!user || !userHasPermission(user, permission)) {
 		error(403, "You do not have access to this resource");
 	}

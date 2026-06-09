@@ -32,7 +32,13 @@
 					submitted: "ส่งคำขอแล้ว",
 					withdrawn: "ถอนคำขอแล้ว",
 					reviewed: "บันทึกผลการตรวจสอบแล้ว",
-					fields: { name: "ชื่อ", email: "อีเมล", username: "ชื่อผู้ใช้", role: "บทบาท", other: "อื่น ๆ" },
+					fields: {
+						name: "ชื่อ",
+						email: "อีเมล",
+						username: "ชื่อผู้ใช้",
+						role: "บทบาท",
+						other: "อื่น ๆ",
+					},
 					status: { pending: "รอตรวจสอบ", approved: "อนุมัติ", rejected: "ปฏิเสธ" },
 				}
 			: {
@@ -56,9 +62,15 @@
 					submitted: "Request submitted",
 					withdrawn: "Request withdrawn",
 					reviewed: "Review saved",
-					fields: { name: "Name", email: "Email", username: "Username", role: "Role", other: "Other" },
+					fields: {
+						name: "Name",
+						email: "Email",
+						username: "Username",
+						role: "Role",
+						other: "Other",
+					},
 					status: { pending: "Pending", approved: "Approved", rejected: "Rejected" },
-				},
+				}
 	);
 
 	type FieldKey = "name" | "email" | "username" | "role" | "other";
@@ -66,7 +78,7 @@
 	const currentValue = $derived(
 		selectedField === "other"
 			? ""
-			: (data.currentValues[selectedField as keyof typeof data.currentValues] ?? ""),
+			: (data.currentValues[selectedField as keyof typeof data.currentValues] ?? "")
 	);
 
 	function statusVariant(status: string): "default" | "secondary" | "outline" | "destructive" {
@@ -160,7 +172,9 @@
 			{:else}
 				<div class="space-y-3">
 					{#each data.myRequests as req (req.id)}
-						<div class="border-border flex flex-col gap-2 rounded-lg border p-3 sm:flex-row sm:items-center sm:justify-between">
+						<div
+							class="border-border flex flex-col gap-2 rounded-lg border p-3 sm:flex-row sm:items-center sm:justify-between"
+						>
 							<div class="min-w-0 space-y-1">
 								<div class="flex flex-wrap items-center gap-2">
 									<span class="font-medium">{fieldLabel(req.field)}</span>
@@ -219,15 +233,28 @@
 										<p class="text-muted-foreground text-xs">{req.reason}</p>
 									{/if}
 								</div>
-								<form method="POST" action="?/review" use:enhance class="flex flex-col gap-2 sm:flex-row sm:items-end">
+								<form
+									method="POST"
+									action="?/review"
+									use:enhance
+									class="flex flex-col gap-2 sm:flex-row sm:items-end"
+								>
 									<input type="hidden" name="id" value={req.id} />
 									<div class="flex-1 space-y-1">
 										<Label for={`note-${req.id}`}>{t.note}</Label>
 										<Input id={`note-${req.id}`} name="review_note" />
 									</div>
 									<div class="flex gap-2">
-										<Button type="submit" name="decision" value="approved" size="sm">{t.approve}</Button>
-										<Button type="submit" name="decision" value="rejected" variant="destructive" size="sm">
+										<Button type="submit" name="decision" value="approved" size="sm"
+											>{t.approve}</Button
+										>
+										<Button
+											type="submit"
+											name="decision"
+											value="rejected"
+											variant="destructive"
+											size="sm"
+										>
 											{t.reject}
 										</Button>
 									</div>

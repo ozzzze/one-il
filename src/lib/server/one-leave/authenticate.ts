@@ -51,7 +51,7 @@ function toInt(value: string | number | null | undefined): number | null {
 async function loadRoles(userId: number): Promise<LeaveRoleCode[]> {
 	const { rows } = await leaveQuery<{ role_code: string }>(
 		`SELECT role_code FROM one_leave.user_roles WHERE user_id = $1`,
-		[userId],
+		[userId]
 	);
 	return rows.map((r) => r.role_code).filter(isLeaveRoleCode);
 }
@@ -94,14 +94,14 @@ async function loadUserByUsernames(usernames: string[]): Promise<UserRow | null>
 		WHERE LOWER(u.username) = ANY($1::text[]) AND u.is_active = true
 		LIMIT 1
 		`,
-		[lowered],
+		[lowered]
 	);
 	return rows[0] ?? null;
 }
 
 export async function authenticateLeaveUser(
 	username: string,
-	password: string,
+	password: string
 ): Promise<LeaveAuthUser | null> {
 	if (isLeaveAuthMockEnabled()) {
 		return authenticateLeaveMockUser(username, password);

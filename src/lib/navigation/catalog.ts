@@ -74,7 +74,10 @@ function asPermissionKeys(keys: readonly string[]): PermissionKey[] {
 }
 
 /** Items visible in catalog for this role (admin_only stripped for non-admin). */
-export function filterCatalogRowsForRole(role: Role, items: readonly RawMenuItemRow[]): RawMenuItemRow[] {
+export function filterCatalogRowsForRole(
+	role: Role,
+	items: readonly RawMenuItemRow[]
+): RawMenuItemRow[] {
 	const filtered = items.filter((row) => row.group_id !== "ol_leave");
 	if (role === "admin") return [...filtered];
 	return filtered.filter((row) => row.visibility !== "admin_only");
@@ -82,7 +85,7 @@ export function filterCatalogRowsForRole(role: Role, items: readonly RawMenuItem
 
 export function evaluateMenuItemAccess(
 	role: Role,
-	item: RawMenuItemRow,
+	item: RawMenuItemRow
 ): { accessible: boolean; lockReason: LockReason } {
 	if (item.implementation_status === "planned" || !item.href) {
 		return { accessible: false, lockReason: "planned" };
@@ -164,7 +167,7 @@ export function buildNavMenuGroups(
 	locale: Locale,
 	role: Role,
 	groups: readonly RawMenuGroupRow[],
-	items: readonly RawMenuItemRow[],
+	items: readonly RawMenuItemRow[]
 ): NavMenuGroup[] {
 	const visibleItems = filterCatalogRowsForRole(role, items);
 	const itemsByGroup = new Map<string, RawMenuItemRow[]>();
@@ -174,7 +177,9 @@ export function buildNavMenuGroups(
 		itemsByGroup.set(it.group_id, list);
 	}
 
-	const sortedGroups = [...groups].filter((g) => g.is_active && g.code !== "ol_leave").sort((a, b) => a.sort_order - b.sort_order);
+	const sortedGroups = [...groups]
+		.filter((g) => g.is_active && g.code !== "ol_leave")
+		.sort((a, b) => a.sort_order - b.sort_order);
 
 	const result: NavMenuGroup[] = [];
 	for (const g of sortedGroups) {
@@ -193,7 +198,7 @@ export function buildNavMenuGroups(
 export function buildCommandPaletteNav(
 	locale: Locale,
 	role: Role,
-	items: readonly RawMenuItemRow[],
+	items: readonly RawMenuItemRow[]
 ): CommandNavEntry[] {
 	const visible = filterCatalogRowsForRole(role, items);
 	const out: CommandNavEntry[] = [];
@@ -215,7 +220,11 @@ export function buildCommandPaletteNav(
 }
 
 /** Apps grid: one tile per href (first row wins by sort_order). */
-export function buildAppsMenuNav(locale: Locale, role: Role, items: readonly RawMenuItemRow[]): CommandNavEntry[] {
+export function buildAppsMenuNav(
+	locale: Locale,
+	role: Role,
+	items: readonly RawMenuItemRow[]
+): CommandNavEntry[] {
 	const command = buildCommandPaletteNav(locale, role, items);
 	const byHref = new Map<string, CommandNavEntry>();
 	for (const entry of command) {
@@ -230,11 +239,11 @@ export function buildHomeNavCards(
 	locale: Locale,
 	role: Role,
 	groups: readonly RawMenuGroupRow[],
-	items: readonly RawMenuItemRow[],
+	items: readonly RawMenuItemRow[]
 ): HomeNavCard[] {
 	const visible = filterCatalogRowsForRole(role, items);
 	const parentIdsWithChildren = new Set(
-		visible.map((row) => row.parent_id).filter((id): id is string => id !== null),
+		visible.map((row) => row.parent_id).filter((id): id is string => id !== null)
 	);
 	const groupMap = new Map(groups.map((g) => [g.code, g]));
 	const decorated = visible.map((row) => ({
@@ -265,7 +274,7 @@ export function buildHomeNavCards(
 
 export function orderHomeCardsByShortcuts(
 	cards: readonly HomeNavCard[],
-	shortcutIds: readonly string[],
+	shortcutIds: readonly string[]
 ): HomeNavCard[] {
 	if (shortcutIds.length === 0) return [...cards];
 	const map = new Map(cards.map((c) => [c.id, c]));

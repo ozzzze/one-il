@@ -1,8 +1,8 @@
-import type { AttachmentType, ChangeCategory, ScrStatus } from '$lib/change-request/types.js';
+import type { AttachmentType, ChangeCategory, ScrStatus } from "$lib/change-request/types.js";
 
 export type { AttachmentType, ChangeCategory, ScrStatus };
 
-export type ScrFormIntent = 'draft' | 'submit';
+export type ScrFormIntent = "draft" | "submit";
 
 export interface ItSystemOption {
 	id: number;

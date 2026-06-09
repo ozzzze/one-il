@@ -29,7 +29,7 @@ export type ProcessOutboxResult = {
  */
 export async function processPendingOutbox(
 	admin: AppSupabaseClient,
-	options?: { limit?: number },
+	options?: { limit?: number }
 ): Promise<ProcessOutboxResult> {
 	if (!isSmtpConfigured()) {
 		return { processed: 0, sent: 0, failed: 0, skipped: true };

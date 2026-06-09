@@ -12,7 +12,9 @@ export const actions = {
 	addMenuShortcut: async ({ request, locals }) => {
 		if (!locals.user) return fail(401, { message: "Unauthorized" });
 		const fd = await request.formData();
-		const parsed = z.object({ menuItemId: z.string().min(1) }).safeParse({ menuItemId: fd.get("menuItemId") });
+		const parsed = z
+			.object({ menuItemId: z.string().min(1) })
+			.safeParse({ menuItemId: fd.get("menuItemId") });
 		if (!parsed.success) return fail(400, { message: "Invalid request" });
 		const allowed = await userCanSeeMenuItem(locals.user, parsed.data.menuItemId);
 		if (!allowed) return fail(400, { message: "Invalid menu item" });
@@ -24,7 +26,9 @@ export const actions = {
 	removeMenuShortcut: async ({ request, locals }) => {
 		if (!locals.user) return fail(401, { message: "Unauthorized" });
 		const fd = await request.formData();
-		const parsed = z.object({ menuItemId: z.string().min(1) }).safeParse({ menuItemId: fd.get("menuItemId") });
+		const parsed = z
+			.object({ menuItemId: z.string().min(1) })
+			.safeParse({ menuItemId: fd.get("menuItemId") });
 		if (!parsed.success) return fail(400, { message: "Invalid request" });
 		const allowed = await userCanSeeMenuItem(locals.user, parsed.data.menuItemId);
 		if (!allowed) return fail(400, { message: "Invalid menu item" });

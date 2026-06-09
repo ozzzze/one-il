@@ -63,7 +63,7 @@ async function main() {
 				add(
 					"Pooler username in SELF_HOSTED_DATABASE_URL",
 					false,
-					`use postgres.${tenantId} not postgres (Supavisor on VPS)`,
+					`use postgres.${tenantId} not postgres (Supavisor on VPS)`
 				);
 			}
 		} catch {
@@ -75,21 +75,21 @@ async function main() {
 	add(
 		"SUPABASE_SERVICE_ROLE_KEY",
 		Boolean(serviceKey),
-		serviceKey ? maskSecret(serviceKey) : "missing",
+		serviceKey ? maskSecret(serviceKey) : "missing"
 	);
 	add(
 		"SMTP_USER + SMTP_PASS",
 		Boolean(smtpUser && smtpPass),
 		smtpUser && smtpPass
 			? `${smtpUser} / ${maskSecret(smtpPass)}`
-			: "missing — add Gmail App Password (16 chars, no spaces)",
+			: "missing — add Gmail App Password (16 chars, no spaces)"
 	);
 	add(
 		"DATABASE_URL or SELF_HOSTED_DB_PASSWORD",
 		Boolean(dbUrl),
 		dbUrl
 			? `can run pnpm db:apply:outbox (${dbUrl.replace(/:[^:@/]+@/, ":***@")})`
-			: "missing — Postgres password for migration only (app does not need it at runtime)",
+			: "missing — Postgres password for migration only (app does not need it at runtime)"
 	);
 
 	const host = url ? supabaseHostFromUrl(url) : null;
@@ -109,7 +109,7 @@ async function main() {
 			tableOk,
 			tableOk
 				? "table visible to API"
-				: probe.error?.message ?? "unknown error — run pnpm db:apply:outbox",
+				: (probe.error?.message ?? "unknown error — run pnpm db:apply:outbox")
 		);
 	}
 
@@ -117,13 +117,13 @@ async function main() {
 	console.log("\n--- Next steps ---");
 	if (!checks.find((c) => c.name.startsWith("SMTP"))?.ok) {
 		console.log(
-			"1) Google Account → Security → 2-Step Verification → App passwords → create for Mail.",
+			"1) Google Account → Security → 2-Step Verification → App passwords → create for Mail."
 		);
 		console.log("   Add SMTP_* to .env (see .env.example), then: pnpm test:email");
 	}
 	if (!checks.find((c) => c.name.startsWith("notifications_outbox"))?.ok) {
 		console.log(
-			"2) Add SELF_HOSTED_DB_PASSWORD (or SELF_HOSTED_DATABASE_URL) to .env, then: pnpm db:apply:outbox",
+			"2) Add SELF_HOSTED_DB_PASSWORD (or SELF_HOSTED_DATABASE_URL) to .env, then: pnpm db:apply:outbox"
 		);
 		console.log("   Or SSH to VPS, run migration SQL + NOTIFY pgrst, 'reload schema';");
 	}

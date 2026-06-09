@@ -72,9 +72,7 @@
 	const filtered = $derived(
 		data.users.filter((u) => {
 			const q = search.toLowerCase();
-			return (
-				u.username.toLowerCase().includes(q) || (u.fullName ?? "").toLowerCase().includes(q)
-			);
+			return u.username.toLowerCase().includes(q) || (u.fullName ?? "").toLowerCase().includes(q);
 		})
 	);
 
@@ -98,9 +96,11 @@
 		return avail[0] ?? "";
 	}
 
-	const refreshEnhance: SubmitFunction = () => async ({ update }) => {
-		await update({ reset: false, invalidateAll: true });
-	};
+	const refreshEnhance: SubmitFunction =
+		() =>
+		async ({ update }) => {
+			await update({ reset: false, invalidateAll: true });
+		};
 </script>
 
 <svelte:head>
@@ -114,11 +114,11 @@
 	</div>
 
 	<div class="relative max-w-sm">
-		<SearchIcon class="text-muted-foreground absolute left-3 top-1/2 size-4 -translate-y-1/2" />
+		<SearchIcon class="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
 		<Input placeholder={t.search} class="pl-9" bind:value={search} />
 	</div>
 
-	<div class="rounded-lg border bg-card shadow-sm overflow-hidden">
+	<div class="bg-card overflow-hidden rounded-lg border shadow-sm">
 		<Table.Root>
 			<Table.Header>
 				<Table.Row>
@@ -145,7 +145,12 @@
 									<span class="inline-flex items-center">
 										<Badge variant={role === "admin" ? "default" : "secondary"} class="gap-1">
 											{leaveRoleLabel(role, data.locale)}
-											<form method="POST" action="?/revoke" use:enhance={refreshEnhance} class="inline">
+											<form
+												method="POST"
+												action="?/revoke"
+												use:enhance={refreshEnhance}
+												class="inline"
+											>
 												<input type="hidden" name="userId" value={u.id} />
 												<input type="hidden" name="roleCode" value={role} />
 												<button
@@ -179,7 +184,12 @@
 										onValueChange={(v) => (addPick[u.id] = v)}
 									>
 										<Select.Trigger class="w-50">
-											<span>{leaveRoleLabel(pickValue(u.id, u.roles) as LeaveRoleCode, data.locale)}</span>
+											<span
+												>{leaveRoleLabel(
+													pickValue(u.id, u.roles) as LeaveRoleCode,
+													data.locale
+												)}</span
+											>
 										</Select.Trigger>
 										<Select.Content>
 											{#each avail as role (role)}

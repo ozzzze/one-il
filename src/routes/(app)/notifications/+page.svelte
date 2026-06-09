@@ -113,7 +113,9 @@
 	</div>
 
 	{#if data.notifications.length === 0}
-		<div class="bg-muted/50 flex h-75 flex-col items-center justify-center gap-3 rounded-lg border border-dashed">
+		<div
+			class="bg-muted/50 flex h-75 flex-col items-center justify-center gap-3 rounded-lg border border-dashed"
+		>
 			<BellIcon class="text-muted-foreground size-10" />
 			<p class="text-muted-foreground text-sm">{copy.noneYet}</p>
 		</div>
@@ -129,7 +131,7 @@
 						<div class="flex-1 space-y-1">
 							<div class="flex items-start justify-between gap-2">
 								<div>
-									<p class="text-sm font-medium leading-none">
+									<p class="text-sm leading-none font-medium">
 										{notification.title}
 										{#if !notification.read}
 											<Badge variant="default" class="ml-2 text-[10px]">{copy.new}</Badge>
@@ -137,21 +139,35 @@
 									</p>
 									<p class="text-muted-foreground mt-1 text-sm">{notification.message}</p>
 								</div>
-								<span class="text-muted-foreground shrink-0 text-xs">{formatDate(notification.created_at)}</span>
+								<span class="text-muted-foreground shrink-0 text-xs"
+									>{formatDate(notification.created_at)}</span
+								>
 							</div>
 						</div>
 						<div class="flex shrink-0 gap-1">
 							{#if !notification.read}
 								<form method="POST" action="?/markRead" use:enhance>
 									<input type="hidden" name="id" value={notification.id} />
-									<Button variant="ghost" size="icon" class="size-8" type="submit" title={copy.markAsRead}>
+									<Button
+										variant="ghost"
+										size="icon"
+										class="size-8"
+										type="submit"
+										title={copy.markAsRead}
+									>
 										<CheckIcon class="size-4" />
 									</Button>
 								</form>
 							{/if}
 							<form method="POST" action="?/delete" use:enhance>
 								<input type="hidden" name="id" value={notification.id} />
-								<Button variant="ghost" size="icon" class="text-destructive size-8" type="submit" title={copy.delete}>
+								<Button
+									variant="ghost"
+									size="icon"
+									class="text-destructive size-8"
+									type="submit"
+									title={copy.delete}
+								>
 									<TrashIcon class="size-4" />
 								</Button>
 							</form>

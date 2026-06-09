@@ -25,8 +25,7 @@ export function getSmtpConfig(): SmtpConfig | null {
 	const host = env.SMTP_HOST?.trim() || "smtp.gmail.com";
 	const port = Number(env.SMTP_PORT ?? "587");
 	const secure = env.SMTP_SECURE === "true" || port === 465;
-	const from =
-		env.SMTP_FROM?.trim() || `ONE-IL <${user}>`;
+	const from = env.SMTP_FROM?.trim() || `ONE-IL <${user}>`;
 	const replyTo = env.SMTP_REPLY_TO?.trim();
 
 	return {

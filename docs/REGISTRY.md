@@ -9,13 +9,13 @@
 
 ## ระบบทั้งหมด
 
-| ระบบ | slug / base path | repo | สถานะ | Owner | PRD | หมายเหตุ |
-|------|------------------|------|-------|-------|-----|----------|
-| **Gateway / Portal** | `/` | `one-il` | Dev | — | [PRD.md](./PRD.md) | identity hub + launcher + RBAC catalog กลาง |
-| **One-Leave** | `/leave` | `one-leave` | Dev | — | — | ระบบลา + บุคลากร; เป็น identity core (`one_leave.*`) + reference สำหรับลอกโครง |
-| **One-Support** (IT Service Management) | `/support` | `one-support` *(ยังไม่ init)* | Bootstrap | — | — | Stage 0: สร้าง UI shell (copy จาก one-il) ก่อนเขียน PRD — ดู [§0.5](./SYSTEM-BLUEPRINT.md#05-stage-0-bootstrap--ui-shell-ก่อน-prd) |
+| ระบบ                                    | slug / base path | repo                          | สถานะ     | Owner | PRD                | หมายเหตุ                                                                                                                           |
+| --------------------------------------- | ---------------- | ----------------------------- | --------- | ----- | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
+| **Gateway / Portal**                    | `/`              | `one-il`                      | Dev       | —     | [PRD.md](./PRD.md) | identity hub + launcher + RBAC catalog กลาง                                                                                        |
+| **One-Leave**                           | `/leave`         | `one-leave`                   | Dev       | —     | —                  | ระบบลา + บุคลากร; เป็น identity core (`one_leave.*`) + reference สำหรับลอกโครง                                                     |
+| **One-Support** (IT Service Management) | `/support`       | `one-support` _(ยังไม่ init)_ | Bootstrap | —     | —                  | Stage 0: สร้าง UI shell (copy จาก one-il) ก่อนเขียน PRD — ดู [§0.5](./SYSTEM-BLUEPRINT.md#05-stage-0-bootstrap--ui-shell-ก่อน-prd) |
 
-> ⚠️ ช่องที่มี *(ยืนยัน/เสนอ)* คือค่าที่ยังต้องตรวจสอบกับเจ้าของจริง — แก้ให้ตรงเมื่อยืนยันแล้ว
+> ⚠️ ช่องที่มี _(ยืนยัน/เสนอ)_ คือค่าที่ยังต้องตรวจสอบกับเจ้าของจริง — แก้ให้ตรงเมื่อยืนยันแล้ว
 
 ---
 
@@ -29,11 +29,11 @@
 
 ## ความหมายสถานะ
 
-| สถานะ | แปลว่า |
-|-------|--------|
-| `Bootstrap` | Stage 0: กำลังสร้าง UI shell ก่อนเขียน PRD (ดู [SYSTEM-BLUEPRINT.md §0.5](./SYSTEM-BLUEPRINT.md)) |
-| `Plan` | กำลังเขียน/รอ PRD |
-| `Rule` | PRD เสร็จ กำลังตรวจ Platform Contract |
-| `Accepted` ✅ | ผ่าน design review — อนุมัติให้ develop ได้ |
-| `Dev` | กำลังพัฒนา (ลอกโครงตาม BLUEPRINT.md) |
-| `Live` | ใช้งานจริงบน production |
+| สถานะ         | แปลว่า                                                                                            |
+| ------------- | ------------------------------------------------------------------------------------------------- |
+| `Bootstrap`   | Stage 0: กำลังสร้าง UI shell ก่อนเขียน PRD (ดู [SYSTEM-BLUEPRINT.md §0.5](./SYSTEM-BLUEPRINT.md)) |
+| `Plan`        | กำลังเขียน/รอ PRD                                                                                 |
+| `Rule`        | PRD เสร็จ กำลังตรวจ Platform Contract                                                             |
+| `Accepted` ✅ | ผ่าน design review — อนุมัติให้ develop ได้                                                       |
+| `Dev`         | กำลังพัฒนา (ลอกโครงตาม BLUEPRINT.md)                                                              |
+| `Live`        | ใช้งานจริงบน production                                                                           |

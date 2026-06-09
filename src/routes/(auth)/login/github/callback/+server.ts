@@ -5,6 +5,9 @@ import type { RequestHandler } from "./$types.js";
 export const GET: RequestHandler = async () => {
 	redirect(
 		302,
-		"/login?notice=" + encodeURIComponent("GitHub/Google OAuth ผ่าน template นี้ปิดไว้ — ตั้งค่าที่ Supabase Auth แทน")
+		"/login?notice=" +
+			encodeURIComponent(
+				"GitHub/Google OAuth ผ่าน template นี้ปิดไว้ — ตั้งค่าที่ Supabase Auth แทน"
+			)
 	);
 };

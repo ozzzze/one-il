@@ -20,19 +20,20 @@ export async function tryLoadMenuCatalogRows(): Promise<{
 	if (!isServiceRoleConfigured()) return null;
 	try {
 		const admin = getServiceRoleClient();
-		const [{ data: groups, error: groupsError }, { data: items, error: itemsError }] = await Promise.all([
-			admin
-				.from("menu_groups")
-				.select("code, label_th, label_en, sort_order, is_active")
-				.order("sort_order", { ascending: true }),
-			admin
-				.from("menu_items")
-				.select(
-					"id, group_id, parent_id, label_th, label_en, href, icon_key, keywords, required_permission_keys, visibility, implementation_status, sort_order",
-				)
-				.order("group_id", { ascending: true })
-				.order("sort_order", { ascending: true }),
-		]);
+		const [{ data: groups, error: groupsError }, { data: items, error: itemsError }] =
+			await Promise.all([
+				admin
+					.from("menu_groups")
+					.select("code, label_th, label_en, sort_order, is_active")
+					.order("sort_order", { ascending: true }),
+				admin
+					.from("menu_items")
+					.select(
+						"id, group_id, parent_id, label_th, label_en, href, icon_key, keywords, required_permission_keys, visibility, implementation_status, sort_order"
+					)
+					.order("group_id", { ascending: true })
+					.order("sort_order", { ascending: true }),
+			]);
 		if (groupsError || itemsError) {
 			console.warn("[menu catalog]", groupsError?.message ?? itemsError?.message);
 			return null;

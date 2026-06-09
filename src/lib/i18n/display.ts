@@ -10,7 +10,7 @@ import type { Locale } from "./locales.js";
 export function localizedDualField(
 	locale: Locale,
 	primaryTh: string,
-	secondaryEn: string | null | undefined,
+	secondaryEn: string | null | undefined
 ): string {
 	if (locale === "th") return primaryTh;
 	const en = secondaryEn?.trim();
@@ -20,7 +20,7 @@ export function localizedDualField(
 /** Rows shaped like HR lookup tables (`label_th` / `label_en`). */
 export function localizedLookupLabel(
 	locale: Locale,
-	row: { label_th: string; label_en?: string | null },
+	row: { label_th: string; label_en?: string | null }
 ): string {
 	return localizedDualField(locale, row.label_th, row.label_en ?? null);
 }

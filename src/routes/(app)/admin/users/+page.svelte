@@ -117,10 +117,7 @@
 	let createRoles = $state<LeaveRoleCode[]>([]);
 
 	const roleOptions = $derived(assignableLeaveRoles(data.canGrantAdmin));
-	const employeeOptions = $derived([
-		{ id: 0, label: t.none },
-		...data.employees,
-	]);
+	const employeeOptions = $derived([{ id: 0, label: t.none }, ...data.employees]);
 
 	const filtered = $derived(
 		data.users.filter((u) => {
@@ -138,8 +135,10 @@
 			if (a.isActive !== b.isActive) {
 				return a.isActive ? -1 : 1;
 			}
-			const aThai = /^[\u0e00-\u0e7f]/.test(a.username) || /^[\u0e00-\u0e7f]/.test(a.fullName ?? "");
-			const bThai = /^[\u0e00-\u0e7f]/.test(b.username) || /^[\u0e00-\u0e7f]/.test(b.fullName ?? "");
+			const aThai =
+				/^[\u0e00-\u0e7f]/.test(a.username) || /^[\u0e00-\u0e7f]/.test(a.fullName ?? "");
+			const bThai =
+				/^[\u0e00-\u0e7f]/.test(b.username) || /^[\u0e00-\u0e7f]/.test(b.fullName ?? "");
 			if (aThai !== bThai) {
 				return aThai ? -1 : 1;
 			}
@@ -185,10 +184,11 @@
 	const enhanceClose = (close: () => void) =>
 		pendingEnhance(
 			(v) => (savePending = v),
-			() => async ({ result, update }) => {
-				if (result.type === "success") close();
-				await update({ reset: false, invalidateAll: true });
-			}
+			() =>
+				async ({ result, update }) => {
+					if (result.type === "success") close();
+					await update({ reset: false, invalidateAll: true });
+				}
 		);
 </script>
 
@@ -209,11 +209,11 @@
 	</div>
 
 	<div class="relative max-w-sm">
-		<SearchIcon class="text-muted-foreground absolute left-3 top-1/2 size-4 -translate-y-1/2" />
+		<SearchIcon class="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
 		<Input placeholder={t.search} class="pl-9" bind:value={search} />
 	</div>
 
-	<div class="rounded-lg border bg-card shadow-sm overflow-hidden">
+	<div class="bg-card overflow-hidden rounded-lg border shadow-sm">
 		<Table.Root>
 			<Table.Header>
 				<Table.Row>
@@ -298,7 +298,13 @@
 				</div>
 				<div class="grid gap-2">
 					<Label for="c-password">{t.password}</Label>
-					<Input id="c-password" name="password" type="password" placeholder={t.passwordHint} required />
+					<Input
+						id="c-password"
+						name="password"
+						type="password"
+						placeholder={t.passwordHint}
+						required
+					/>
 				</div>
 				<div class="grid gap-2">
 					<Label>{t.linkEmployee}</Label>
@@ -382,12 +388,22 @@
 			<Dialog.Title>{t.resetTitle}</Dialog.Title>
 			<Dialog.Description>{t.resetDesc}</Dialog.Description>
 		</Dialog.Header>
-		<form method="POST" action="?/resetPassword" use:enhance={enhanceClose(() => (resetOpen = false))}>
+		<form
+			method="POST"
+			action="?/resetPassword"
+			use:enhance={enhanceClose(() => (resetOpen = false))}
+		>
 			<input type="hidden" name="id" value={resetId} />
 			<div class="grid gap-4 py-4">
 				<div class="grid gap-2">
 					<Label for="r-password">{t.newPassword}</Label>
-					<Input id="r-password" name="password" type="password" placeholder={t.passwordHint} required />
+					<Input
+						id="r-password"
+						name="password"
+						type="password"
+						placeholder={t.passwordHint}
+						required
+					/>
 				</div>
 			</div>
 			<Dialog.Footer>

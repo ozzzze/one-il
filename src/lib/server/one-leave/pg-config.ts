@@ -27,23 +27,17 @@ export type LeavePgPoolOptions = {
 /** Pool options aligned with scripts/lib/self-hosted-pg.mjs (Supavisor / Supabase). */
 export function buildLeavePgPoolConfig(
 	connectionString: string,
-	options: LeavePgPoolOptions = {},
+	options: LeavePgPoolOptions = {}
 ): PoolConfig {
 	const url = new URL(connectionString);
 	let user = options.user?.trim() || decodeURIComponent(url.username);
-	if (
-		!options.user &&
-		(user === "postgres" || user === `postgres.${DEFAULT_POOLER_TENANT}`)
-	) {
+	if (!options.user && (user === "postgres" || user === `postgres.${DEFAULT_POOLER_TENANT}`)) {
 		user = poolerUsername(options.tenantId);
 	}
-	const ssl = requiresSsl(connectionString, url.hostname)
-		? { rejectUnauthorized: false }
-		: false;
+	const ssl = requiresSsl(connectionString, url.hostname) ? { rejectUnauthorized: false } : false;
 
 	const password =
-		options.password?.trim() ||
-		(url.password ? decodeURIComponent(url.password) : "");
+		options.password?.trim() || (url.password ? decodeURIComponent(url.password) : "");
 
 	return {
 		host: options.host?.trim() || url.hostname,

@@ -14,25 +14,27 @@
 		userId: string;
 		userName: string;
 		currentRole: Role;
-	locale?: "en" | "th";
+		locale?: "en" | "th";
 	};
 
-let { open = $bindable(false), userId, userName, currentRole, locale = "en" }: Props = $props();
-const copy = $derived.by(() =>
-	locale === "th"
-		? {
-				title: "เปลี่ยนบทบาท",
-				description: (name: string, roleLabel: string) => `เปลี่ยนบทบาทของ ${name} บทบาทปัจจุบัน: ${roleLabel}`,
-				newRole: "บทบาทใหม่",
-				updateRole: "อัปเดตบทบาท",
-			}
-		: {
-				title: "Change Role",
-				description: (name: string, roleLabel: string) => `Change role for ${name}. Current role: ${roleLabel}.`,
-				newRole: "New Role",
-				updateRole: "Update Role",
-			}
-);
+	let { open = $bindable(false), userId, userName, currentRole, locale = "en" }: Props = $props();
+	const copy = $derived.by(() =>
+		locale === "th"
+			? {
+					title: "เปลี่ยนบทบาท",
+					description: (name: string, roleLabel: string) =>
+						`เปลี่ยนบทบาทของ ${name} บทบาทปัจจุบัน: ${roleLabel}`,
+					newRole: "บทบาทใหม่",
+					updateRole: "อัปเดตบทบาท",
+				}
+			: {
+					title: "Change Role",
+					description: (name: string, roleLabel: string) =>
+						`Change role for ${name}. Current role: ${roleLabel}.`,
+					newRole: "New Role",
+					updateRole: "Update Role",
+				}
+	);
 
 	const uiLabels = $derived(getUiLabels(locale));
 	let savePending = $state(false);
@@ -55,12 +57,16 @@ const copy = $derived.by(() =>
 		<form
 			method="POST"
 			action="?/changeRole"
-			use:enhance={pendingEnhance((v) => (savePending = v), () => async ({ result, update }) => {
-				if (result.type === "success" || result.type === "redirect") {
-					open = false;
-				}
-				await update();
-			})}
+			use:enhance={pendingEnhance(
+				(v) => (savePending = v),
+				() =>
+					async ({ result, update }) => {
+						if (result.type === "success" || result.type === "redirect") {
+							open = false;
+						}
+						await update();
+					}
+			)}
 		>
 			<input type="hidden" name="userId" value={userId} />
 			<div class="grid gap-4 py-4">

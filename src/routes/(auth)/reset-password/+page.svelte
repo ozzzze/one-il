@@ -47,7 +47,9 @@
 	<Card.Root class="w-full max-w-md">
 		<Card.Header class="space-y-1 text-center">
 			<div class="flex justify-center">
-				<div class="bg-primary text-primary-foreground flex size-12 items-center justify-center rounded-xl">
+				<div
+					class="bg-primary text-primary-foreground flex size-12 items-center justify-center rounded-xl"
+				>
 					<KeyRoundIcon class="size-6" />
 				</div>
 			</div>

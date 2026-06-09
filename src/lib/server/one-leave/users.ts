@@ -1,5 +1,9 @@
 import { leaveQuery } from "$lib/server/one-leave/pg.js";
-import { isLeaveRoleCode, type LeaveAuthUser, type LeaveRoleCode } from "$lib/server/one-leave/types.js";
+import {
+	isLeaveRoleCode,
+	type LeaveAuthUser,
+	type LeaveRoleCode,
+} from "$lib/server/one-leave/types.js";
 
 type UserRow = {
 	id: string | number;
@@ -21,7 +25,7 @@ function toInt(value: string | number | null | undefined): number | null {
 async function loadRoles(userId: number): Promise<LeaveRoleCode[]> {
 	const { rows } = await leaveQuery<{ role_code: string }>(
 		`SELECT role_code FROM one_leave.user_roles WHERE user_id = $1`,
-		[userId],
+		[userId]
 	);
 	return rows.map((r: { role_code: string }) => r.role_code).filter(isLeaveRoleCode);
 }
@@ -49,7 +53,7 @@ function rowToAuthUser(row: UserRow, roles: LeaveRoleCode[]): LeaveAuthUser {
 export async function getPasswordChangedAt(userId: number): Promise<number> {
 	const { rows } = await leaveQuery<{ password_changed_at: Date | null }>(
 		`SELECT password_changed_at FROM one_leave.users WHERE id = $1 AND is_active = true`,
-		[userId],
+		[userId]
 	);
 	const row = rows[0];
 	if (!row?.password_changed_at) return 0;
@@ -72,7 +76,7 @@ export async function getLeaveUserById(userId: number): Promise<LeaveAuthUser | 
 		LEFT JOIN one_leave.employees AS e ON e.id = u.employee_id
 		WHERE u.id = $1 AND u.is_active = true
 		`,
-		[userId],
+		[userId]
 	);
 	const row = rows[0];
 	if (!row) return null;

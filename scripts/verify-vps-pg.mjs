@@ -59,7 +59,7 @@ try {
 	const users = await pool.query(
 		`SELECT id, username, is_active FROM one_leave.users
 		 WHERE lower(username) = ANY($1::text[])`,
-		[["nopparat.jap@mahidol.ac.th", "nopparat.jap@mahidol.edu"]],
+		[["nopparat.jap@mahidol.ac.th", "nopparat.jap@mahidol.edu"]]
 	);
 	console.log("\n✓ Connected");
 	console.log("nopparat rows:", users.rows);
@@ -67,13 +67,14 @@ try {
 		console.warn("User nopparat.jap@mahidol.ac.th not found in one_leave.users");
 	}
 	const roles = users.rows[0]
-		? await pool.query(
-				`SELECT role_code FROM one_leave.user_roles WHERE user_id = $1`,
-				[users.rows[0].id],
-			)
+		? await pool.query(`SELECT role_code FROM one_leave.user_roles WHERE user_id = $1`, [
+				users.rows[0].id,
+			])
 		: { rows: [] };
 	if (roles.rows.length) console.log("roles:", roles.rows.map((r) => r.role_code).join(", "));
-	console.log("\nNext: set AUTH_MOCK=false in .env, restart pnpm dev, login with your real password.");
+	console.log(
+		"\nNext: set AUTH_MOCK=false in .env, restart pnpm dev, login with your real password."
+	);
 	process.exitCode = users.rows.length ? 0 : 2;
 } catch (err) {
 	const msg = err instanceof Error ? err.message : String(err);

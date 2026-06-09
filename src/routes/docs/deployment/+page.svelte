@@ -17,15 +17,26 @@
 	<h2>Requirements</h2>
 	<ul>
 		<li><strong>Node.js runtime</strong> ที่รัน SvelteKit server ได้</li>
-		<li><strong>Supabase Project</strong> ที่สร้างตารางของแอปแล้ว (ดู <code>scratch/supabase_schema.sql</code>)</li>
-		<li><strong>Secrets/Env</strong>: <code>PUBLIC_SUPABASE_URL</code>, <code>PUBLIC_SUPABASE_PUBLISHABLE_KEY</code>, <code>SUPABASE_SERVICE_ROLE_KEY</code>, <code>ORIGIN</code></li>
+		<li>
+			<strong>Supabase Project</strong> ที่สร้างตารางของแอปแล้ว (ดู
+			<code>scratch/supabase_schema.sql</code>)
+		</li>
+		<li>
+			<strong>Secrets/Env</strong>: <code>PUBLIC_SUPABASE_URL</code>,
+			<code>PUBLIC_SUPABASE_PUBLISHABLE_KEY</code>, <code>SUPABASE_SERVICE_ROLE_KEY</code>,
+			<code>ORIGIN</code>
+		</li>
 	</ul>
 
 	<h2>Docker</h2>
-	<pre><code class="language-bash">docker build -t one-il .
-docker run -p 3000:3000 --env-file .env one-il</code></pre>
+	<pre><code class="language-bash"
+			>docker build -t one-il .
+docker run -p 3000:3000 --env-file .env one-il</code
+		></pre>
 
 	<p>
-		แนะนำให้จัดการ secrets ผ่าน orchestrator (Render/Fly/Railway/Kubernetes) แทนการ commit ไฟล์ <code>.env</code>.
+		แนะนำให้จัดการ secrets ผ่าน orchestrator (Render/Fly/Railway/Kubernetes) แทนการ commit ไฟล์ <code
+			>.env</code
+		>.
 	</p>
 </div>

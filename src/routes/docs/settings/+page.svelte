@@ -7,7 +7,9 @@
 	<h1>Settings</h1>
 
 	<p class="lead">
-		Settings แยกเป็น 2 ส่วน: โปรไฟล์ผู้ใช้ (<code>public.users</code>) และค่าระบบ (<code>public.app_settings</code>) บน Supabase.
+		Settings แยกเป็น 2 ส่วน: โปรไฟล์ผู้ใช้ (<code>public.users</code>) และค่าระบบ (<code
+			>public.app_settings</code
+		>) บน Supabase.
 	</p>
 
 	<h2>Implementation</h2>

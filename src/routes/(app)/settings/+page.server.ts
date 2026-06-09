@@ -77,7 +77,13 @@ export const load: PageServerLoad = async ({ locals }) => {
 		profile,
 		settings,
 		isAdmin: hasPermission(user.role, "settings:manage"),
-		sessions: [] as { id: string; userAgent: string | null; ipAddress: string | null; createdAt: Date | null; expiresAt: number }[],
+		sessions: [] as {
+			id: string;
+			userAgent: string | null;
+			ipAddress: string | null;
+			createdAt: Date | null;
+			expiresAt: number;
+		}[],
 		currentSessionId: "",
 		notificationPrefs: notifPrefs,
 	};
@@ -189,7 +195,8 @@ export const actions: Actions = {
 
 	updateSettings: async ({ request, locals }) => {
 		const admin = getServiceRoleClient();
-		const adminError = locals.locale === "th" ? "ต้องใช้สิทธิ์ผู้ดูแลระบบ" : "Admin access required";
+		const adminError =
+			locals.locale === "th" ? "ต้องใช้สิทธิ์ผู้ดูแลระบบ" : "Admin access required";
 		if (!hasPermission(locals.user!.role, "settings:manage")) {
 			return fail(403, { message: adminError });
 		}
@@ -208,10 +215,9 @@ export const actions: Actions = {
 		];
 
 		for (const [key, value] of entries) {
-			await admin.from("app_settings").upsert(
-				{ key, value, updated_at: new Date().toISOString() },
-				{ onConflict: "key" }
-			);
+			await admin
+				.from("app_settings")
+				.upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: "key" });
 		}
 
 		return { success: true, action: "settings" };
@@ -246,10 +252,12 @@ export const actions: Actions = {
 			const value = formData.get(key) === "on" ? "true" : "false";
 			const settingKey = `${userId}:${key}`;
 
-			await admin.from("app_settings").upsert(
-				{ key: settingKey, value, updated_at: new Date().toISOString() },
-				{ onConflict: "key" }
-			);
+			await admin
+				.from("app_settings")
+				.upsert(
+					{ key: settingKey, value, updated_at: new Date().toISOString() },
+					{ onConflict: "key" }
+				);
 		}
 
 		return { success: true, action: "notifications" };

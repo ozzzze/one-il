@@ -1,5 +1,5 @@
-import { PgTransaction, PgConnectionPool, PgRequest } from '$lib/server/one-leave/db/pool.js';
-import sql from '$lib/server/one-leave/db/pool.js';
+import { PgTransaction, PgConnectionPool, PgRequest } from "$lib/server/one-leave/db/pool.js";
+import sql from "$lib/server/one-leave/db/pool.js";
 
 export function toSqlDateTime(value: string | null | undefined): Date | null {
 	if (!value) return null;
@@ -17,20 +17,21 @@ export async function rollbackTransaction(transaction: PgTransaction): Promise<v
 }
 
 export function formatDbError(err: unknown): string {
-	if (!(err instanceof Error)) return 'บันทึกไม่สำเร็จ';
+	if (!(err instanceof Error)) return "บันทึกไม่สำเร็จ";
 
 	const reqErr = err as Error & { precedingErrors?: Array<{ message?: string }> };
-	const root = reqErr.precedingErrors?.find((e: { message?: string }) => e.message && !e.message.includes('Transaction has been aborted'))
-		?.message;
+	const root = reqErr.precedingErrors?.find(
+		(e: { message?: string }) => e.message && !e.message.includes("Transaction has been aborted")
+	)?.message;
 
 	if (root) return root;
 
-	if (err.message.includes('FOREIGN KEY')) {
-		return 'ข้อมูลอ้างอิงไม่ถูกต้อง — ตรวจสอบหัวหน้างาน ระบบ หรือประเภทข้อยกเว้น';
+	if (err.message.includes("FOREIGN KEY")) {
+		return "ข้อมูลอ้างอิงไม่ถูกต้อง — ตรวจสอบหัวหน้างาน ระบบ หรือประเภทข้อยกเว้น";
 	}
 
-	if (err.message.includes('Transaction has been aborted')) {
-		return 'บันทึกไม่สำเร็จ — ลองใหม่อีกครั้ง';
+	if (err.message.includes("Transaction has been aborted")) {
+		return "บันทึกไม่สำเร็จ — ลองใหม่อีกครั้ง";
 	}
 
 	return err.message;
@@ -53,15 +54,15 @@ export async function insertScrApprovalRow(
 	params: ScrApprovalInsert
 ): Promise<void> {
 	await new PgRequest(transaction)
-		.input('scrId', params.scrId)
-		.input('actorUserId', params.actorUserId)
-		.input('actorRole', params.actorRole)
-		.input('actionType', params.actionType)
-		.input('fromStatus', params.fromStatus)
-		.input('toStatus', params.toStatus)
-		.input('stepOrder', params.stepOrder)
-		.input('comment', params.comment)
-		.input('ipAddress', params.ipAddress).query(`
+		.input("scrId", params.scrId)
+		.input("actorUserId", params.actorUserId)
+		.input("actorRole", params.actorRole)
+		.input("actionType", params.actionType)
+		.input("fromStatus", params.fromStatus)
+		.input("toStatus", params.toStatus)
+		.input("stepOrder", params.stepOrder)
+		.input("comment", params.comment)
+		.input("ipAddress", params.ipAddress).query(`
 			INSERT INTO [one_leave].[system_change_approvals] (
 				[system_change_request_id], [step_order], [actor_user_id], [actor_role],
 				[action_type], [from_status], [to_status], [comment], [ip_address]

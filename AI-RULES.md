@@ -192,8 +192,8 @@ import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } from "$env/static/publi
 
 ```bash
 # .env (ที่ root ของ project เท่านั้น — ไม่ใช่ใน src/)
-PUBLIC_SUPABASE_URL=https://xxx.supabase.co
-PUBLIC_SUPABASE_ANON_KEY=eyJ...
+PUBLIC_SUPABASE_URL=http://<VPS_HOST>:8000
+PUBLIC_SUPABASE_PUBLISHABLE_KEY=eyJ...
 ```
 
 - `src/lib/supabase.ts` — Supabase client สำหรับ Client-side
@@ -204,15 +204,15 @@ PUBLIC_SUPABASE_ANON_KEY=eyJ...
 
 ## 9. Quick Reference — Do / Don't
 
-| หัวข้อ     | ✅ Do                          | ❌ Don't          |
-| ---------- | ------------------------------ | ----------------- |
-| Props      | `$props()`                     | `export let`      |
-| State      | `$state()`                     | `writable()`      |
-| Derived    | `$derived()`                   | `$: value =`      |
-| Data Fetch | `+page.server.ts` load         | `onMount` + fetch |
-| Types      | `interface` / `type`           | `any`             |
-| Async      | `async/await`                  | `.then().catch()` |
-| Validation | Zod schema                     | Manual if-check   |
-| Styling    | shadcn-svelte + Tailwind class | Custom CSS file   |
-| Template   | `{#snippet}` + `{@render}`     | `<slot>`          |
+| หัวข้อ     | ✅ Do                                                                              | ❌ Don't                                  |
+| ---------- | ---------------------------------------------------------------------------------- | ----------------------------------------- |
+| Props      | `$props()`                                                                         | `export let`                              |
+| State      | `$state()`                                                                         | `writable()`                              |
+| Derived    | `$derived()`                                                                       | `$: value =`                              |
+| Data Fetch | `+page.server.ts` load                                                             | `onMount` + fetch                         |
+| Types      | `interface` / `type`                                                               | `any`                                     |
+| Async      | `async/await`                                                                      | `.then().catch()`                         |
+| Validation | Zod schema                                                                         | Manual if-check                           |
+| Styling    | shadcn-svelte + Tailwind class                                                     | Custom CSS file                           |
+| Template   | `{#snippet}` + `{@render}`                                                         | `<slot>`                                  |
 | Form PE    | Skill [`sveltekit-forms-enhance`](.cursor/skills/sveltekit-forms-enhance/SKILL.md) | `update()` default → reset form หลัง save |

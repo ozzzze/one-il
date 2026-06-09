@@ -70,7 +70,7 @@ async function main() {
 		const usersBody = await rUsers.text();
 		console.log(
 			`REST /rest/v1/users (publishable) → HTTP ${rUsers.status}`,
-			rUsers.ok ? "(โอเค — ตารางว่างได้ถ้ายังไม่มีข้อมูล)" : usersBody.slice(0, 120),
+			rUsers.ok ? "(โอเค — ตารางว่างได้ถ้ายังไม่มีข้อมูล)" : usersBody.slice(0, 120)
 		);
 		if (!rUsers.ok && rUsers.status !== 404) supabaseOk = false;
 	} catch (e) {
@@ -85,7 +85,9 @@ async function main() {
 			data: { session },
 			error,
 		} = await sb.auth.getSession();
-		console.log(`supabase-js getSession → error: ${error?.message ?? "(ไม่มี)"} session: ${session ? "มี" : "ไม่มี (ปกติถ้ายังไม่ล็อกอิน)"}`);
+		console.log(
+			`supabase-js getSession → error: ${error?.message ?? "(ไม่มี)"} session: ${session ? "มี" : "ไม่มี (ปกติถ้ายังไม่ล็อกอิน)"}`
+		);
 	} catch (e) {
 		console.error("❌ createClient/getSession ล้มเหลว:", e.message);
 		supabaseOk = false;
@@ -119,7 +121,7 @@ async function main() {
 	console.log(
 		supabaseOk
 			? "✅ Supabase API + คีย์ (publishable / secret) ใช้งานได้"
-			: "❌ Supabase มีปัญหา — ดู HTTP และข้อความด้านบน",
+			: "❌ Supabase มีปัญหา — ดู HTTP และข้อความด้านบน"
 	);
 	process.exit(supabaseOk ? 0 : 1);
 }

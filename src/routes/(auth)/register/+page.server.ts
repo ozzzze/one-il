@@ -114,10 +114,7 @@ export const actions: Actions = {
 			role,
 		});
 		if (profileInsertError) {
-			const msg =
-				profileInsertError.code === "23505"
-					? t.duplicate
-					: t.profileFail;
+			const msg = profileInsertError.code === "23505" ? t.duplicate : t.profileFail;
 			return fail(profileInsertError.code === "23505" ? 400 : 500, { message: msg });
 		}
 

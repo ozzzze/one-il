@@ -3,8 +3,4 @@
  * Re-exports helpers used by tests and shared types.
  */
 export type { IconKey } from "./types.js";
-export {
-	getAccessibleMenuItemIds,
-	type RawMenuItemRow,
-	type RawMenuGroupRow,
-} from "./catalog.js";
+export { getAccessibleMenuItemIds, type RawMenuItemRow, type RawMenuGroupRow } from "./catalog.js";
