@@ -86,3 +86,13 @@ Identity/auth schema: `one_leave.*` (users, user_roles, employees, leave tables)
 - App shell layout: sidebar (`app-sidebar.svelte`) + topbar with breadcrumbs (generated from URL pathname)
 - `App.Locals` typed in `src/app.d.ts` — includes Supabase client and session/user types as defined there
 - **Global Loading Indicator**: The global loading screen overlay automatically triggers on SvelteKit routing navigations. For client-side manual data fetching (e.g. Supabase queries triggered by button click events), import `globalLoading` from `$lib/utils/loading.svelte` and call `globalLoading.show()` and `globalLoading.hide()` within a `try...finally` block to display/hide the premium Clock Loader.
+
+## React-to-Svelte Component Transformation (shadcnblocks & shadcnspace)
+
+เมื่อผู้ใช้นำโค้ด React จาก shadcnblocks หรือ shadcnspace มาให้แปลงด้วยคำสั่งลัด เช่น `/convert-react` หรือ `/convert-block` ให้ปฏิบัติดังนี้:
+- **Zero Performance Degradation**: ห้ามดึง React wrappers หรือ runtime เข้ามาเด็ดขาด ต้องแปลงเป็น Svelte 5 Native Component 100%
+- **Remove Framer Motion**: ลบ `framer-motion` หรือ dynamic animation loop ของ React ทั้งหมด และแทนที่ด้วย Svelte transition (`fade`, `fly`, `slide`, `scale`) หรือการใช้ CSS transitions ด้วยการ Bind class ของ Tailwind
+- **Svelte 5 Runes**: ใช้ `$state`, `$derived`, และ `$props` เสมอ ห้ามใช้ Svelte 4 legacy syntax เว้นแต่ถูกระบุเป็นอย่างอื่น
+- **Clean Code & Type-safety**: ห้ามใช้ `any` หรือทำ unsafe type assertions ใน props และ logic
+- **Lint Conformity**: จัดระเบียบ Tailwind classes (หลีกเลี่ยง arbitrary values ถ้าไม่จำเป็นตามกฎ `user_global`) และตรวจสอบให้แน่ใจว่าเข้ากันได้กับ ESLint rules ของโปรเจกต์
+

@@ -1,0 +1,52 @@
+---
+description: Svelte 5 Adapter rules and performance optimization details for shadcnblocks & shadcnspace. Applies to all one-[xxx] projects.
+globs: src/**/*.svelte,src/**/*.ts
+alwaysApply: false
+---
+
+# UI Block Libraries — shadcnblocks vs shadcnspace
+
+## Svelte 5 Adapter Rules & Performance Optimization (บังคับทุก block ที่ adapt)
+
+เมื่อทำการแปลง (transform/adapt) block จาก React (JSX/TSX) -> Svelte 5:
+
+```svelte
+<!-- ❌ React pattern — ห้ามใช้ -->
+const [open, setOpen] = useState(false);
+onClick={() => setOpen(true)}
+export default function Hero() { ... }
+
+<!-- ✅ Svelte 5 Runes pattern -->
+let open = $state(false);
+onclick={() => open = true}
+<!-- ไม่มี export default — ใช้ .svelte file โดยตรง -->
+```
+
+### ⚡ Performance-first Guidelines (ประสิทธิภาพ 100%):
+1. **ลบ React Animation Libraries**: ห้ามใช้ `framer-motion` หรือ libraries ของ React เด็ดขาด ให้แปลงเป็น **Svelte native transitions** (`in:`, `out:`, `transition:`) หรือ **CSS transitions / Tailwind transition classes** แทน
+2. **ห้ามใช้ React Wrappers**: ห้ามติดตั้งหรือใช้งาน React runtime หรือ wrapper helper ใดๆ (เช่น `svelte-preprocess-react`) ในโปรเจกต์นี้
+3. **กำจัด Hooks ที่ไม่จำเป็น**: แปลง `useMemo` หรือ `useCallback` เป็น `$derived` และแปลง `useEffect` เป็นการระบุ action/event listener โดยตรง (หรือใช้ `$effect` เฉพาะเมื่อต้องทำงานกับ DOM จริงๆ เท่านั้น)
+4. **Tailwind Spacing**: แปลง Tailwind `space-x-*` / `space-y-*` ไปใช้ `flex gap-*` เพื่อหลีกเลี่ยงความขัดแย้งของ DOM
+5. **Types & Props**: จัดการ props ด้วย `let { ... } = $props<{...}>()` และหลีกเลี่ยงชนิดข้อมูล `any`
+6. **Autofix**: รัน `svelte-autofixer` หลังจากการแปลงทุกครั้งเพื่อให้แน่ใจว่าไม่มีข้อผิดพลาดจากลินเตอร์
+
+---
+
+## Short Prompt Shortcuts & Templates
+
+ผู้ใช้งานสามารถใช้คำสั่งลัดต่อไปนี้ในแชทเพื่อระบุให้แปลงคอมโพเนนต์อย่างรวดเร็ว:
+
+### 1. คำสั่งย่อสำหรับส่งแปลง (Short Prompts)
+*   **คำสั่งแปลงแบบปกติ:**
+    > `/convert-react [วางโค้ด React ที่นี่]`
+*   **คำสั่งแปลงพร้อมระบุชื่อไฟล์:**
+    > `/convert-react [ชื่อไฟล์.svelte] [วางโค้ด React ที่นี่]`
+*   **คำสั่งแปลงเป็น Block หน้าเว็บ:**
+    > `/convert-block [ชื่อบล็อก] [วางโค้ด React ที่นี่]`
+
+### 2. พฤติกรรมที่ Agent จะทำทันทีเมื่อได้รับคำสั่งย่อ:
+1. อ่านโครงสร้าง React (JSX/TSX)
+2. แปลงเป็น Svelte 5 (Runes) ทันที
+3. ลบ `framer-motion` หรือ JS Animation Loop ทั้งหมดทิ้ง แล้วแทนที่ด้วย Svelte transition (`fade`, `fly`, `slide`, `scale`) หรือ Tailwind transition classes
+4. ตรวจสอบว่าไม่มี `any` หรือ syntax ที่ผิดหลัก TypeScript/ESLint ของโครงการ
+5. ตอบกลับด้วยโค้ด Svelte 5 ที่สะอาดและคอมเมนต์ระบุแนวทางการเพิ่มประสิทธิภาพที่ทำไป
