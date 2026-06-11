@@ -13,8 +13,12 @@ function browserSupabaseConfig(): { url: string; key: string } | null {
 /**
  * Browser Supabase client (optional — gateway auth uses one-leave session).
  */
-export const supabase: SupabaseClient<Database> | null = (() => {
+export const supabase: SupabaseClient<Database, "one_il"> | null = (() => {
 	const config = browserSupabaseConfig();
 	if (!config) return null;
-	return createBrowserClient<Database>(config.url, config.key);
+	return createBrowserClient<Database, "one_il">(config.url, config.key, {
+		db: {
+			schema: "one_il",
+		},
+	});
 })();

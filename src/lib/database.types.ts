@@ -12,7 +12,7 @@ type GenericSupabaseTable = {
 };
 
 export type Database = {
-	public: {
+	one_il: {
 		Tables: {
 			app_settings: {
 				Row: { key: string; value: string; updated_at: string };
@@ -39,7 +39,7 @@ export type Database = {
 					created_at?: string;
 					updated_at?: string;
 				};
-				Update: Partial<Database["public"]["Tables"]["deduction_types"]["Row"]>;
+				Update: Partial<Database["one_il"]["Tables"]["deduction_types"]["Row"]>;
 				Relationships: [];
 			};
 			employee_assignments: {
@@ -65,7 +65,7 @@ export type Database = {
 					created_at?: string;
 					updated_at?: string;
 				};
-				Update: Partial<Database["public"]["Tables"]["employee_assignments"]["Row"]>;
+				Update: Partial<Database["one_il"]["Tables"]["employee_assignments"]["Row"]>;
 				Relationships: [
 					{
 						foreignKeyName: "employee_assignments_employee_id_fkey";
@@ -101,7 +101,7 @@ export type Database = {
 					deduction_type_id: string;
 					created_at?: string;
 				};
-				Update: Partial<Database["public"]["Tables"]["employee_deductions"]["Row"]>;
+				Update: Partial<Database["one_il"]["Tables"]["employee_deductions"]["Row"]>;
 				Relationships: [
 					{
 						foreignKeyName: "employee_deductions_deduction_type_id_fkey";
@@ -140,7 +140,7 @@ export type Database = {
 					created_at?: string;
 					updated_at?: string;
 				};
-				Update: Partial<Database["public"]["Tables"]["employee_emergency_contacts"]["Row"]>;
+				Update: Partial<Database["one_il"]["Tables"]["employee_emergency_contacts"]["Row"]>;
 				Relationships: [
 					{
 						foreignKeyName: "employee_emergency_contacts_employee_id_fkey";
@@ -172,7 +172,7 @@ export type Database = {
 					created_at?: string;
 					updated_at?: string;
 				};
-				Update: Partial<Database["public"]["Tables"]["employee_supervisors"]["Row"]>;
+				Update: Partial<Database["one_il"]["Tables"]["employee_supervisors"]["Row"]>;
 				Relationships: [
 					{
 						foreignKeyName: "employee_supervisors_employee_id_fkey";
@@ -253,7 +253,7 @@ export type Database = {
 					employment_ended_at?: string | null;
 					photo_object_key?: string | null;
 				};
-				Update: Partial<Database["public"]["Tables"]["employees"]["Row"]>;
+				Update: Partial<Database["one_il"]["Tables"]["employees"]["Row"]>;
 				Relationships: [
 					{
 						foreignKeyName: "employees_user_id_fkey";
@@ -283,7 +283,7 @@ export type Database = {
 					created_at?: string;
 					updated_at?: string;
 				};
-				Update: Partial<Database["public"]["Tables"]["employment_contract_types"]["Row"]>;
+				Update: Partial<Database["one_il"]["Tables"]["employment_contract_types"]["Row"]>;
 				Relationships: [];
 			};
 			hr_employment_statuses: {
@@ -305,7 +305,7 @@ export type Database = {
 					created_at?: string;
 					updated_at?: string;
 				};
-				Update: Partial<Database["public"]["Tables"]["hr_employment_statuses"]["Row"]>;
+				Update: Partial<Database["one_il"]["Tables"]["hr_employment_statuses"]["Row"]>;
 				Relationships: [];
 			};
 			notifications_outbox: GenericSupabaseTable;
@@ -328,7 +328,7 @@ export type Database = {
 					read?: boolean;
 					created_at?: string;
 				};
-				Update: Partial<Database["public"]["Tables"]["notifications"]["Row"]>;
+				Update: Partial<Database["one_il"]["Tables"]["notifications"]["Row"]>;
 				Relationships: [
 					{
 						foreignKeyName: "notifications_user_id_fkey";
@@ -354,7 +354,7 @@ export type Database = {
 					sort_order?: number;
 					is_active?: boolean;
 				};
-				Update: Partial<Database["public"]["Tables"]["menu_groups"]["Row"]>;
+				Update: Partial<Database["one_il"]["Tables"]["menu_groups"]["Row"]>;
 				Relationships: [];
 			};
 			user_change_requests: {
@@ -386,7 +386,7 @@ export type Database = {
 					updated_at?: string;
 					reviewed_at?: string | null;
 				};
-				Update: Partial<Database["public"]["Tables"]["user_change_requests"]["Row"]>;
+				Update: Partial<Database["one_il"]["Tables"]["user_change_requests"]["Row"]>;
 				Relationships: [
 					{
 						foreignKeyName: "user_change_requests_user_id_fkey";
@@ -418,7 +418,7 @@ export type Database = {
 					updated_at?: string;
 					created_by_user_id?: string | null;
 				};
-				Update: Partial<Database["public"]["Tables"]["institutional_holidays"]["Row"]>;
+				Update: Partial<Database["one_il"]["Tables"]["institutional_holidays"]["Row"]>;
 				Relationships: [
 					{
 						foreignKeyName: "institutional_holidays_created_by_user_id_fkey";
@@ -458,7 +458,7 @@ export type Database = {
 					implementation_status?: "live" | "planned";
 					sort_order?: number;
 				};
-				Update: Partial<Database["public"]["Tables"]["menu_items"]["Row"]>;
+				Update: Partial<Database["one_il"]["Tables"]["menu_items"]["Row"]>;
 				Relationships: [
 					{
 						foreignKeyName: "menu_items_group_id_fkey";
@@ -491,7 +491,7 @@ export type Database = {
 					sort_order?: number;
 					created_at?: string;
 				};
-				Update: Partial<Database["public"]["Tables"]["user_menu_shortcuts"]["Row"]>;
+				Update: Partial<Database["one_il"]["Tables"]["user_menu_shortcuts"]["Row"]>;
 				Relationships: [
 					{
 						foreignKeyName: "user_menu_shortcuts_menu_item_id_fkey";
@@ -534,7 +534,7 @@ export type Database = {
 					created_at?: string;
 					updated_at?: string;
 				};
-				Update: Partial<Database["public"]["Tables"]["org_units"]["Row"]>;
+				Update: Partial<Database["one_il"]["Tables"]["org_units"]["Row"]>;
 				Relationships: [
 					{
 						foreignKeyName: "org_units_parent_unit_id_fkey";
@@ -570,7 +570,7 @@ export type Database = {
 					updated_at?: string;
 					published_at?: string | null;
 				};
-				Update: Partial<Database["public"]["Tables"]["pages"]["Row"]>;
+				Update: Partial<Database["one_il"]["Tables"]["pages"]["Row"]>;
 				Relationships: [
 					{
 						foreignKeyName: "pages_author_id_fkey";
@@ -600,7 +600,7 @@ export type Database = {
 					created_at?: string;
 					updated_at?: string;
 				};
-				Update: Partial<Database["public"]["Tables"]["personnel_categories"]["Row"]>;
+				Update: Partial<Database["one_il"]["Tables"]["personnel_categories"]["Row"]>;
 				Relationships: [];
 			};
 			positions: {
@@ -626,7 +626,7 @@ export type Database = {
 					created_at?: string;
 					updated_at?: string;
 				};
-				Update: Partial<Database["public"]["Tables"]["positions"]["Row"]>;
+				Update: Partial<Database["one_il"]["Tables"]["positions"]["Row"]>;
 				Relationships: [];
 			};
 			program_chairs: {
@@ -648,7 +648,7 @@ export type Database = {
 					created_at?: string;
 					updated_at?: string;
 				};
-				Update: Partial<Database["public"]["Tables"]["program_chairs"]["Row"]>;
+				Update: Partial<Database["one_il"]["Tables"]["program_chairs"]["Row"]>;
 				Relationships: [
 					{
 						foreignKeyName: "program_chairs_employee_id_fkey";
@@ -683,7 +683,7 @@ export type Database = {
 					created_at?: string;
 					updated_at?: string;
 				};
-				Update: Partial<Database["public"]["Tables"]["programs"]["Row"]>;
+				Update: Partial<Database["one_il"]["Tables"]["programs"]["Row"]>;
 				Relationships: [];
 			};
 			asset_annual_inspections: GenericSupabaseTable;
@@ -735,7 +735,7 @@ export type Database = {
 					ip_address?: string | null;
 					created_at?: string | null;
 				};
-				Update: Partial<Database["public"]["Tables"]["sessions"]["Row"]>;
+				Update: Partial<Database["one_il"]["Tables"]["sessions"]["Row"]>;
 				Relationships: [
 					{
 						foreignKeyName: "sessions_user_id_fkey";
@@ -769,7 +769,7 @@ export type Database = {
 					created_at?: string;
 					updated_at?: string;
 				};
-				Update: Partial<Database["public"]["Tables"]["users"]["Row"]>;
+				Update: Partial<Database["one_il"]["Tables"]["users"]["Row"]>;
 				Relationships: [];
 			};
 		};
@@ -838,5 +838,5 @@ export type Database = {
 	};
 };
 
-export type Tables<T extends keyof Database["public"]["Tables"]> =
-	Database["public"]["Tables"][T]["Row"];
+export type Tables<T extends keyof Database["one_il"]["Tables"]> =
+	Database["one_il"]["Tables"][T]["Row"];

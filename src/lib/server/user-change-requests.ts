@@ -18,7 +18,7 @@ export async function listMyChangeRequests(userId: number): Promise<ChangeReques
 	const { rows } = await pool.query<ChangeRequestRow>(
 		`
 		SELECT id, user_id, field, current_value, requested_value, reason, status, review_note, created_at, reviewed_at
-		FROM public.user_change_requests
+		FROM one_il.user_change_requests
 		WHERE user_id = $1
 		ORDER BY created_at DESC
 		`,
@@ -32,7 +32,7 @@ export async function listPendingChangeRequests(): Promise<ChangeRequestRow[]> {
 	const { rows } = await pool.query<ChangeRequestRow>(
 		`
 		SELECT id, user_id, field, current_value, requested_value, reason, status, review_note, created_at, reviewed_at
-		FROM public.user_change_requests
+		FROM one_il.user_change_requests
 		WHERE status = 'pending'
 		ORDER BY created_at ASC
 		`

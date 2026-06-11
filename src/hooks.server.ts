@@ -20,7 +20,7 @@ function supabasePublicConfig(): { url: string; key: string } | null {
 const supabaseHandle: Handle = async ({ event, resolve }) => {
 	const config = supabasePublicConfig();
 	if (config) {
-		event.locals.supabase = createServerClient<Database>(config.url, config.key, {
+		event.locals.supabase = createServerClient<Database, "one_il">(config.url, config.key, {
 			cookies: {
 				getAll: () => event.cookies.getAll(),
 				setAll: (cookiesToSet) => {
@@ -28,6 +28,9 @@ const supabaseHandle: Handle = async ({ event, resolve }) => {
 						event.cookies.set(name, value, { ...options, path: "/" });
 					});
 				},
+			},
+			db: {
+				schema: "one_il",
 			},
 		});
 	} else {

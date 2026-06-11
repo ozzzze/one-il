@@ -144,7 +144,7 @@ export const actions: Actions = {
 		try {
 			await pool.query(
 				`
-				INSERT INTO public.user_change_requests (user_id, field, current_value, requested_value, reason)
+				INSERT INTO one_il.user_change_requests (user_id, field, current_value, requested_value, reason)
 				VALUES ($1, $2, $3, $4, $5)
 				`,
 				[
@@ -178,7 +178,7 @@ export const actions: Actions = {
 		}
 		const pool = getLeavePgPool();
 		const { rowCount } = await pool.query(
-			`DELETE FROM public.user_change_requests WHERE id = $1::uuid AND user_id = $2 AND status = 'pending'`,
+			`DELETE FROM one_il.user_change_requests WHERE id = $1::uuid AND user_id = $2 AND status = 'pending'`,
 			[id, leaveUserId]
 		);
 		if ((rowCount ?? 0) === 0) {
@@ -209,7 +209,7 @@ export const actions: Actions = {
 		const now = new Date();
 		const { rowCount } = await pool.query(
 			`
-			UPDATE public.user_change_requests
+			UPDATE one_il.user_change_requests
 			SET status = $2, review_note = $3, reviewed_by = $4, reviewed_at = $5, updated_at = $5
 			WHERE id = $1::uuid AND status = 'pending'
 			`,

@@ -13,6 +13,8 @@
 	import { getDashboardPageCopy } from "$lib/content/page-copy.js";
 	import { orderHomeCardsByShortcuts } from "$lib/navigation/catalog.js";
 	import { menuIconFor } from "$lib/navigation/icons.js";
+	import PinIcon from "@lucide/svelte/icons/pin";
+	import PinOffIcon from "@lucide/svelte/icons/pin-off";
 
 	let { data } = $props();
 	const copy = $derived(getDashboardPageCopy(data.locale));
@@ -77,6 +79,33 @@
 				return "text-blue-600 dark:text-blue-400";
 		}
 	}
+
+	function notifBgColor(type: string) {
+		switch (type) {
+			case "warning":
+				return "bg-yellow-50 dark:bg-yellow-950/20";
+			case "error":
+				return "bg-red-50 dark:bg-red-950/20";
+			case "success":
+				return "bg-green-50 dark:bg-green-950/20";
+			default:
+				return "bg-blue-50 dark:bg-blue-950/20";
+		}
+	}
+
+	function relativeTime(dateStr: string) {
+		const date = new Date(dateStr);
+		const now = new Date();
+		const diffMs = now.getTime() - date.getTime();
+		const diffMins = Math.floor(diffMs / 60000);
+		if (diffMins < 1) return copy.time.justNow;
+		if (diffMins < 60) return copy.time.minAgo(diffMins);
+		const diffHours = Math.floor(diffMins / 60);
+		if (diffHours < 24) return copy.time.hourAgo(diffHours);
+		const diffDays = Math.floor(diffHours / 24);
+		return copy.time.dayAgo(diffDays);
+	}
+
 </script>
 
 <svelte:head>
@@ -84,9 +113,41 @@
 </svelte:head>
 
 <div class="space-y-6">
-	<div class="flex flex-col gap-1">
-		<h1 class="text-3xl font-bold tracking-tight">{copy.heading}</h1>
-		<p class="text-muted-foreground">{copy.description}</p>
+	<!-- Premium Welcome Banner (inspired by shadcnspace widget-08) -->
+	<div class="relative overflow-hidden rounded-2xl border border-border/50 bg-linear-to-r from-card to-muted/20 p-6 md:p-8 shadow-sm">
+		<!-- Dynamic Background Accents -->
+		<div class="absolute -right-16 -top-16 size-48 rounded-full bg-primary/5 blur-3xl dark:bg-primary/10"></div>
+		<div class="absolute -bottom-16 -left-16 size-48 rounded-full bg-chart-1/5 blur-3xl dark:bg-chart-1/10"></div>
+		
+		<div class="flex flex-col gap-6 md:flex-row md:items-center md:justify-between relative z-10">
+			<div class="space-y-2">
+				<div class="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary dark:bg-primary/20">
+					<span class="flex size-1.5 rounded-full bg-green-500 animate-pulse"></span>
+					{copy.system.operational}
+				</div>
+				<h1 class="text-3xl md:text-4xl font-bold tracking-tight bg-linear-to-br from-foreground via-foreground to-muted-foreground bg-clip-text text-transparent">
+					{data.locale === "th" ? `สวัสดีคุณ ${data.user?.name}` : `Welcome back, ${data.user?.name}`}
+				</h1>
+				<p class="text-muted-foreground text-sm max-w-xl">{copy.description}</p>
+			</div>
+
+			<!-- KPI Mini Cards -->
+			<div class="grid grid-cols-2 sm:flex items-center gap-4">
+				<div class="flex flex-col rounded-xl border border-border/40 bg-card/50 p-4 min-w-32 backdrop-blur-xs shadow-xs hover:border-primary/20 transition-all duration-300">
+					<span class="text-muted-foreground text-xs font-medium">{copy.navShortcuts.yourShortcuts}</span>
+					<span class="text-2xl font-bold mt-1 text-foreground">{shortcutIds.length}</span>
+				</div>
+				<div class="flex flex-col rounded-xl border border-border/40 bg-card/50 p-4 min-w-32 backdrop-blur-xs shadow-xs hover:border-primary/20 transition-all duration-300">
+					<span class="text-muted-foreground text-xs font-medium">{copy.notifications.title}</span>
+					<div class="flex items-baseline gap-1 mt-1">
+						<span class="text-2xl font-bold text-foreground">{data.recentNotifications.length}</span>
+						{#if data.unreadNotificationCount > 0}
+							<span class="text-[10px] font-semibold text-destructive px-1.5 py-0.5 rounded-full bg-destructive/10 animate-bounce">{copy.notifications.new}</span>
+						{/if}
+					</div>
+				</div>
+			</div>
+		</div>
 	</div>
 
 	<section class="flex flex-col gap-3" aria-labelledby="nav-shortcuts-heading">
@@ -128,98 +189,123 @@
 				autocomplete="off"
 			/>
 		</div>
-		<div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+		<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 			{#each filteredNavCards as card (card.id)}
 				{@const Icon = menuIconFor(card.iconKey)}
-				<Card.Root
-					class={!card.accessible
-						? "border-muted bg-muted/30"
-						: "hover:bg-muted/40 transition-colors"}
+				<div
+					class="group relative overflow-hidden rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:shadow-md
+						{!card.accessible
+							? 'border-border/30 bg-muted/20 opacity-75'
+							: 'border-border/60 bg-card hover:border-primary/30'}"
 				>
-					<Card.Header class="pb-2">
-						<div class="flex items-start gap-3">
-							<div class="bg-muted flex size-10 shrink-0 items-center justify-center rounded-lg">
-								<Icon class="text-foreground size-5" />
-							</div>
-							<div class="min-w-0 flex-1 space-y-1">
+					<!-- Glow effect on hover -->
+					{#if card.accessible}
+						<div class="absolute -right-20 -top-20 size-40 rounded-full bg-primary/5 opacity-0 blur-2xl group-hover:opacity-100 transition-opacity duration-500"></div>
+					{/if}
+
+					<div class="p-5 flex flex-col justify-between h-full relative z-10">
+						<div class="space-y-4">
+							<div class="flex items-start justify-between gap-3">
+								<div class="bg-secondary text-secondary-foreground group-hover:bg-primary group-hover:text-primary-foreground flex size-12 shrink-0 items-center justify-center rounded-xl transition-all duration-300 group-hover:shadow-md">
+									<Icon class="size-5 transition-transform group-hover:scale-110" />
+								</div>
+								
+								<!-- Shortcut Pin Form -->
 								{#if card.accessible && card.href}
-									<a href={appHref(card.href)} class="font-medium hover:underline">{card.label}</a>
-								{:else}
-									<p class="text-muted-foreground flex items-center gap-1.5 font-medium">
-										<LockIcon class="size-3.5" />
-										{card.label}
-									</p>
+									<div class="{isPinned(card.id) ? 'opacity-100' : 'opacity-100 sm:opacity-0'} group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-200">
+										{#if !isPinned(card.id)}
+											<form method="POST" action="?/addMenuShortcut" use:enhance>
+												<input type="hidden" name="menuItemId" value={card.id} />
+												<button type="submit" class="p-2 text-muted-foreground hover:text-primary rounded-lg hover:bg-muted transition-colors" title={copy.navShortcuts.addShortcut}>
+													<PinIcon class="size-4 rotate-45" />
+												</button>
+											</form>
+										{:else}
+											<form method="POST" action="?/removeMenuShortcut" use:enhance>
+												<input type="hidden" name="menuItemId" value={card.id} />
+												<button type="submit" class="p-2 text-primary hover:text-destructive rounded-lg hover:bg-muted transition-colors" title={copy.navShortcuts.removeShortcut}>
+													<PinOffIcon class="size-4" />
+												</button>
+											</form>
+										{/if}
+									</div>
 								{/if}
-								<p class="text-muted-foreground text-xs">{card.groupLabel}</p>
+							</div>
+
+							<div class="space-y-1.5">
+								<div class="flex items-center gap-1.5">
+									{#if card.accessible && card.href}
+										<a href={appHref(card.href)} class="font-semibold text-foreground hover:text-primary hover:underline transition-colors block text-base">
+											{card.label}
+										</a>
+									{:else}
+										<span class="font-semibold text-muted-foreground flex items-center gap-1.5 text-base">
+											<LockIcon class="size-4 animate-pulse" />
+											{card.label}
+										</span>
+									{/if}
+								</div>
+								
+								<p class="text-muted-foreground text-xs font-medium">{card.groupLabel}</p>
+								
 								{#if !card.accessible}
-									<p class="text-muted-foreground text-[11px]">
+									<div class="inline-flex items-center gap-1 rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground mt-1">
 										{card.lockReason === "planned"
 											? copy.navShortcuts.comingSoonHint
 											: copy.navShortcuts.noAccessHint}
-									</p>
+									</div>
 								{/if}
 							</div>
 						</div>
-					</Card.Header>
-					<Card.Content class="pt-0">
-						<div class="flex flex-wrap gap-2">
-							{#if card.accessible && card.href}
-								{#if !isPinned(card.id)}
-									<form method="POST" action="?/addMenuShortcut" use:enhance>
-										<input type="hidden" name="menuItemId" value={card.id} />
-										<Button type="submit" variant="secondary" size="sm"
-											>{copy.navShortcuts.addShortcut}</Button
-										>
-									</form>
-								{:else}
-									<form method="POST" action="?/removeMenuShortcut" use:enhance>
-										<input type="hidden" name="menuItemId" value={card.id} />
-										<Button type="submit" variant="outline" size="sm"
-											>{copy.navShortcuts.removeShortcut}</Button
-										>
-									</form>
-								{/if}
-							{/if}
-						</div>
-					</Card.Content>
-				</Card.Root>
+					</div>
+				</div>
 			{/each}
 		</div>
 	</section>
 
-	<Card.Root>
-		<Card.Header class="flex flex-row items-center justify-between">
+	<div class="rounded-2xl border border-border/60 bg-card shadow-sm">
+		<div class="p-6 flex flex-row items-center justify-between border-b border-border/50">
 			<div>
-				<Card.Title>{copy.notifications.title}</Card.Title>
-				<Card.Description>{copy.notifications.description}</Card.Description>
+				<h2 class="text-lg font-semibold tracking-tight text-foreground">{copy.notifications.title}</h2>
+				<p class="text-muted-foreground text-sm">{copy.notifications.description}</p>
 			</div>
-			<a href={appHref("/notifications")} class="text-primary text-xs font-medium hover:underline">
+			<a href={appHref("/notifications")} class="inline-flex items-center gap-1 text-primary text-xs font-semibold hover:underline bg-primary/5 px-2.5 py-1.5 rounded-lg transition-colors">
 				{copy.notifications.viewAll}
 			</a>
-		</Card.Header>
-		<Card.Content>
+		</div>
+		<div class="p-6">
 			{#if data.recentNotifications.length > 0}
-				<ScrollArea class="max-h-62.5">
-					<div class="space-y-3">
-						{#each data.recentNotifications as notif (notif.id)}
-							{@const Icon = notifIcon(notif.type)}
-							<div class="flex items-start gap-3">
-								<div class={`mt-0.5 shrink-0 ${notifColor(notif.type)}`}>
-									<Icon class="size-4" />
-								</div>
-								<div class="min-w-0 flex-1">
-									<p class="truncate text-sm font-medium">{notif.title}</p>
-									<p class="text-muted-foreground truncate text-xs">{notif.message}</p>
-								</div>
+				<div class="relative pl-6 space-y-6 after:absolute after:bottom-2 after:left-[9px] after:top-2 after:w-0.5 after:bg-border/60">
+					{#each data.recentNotifications as notif (notif.id)}
+						{@const Icon = notifIcon(notif.type)}
+						<div class="relative flex gap-4">
+							<!-- Timeline dot -->
+							<div class="absolute -left-[23px] flex size-5 items-center justify-center rounded-full bg-card ring-2 ring-border/50 z-10 transition-transform duration-300 hover:scale-110">
+								<span class={`flex size-2 rounded-full ${notifColor(notif.type).replace("text-", "bg-")}`}></span>
 							</div>
-						{/each}
-					</div>
-				</ScrollArea>
+
+							<!-- Notification icon with themed background -->
+							<div class={`flex size-10 shrink-0 items-center justify-center rounded-xl border border-border/40 ${notifBgColor(notif.type)}`}>
+								<Icon class={`size-4.5 ${notifColor(notif.type)}`} />
+							</div>
+
+							<!-- Content -->
+							<div class="min-w-0 flex-1 space-y-1">
+								<div class="flex items-center justify-between gap-2">
+									<p class="text-sm font-semibold text-foreground truncate">{notif.title}</p>
+									<span class="text-[10px] font-medium text-muted-foreground shrink-0">{relativeTime(notif.createdAt)}</span>
+								</div>
+								<p class="text-muted-foreground text-xs leading-relaxed">{notif.message}</p>
+							</div>
+						</div>
+					{/each}
+				</div>
 			{:else}
-				<div class="flex h-25 items-center justify-center">
-					<p class="text-muted-foreground text-sm">{copy.notifications.none}</p>
+				<div class="flex h-32 flex-col items-center justify-center gap-2">
+					<InfoIcon class="size-8 text-muted-foreground/50" />
+					<p class="text-muted-foreground text-sm font-medium">{copy.notifications.none}</p>
 				</div>
 			{/if}
-		</Card.Content>
-	</Card.Root>
+		</div>
+	</div>
 </div>

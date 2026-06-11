@@ -22,7 +22,7 @@ function loadEnvFile(path) {
 }
 
 const env = loadEnvFile(new URL("../.env", import.meta.url).pathname.replace(/^\/([A-Z]:)/, "$1"));
-const url = env.DATABASE_URL || env.SELF_HOSTED_DATABASE_URL;
+const url = env.SELF_HOSTED_DATABASE_URL || env.DATABASE_URL;
 if (!url) {
 	console.error("No DATABASE_URL");
 	process.exit(1);
