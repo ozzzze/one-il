@@ -157,6 +157,20 @@ const LAUNCHER_MODULES: readonly LauncherModule[] = [
 		gatewayOnly: true,
 		leaveRoles: ["admin", "hr_verifier"],
 	},
+	{
+		id: "admin-audit-logs",
+		titleTh: "ประวัติการทำรายการ",
+		titleEn: "Audit logs",
+		descriptionTh: "ดูประวัติ CRUD และ workflow — รวม SCR (system_change_request)",
+		descriptionEn: "View CRUD and workflow audit trail including SCR",
+		href: "/admin/audit-logs",
+		groupTh: "ผู้ดูแลระบบ",
+		groupEn: "Administration",
+		groupCode: "admin",
+		iconKey: "history",
+		gatewayOnly: true,
+		leaveRoles: ["admin", "hr_verifier"],
+	},
 ];
 
 function label(locale: Locale, th: string, en: string): string {

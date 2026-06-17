@@ -17,6 +17,10 @@ Thumbs.db
 .env.*
 !.env.example
 !.env.test
+.env-backup
+
+# Supabase CLI cache (local)
+supabase/.temp/
 
 # Vite
 vite.config.js.timestamp-*

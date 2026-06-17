@@ -30,6 +30,13 @@
 		"supabase:stop": "npx supabase stop",
 		"db:apply:migration": "node --env-file=.env scripts/apply-migration-pg.mjs",
 		"db:types": "node --env-file=.env scripts/gen-db-types.mjs",
+		"db:types:remote": "node --env-file=.env scripts/gen-db-types-remote.mjs",
+		"db:supabase": "node --env-file=.env scripts/supabase-db.mjs",
+		"db:supabase:migrations": "node --env-file=.env scripts/supabase-db.mjs migration list",
+		"db:supabase:push": "node --env-file=.env scripts/supabase-db.mjs db push",
+		"db:supabase:repair": "node --env-file=.env scripts/supabase-repair-all.mjs",
+		"db:ssh": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/ssh-vps.ps1",
+		"db:ssh:tunnel": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/ssh-vps.ps1 -Tunnel",
 		"notifications:process": "node --env-file=.env ./node_modules/tsx/dist/cli.mjs scripts/process-notification-outbox.ts",
 		"check:notifications": "node --env-file=.env ./node_modules/tsx/dist/cli.mjs scripts/check-notification-setup.ts",
 		"db:apply:outbox": "node --env-file=.env scripts/apply-outbox-migration-pg.mjs",
@@ -37,6 +44,7 @@
 		"db:seed:menu-catalog": "node --env-file=.env scripts/apply-migration-pg.mjs supabase/migrations/20260601140000_gateway_menu_catalog_seed.sql",
 		"db:apply:user-admin-audit": "node --env-file=.env scripts/apply-migration-pg.mjs supabase/migrations/20260602120000_one_leave_user_admin_audit.sql",
 		"db:seed:admin-menu": "node --env-file=.env scripts/apply-migration-pg.mjs supabase/migrations/20260602130000_gateway_admin_menu_seed.sql",
+		"db:seed:audit-menu": "node --env-file=.env scripts/apply-migration-pg.mjs supabase/migrations/20260617140000_gateway_audit_logs_menu.sql",
 		"test:email": "node --env-file=.env ./node_modules/tsx/dist/cli.mjs scripts/test-email-notification.ts"
 	},
 	"devDependencies": {

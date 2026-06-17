@@ -93,6 +93,12 @@
 					<DownloadIcon class="mr-2 size-4" />
 					ส่งออก CSV
 				</Button>
+				<Button
+					href={resolve("/admin/audit-logs?entityType=system_change_request" as "/")}
+					variant="outline"
+				>
+					ประวัติ SCR
+				</Button>
 			{/if}
 			<Button href={resolve("/change-requests/new" as "/")} variant="default">
 				<PlusIcon class="mr-2 size-4" />

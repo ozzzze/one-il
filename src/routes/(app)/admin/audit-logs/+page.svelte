@@ -1,0 +1,420 @@
+<script lang="ts">
+	import GatewayAdminSubnav from "$lib/components/gateway-admin-subnav.svelte";
+	import { Button } from "$lib/components/ui/button/index.js";
+	import * as Card from "$lib/components/ui/card/index.js";
+	import { Input } from "$lib/components/ui/input/index.js";
+	import { Label } from "$lib/components/ui/label/index.js";
+	import * as Dialog from "$lib/components/ui/dialog/index.js";
+	import type { PageData } from "./$types";
+	import SearchIcon from "@lucide/svelte/icons/search";
+	import FileTextIcon from "@lucide/svelte/icons/file-text";
+	import ChevronLeftIcon from "@lucide/svelte/icons/chevron-left";
+	import ChevronRightIcon from "@lucide/svelte/icons/chevron-right";
+	import HistoryIcon from "@lucide/svelte/icons/history";
+	import RotateCcwIcon from "@lucide/svelte/icons/rotate-ccw";
+	import XIcon from "@lucide/svelte/icons/x";
+	import { resolve } from "$app/paths";
+
+	let { data }: { data: PageData } = $props();
+
+	const auditPage = $derived(data.auditPage);
+	const totalPages = $derived(Math.ceil(auditPage.total / auditPage.pageSize));
+	const rangeFrom = $derived(
+		auditPage.total === 0 ? 0 : (auditPage.page - 1) * auditPage.pageSize + 1,
+	);
+	const rangeTo = $derived(Math.min(auditPage.page * auditPage.pageSize, auditPage.total));
+
+	function labelAction(action: string): string {
+		const map: Record<string, string> = {
+			create: "สร้าง",
+			update: "แก้ไข",
+			self_update: "แก้ไขส่วนตัว",
+			soft_delete: "ปิดใช้งาน",
+			submit: "ยื่น",
+			withdraw: "ถอน",
+			verify: "HR ตรวจสอบ",
+			grant: "อนุญาต",
+			deny: "ปฏิเสธ",
+			revoke_request: "ขอยกเลิก",
+			revoke_approve: "อนุมัติยกเลิก",
+			revoke_reject: "ปฏิเสธยกเลิก",
+		};
+		return map[action] ?? action;
+	}
+
+	function labelEntity(entityType: string): string {
+		const map: Record<string, string> = {
+			employee: "พนักงาน",
+			leave_request: "ใบลา",
+			system_change_request: "คำขอเปลี่ยนแปลงระบบ",
+			leave_attachment: "ไฟล์แนบ",
+			org_unit: "หน่วยงาน",
+			user: "บัญชีผู้ใช้",
+			fiscal_year: "ปีงบ",
+			working_calendar: "ปฏิทิน",
+			system_settings: "ตั้งค่า",
+			leave_type: "ประเภทลา",
+		};
+		return map[entityType] ?? entityType;
+	}
+
+	function formatDate(iso: string): string {
+		return new Date(iso).toLocaleString("th-TH", {
+			timeZone: "Asia/Bangkok",
+			dateStyle: "short",
+			timeStyle: "short",
+		});
+	}
+
+	function prettyJson(raw: string | null): string {
+		if (!raw) return "";
+		try {
+			return JSON.stringify(JSON.parse(raw), null, 2);
+		} catch {
+			return raw;
+		}
+	}
+
+	function detailHref(itemId: number): string {
+		const params = new URLSearchParams();
+		if (data.filter.from) params.set("from", data.filter.from);
+		if (data.filter.to) params.set("to", data.filter.to);
+		if (data.filter.entityType) params.set("entityType", data.filter.entityType);
+		if (data.filter.action) params.set("action", data.filter.action);
+		if (data.filter.q) params.set("q", data.filter.q);
+		if (auditPage.page > 1) params.set("page", String(auditPage.page));
+		params.set("detail", String(itemId));
+		return resolve(`/admin/audit-logs?${params.toString()}` as "/");
+	}
+
+	function closeDetailHref(): string {
+		const params = new URLSearchParams();
+		if (data.filter.from) params.set("from", data.filter.from);
+		if (data.filter.to) params.set("to", data.filter.to);
+		if (data.filter.entityType) params.set("entityType", data.filter.entityType);
+		if (data.filter.action) params.set("action", data.filter.action);
+		if (data.filter.q) params.set("q", data.filter.q);
+		if (auditPage.page > 1) params.set("page", String(auditPage.page));
+		const qs = params.toString();
+		return qs
+			? resolve(`/admin/audit-logs?${qs}` as "/")
+			: resolve("/admin/audit-logs" as "/");
+	}
+
+	function pageHref(page: number): string {
+		const params = new URLSearchParams();
+		if (data.filter.from) params.set("from", data.filter.from);
+		if (data.filter.to) params.set("to", data.filter.to);
+		if (data.filter.entityType) params.set("entityType", data.filter.entityType);
+		if (data.filter.action) params.set("action", data.filter.action);
+		if (data.filter.q) params.set("q", data.filter.q);
+		if (page > 1) params.set("page", String(page));
+		const qs = params.toString();
+		return qs
+			? resolve(`/admin/audit-logs?${qs}` as "/")
+			: resolve("/admin/audit-logs" as "/");
+	}
+
+	const detailOpen = $derived(data.detail !== null);
+</script>
+
+<svelte:head>
+	<title>{data.pageTitle} — ONE-IL</title>
+</svelte:head>
+
+<div class="flex flex-col gap-6">
+	<GatewayAdminSubnav />
+
+	<!-- Filter Card -->
+	<Card.Root>
+		<Card.Header>
+			<Card.Title class="flex items-center gap-2 text-base">
+				<SearchIcon class="size-4 shrink-0" />
+				ค้นหา
+			</Card.Title>
+		</Card.Header>
+		<Card.Content>
+			<form method="GET" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+				<div class="flex flex-col gap-1.5">
+					<Label for="from">ตั้งแต่วันที่</Label>
+					<Input id="from" name="from" type="date" value={data.filter.from} />
+				</div>
+				<div class="flex flex-col gap-1.5">
+					<Label for="to">ถึงวันที่</Label>
+					<Input id="to" name="to" type="date" value={data.filter.to} />
+				</div>
+				<div class="flex flex-col gap-1.5">
+					<Label for="entityType">ประเภทข้อมูล</Label>
+					<select
+						id="entityType"
+						name="entityType"
+						class="border-input bg-background h-8 w-full rounded-lg border px-2.5 text-sm"
+					>
+						<option value="" selected={data.filter.entityType === ""}>ทั้งหมด</option>
+						{#each data.entityTypes as opt, i (opt.value)}
+							<option value={opt.value} selected={data.filter.entityType === opt.value}>
+								{opt.label}
+							</option>
+						{/each}
+					</select>
+				</div>
+				<div class="flex flex-col gap-1.5">
+					<Label for="action">การกระทำ</Label>
+					<Input
+						id="action"
+						name="action"
+						type="text"
+						placeholder="เช่น create, update"
+						value={data.filter.action}
+					/>
+				</div>
+				<div class="flex flex-col gap-1.5">
+					<Label for="q">ค้นหา</Label>
+					<Input
+						id="q"
+						name="q"
+						type="search"
+						placeholder="ผู้ทำรายการ, รายละเอียด"
+						value={data.filter.q}
+					/>
+				</div>
+				<div class="flex flex-col gap-2 sm:col-span-2 sm:flex-row sm:justify-end lg:col-span-5">
+					<Button variant="outline" type="button" href={resolve("/admin/audit-logs" as "/")}>
+						<RotateCcwIcon data-icon="inline-start" />
+						ล้างตัวกรอง
+					</Button>
+					<Button type="submit" variant="outline">
+						<SearchIcon data-icon="inline-start" />
+						ค้นหา
+					</Button>
+				</div>
+			</form>
+		</Card.Content>
+	</Card.Root>
+
+	<!-- Results Card -->
+	<Card.Root>
+		<Card.Header>
+			<Card.Title class="flex items-center gap-2 text-base">
+				<HistoryIcon class="size-4 shrink-0" />
+				ประวัติการทำรายการ
+			</Card.Title>
+			<Card.Description>
+				{auditPage.total} รายการ
+			</Card.Description>
+		</Card.Header>
+		<Card.Content class="overflow-x-auto p-0">
+			<table class="w-full min-w-215 text-sm">
+				<thead>
+					<tr class="border-b bg-muted/50 text-left">
+						<th class="px-4 py-3 font-medium whitespace-nowrap">วันที่-เวลา</th>
+						<th class="px-4 py-3 font-medium">ผู้ทำ</th>
+						<th class="px-4 py-3 font-medium">บทบาท</th>
+						<th class="px-4 py-3 font-medium">ประเภท</th>
+						<th class="px-4 py-3 font-medium">การกระทำ</th>
+						<th class="px-4 py-3 font-medium">รายละเอียด</th>
+						<th class="px-2 py-3 font-medium">
+							<span class="sr-only">ดูรายละเอียด</span>
+						</th>
+					</tr>
+				</thead>
+				<tbody>
+					{#each auditPage.items as item, i (item.id)}
+						<tr class="border-b last:border-0 hover:bg-muted/30">
+							<td class="px-4 py-3 font-mono text-xs whitespace-nowrap">
+								{formatDate(item.createdAt)}
+							</td>
+							<td class="px-4 py-3">
+								{#if item.actorDisplayName}
+									<span>{item.actorDisplayName}</span>
+									{#if item.actorUsername}
+										<span class="text-muted-foreground block text-xs">{item.actorUsername}</span>
+									{/if}
+								{:else if item.actorUsername}
+									<span>{item.actorUsername}</span>
+								{:else}
+									<span class="text-muted-foreground">—</span>
+								{/if}
+							</td>
+							<td class="text-muted-foreground px-4 py-3 text-xs">
+								{item.roleCode ?? "—"}
+							</td>
+							<td class="px-4 py-3 text-xs">
+								{labelEntity(item.entityType)}
+								<span class="text-muted-foreground">#{item.entityId}</span>
+							</td>
+							<td class="px-4 py-3">
+								<span class="rounded-sm bg-muted px-1.5 py-0.5 text-xs font-medium">
+									{labelAction(item.action)}
+								</span>
+							</td>
+							<td class="text-muted-foreground max-w-xs truncate px-4 py-3 text-xs">
+								{item.summary ?? "—"}
+							</td>
+							<td class="px-2 py-3">
+								<Button
+									variant="ghost"
+									size="icon-sm"
+									href={detailHref(item.id)}
+									title="ดูรายละเอียด"
+									aria-label="ดูรายละเอียดรายการ #{item.id}"
+								>
+									<FileTextIcon class="size-4" />
+								</Button>
+							</td>
+						</tr>
+					{:else}
+						<tr>
+							<td colspan="7" class="text-muted-foreground px-4 py-8 text-center">
+								ไม่พบรายการตามเงื่อนไข
+							</td>
+						</tr>
+					{/each}
+				</tbody>
+			</table>
+
+			{#if auditPage.total > 0}
+				<div class="flex items-center justify-between border-t p-4 bg-muted/20">
+					<div class="flex flex-1 justify-between sm:hidden">
+						<Button
+							variant="outline"
+							size="sm"
+							href={pageHref(auditPage.page - 1)}
+							disabled={auditPage.page <= 1}
+						>
+							<ChevronLeftIcon data-icon="inline-start" class="size-4 shrink-0" />
+							ก่อนหน้า
+						</Button>
+						<Button
+							variant="outline"
+							size="sm"
+							href={pageHref(auditPage.page + 1)}
+							disabled={auditPage.page >= totalPages}
+						>
+							ถัดไป
+							<ChevronRightIcon data-icon="inline-end" class="size-4 shrink-0" />
+						</Button>
+					</div>
+					<div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+						<div>
+							<p class="text-muted-foreground text-xs">
+								แสดงรายการที่ <span class="font-semibold text-foreground">{rangeFrom}</span> ถึง
+								<span class="font-semibold text-foreground">{rangeTo}</span> จากทั้งหมด
+								<span class="font-semibold text-foreground">{auditPage.total}</span> รายการ
+							</p>
+						</div>
+						{#if totalPages > 1}
+							<div>
+								<nav class="isolate inline-flex -space-x-px rounded-md" aria-label="Pagination">
+									<Button
+										variant="outline"
+										size="sm"
+										class="rounded-r-none"
+										href={pageHref(auditPage.page - 1)}
+										disabled={auditPage.page <= 1}
+									>
+										<ChevronLeftIcon data-icon="inline-start" class="size-4 shrink-0" />
+										ก่อนหน้า
+									</Button>
+									{#each Array.from({ length: totalPages }, (_, i) => i + 1) as page, i (page)}
+										<Button
+											variant={auditPage.page === page ? "default" : "outline"}
+											size="sm"
+											class="rounded-none border-l-0"
+											href={pageHref(page)}
+										>
+											{page}
+										</Button>
+									{/each}
+									<Button
+										variant="outline"
+										size="sm"
+										class="rounded-l-none border-l-0"
+										href={pageHref(auditPage.page + 1)}
+										disabled={auditPage.page >= totalPages}
+									>
+										ถัดไป
+										<ChevronRightIcon data-icon="inline-end" class="size-4 shrink-0" />
+									</Button>
+								</nav>
+							</div>
+						{/if}
+					</div>
+				</div>
+			{/if}
+		</Card.Content>
+	</Card.Root>
+</div>
+
+<!-- Detail Dialog -->
+<Dialog.Root open={detailOpen}>
+	<Dialog.Portal>
+		<Dialog.Overlay />
+		<Dialog.Content class="sm:max-w-4xl">
+			<Dialog.Header>
+				<Dialog.Title>รายละเอียดรายการ #{data.detail?.id}</Dialog.Title>
+				<Dialog.Description>
+					{#if data.detail}
+						{formatDate(data.detail.createdAt)} ·
+						{labelEntity(data.detail.entityType)} #{data.detail.entityId} ·
+						{labelAction(data.detail.action)}
+					{/if}
+				</Dialog.Description>
+			</Dialog.Header>
+
+			{#if data.detail}
+				{@const d = data.detail}
+				<div class="grid gap-4 py-2 text-sm">
+					<div class="grid grid-cols-2 gap-x-6 gap-y-2">
+						<div>
+							<span class="text-muted-foreground">ผู้ทำรายการ</span>
+							<p class="font-medium">{d.actorDisplayName ?? d.actorUsername ?? "—"}</p>
+						</div>
+						<div>
+							<span class="text-muted-foreground">บทบาท</span>
+							<p class="font-medium">{d.roleCode ?? "—"}</p>
+						</div>
+						<div>
+							<span class="text-muted-foreground">IP Address</span>
+							<p class="font-mono text-xs">{d.ipAddress ?? "—"}</p>
+						</div>
+						<div>
+							<span class="text-muted-foreground">รายละเอียด</span>
+							<p>{d.summary ?? "—"}</p>
+						</div>
+					</div>
+
+					<div class="grid gap-4 sm:grid-cols-2">
+						<div class="flex flex-col gap-1.5">
+							<p class="text-muted-foreground text-xs font-medium uppercase tracking-wide">ก่อน</p>
+							{#if d.beforeJson}
+								<pre class="max-h-60 overflow-auto rounded bg-muted p-3 text-xs">{prettyJson(
+										d.beforeJson,
+									)}</pre>
+							{:else}
+								<p class="text-muted-foreground text-xs italic">ไม่มีข้อมูล</p>
+							{/if}
+						</div>
+						<div class="flex flex-col gap-1.5">
+							<p class="text-muted-foreground text-xs font-medium uppercase tracking-wide">หลัง</p>
+							{#if d.afterJson}
+								<pre class="max-h-60 overflow-auto rounded bg-muted p-3 text-xs">{prettyJson(
+										d.afterJson,
+									)}</pre>
+							{:else}
+								<p class="text-muted-foreground text-xs italic">ไม่มีข้อมูล</p>
+							{/if}
+						</div>
+					</div>
+				</div>
+			{/if}
+
+			<Dialog.Footer>
+				<Button variant="outline" href={closeDetailHref()} class="gap-1.5">
+					<XIcon class="size-4" />
+					ปิด
+				</Button>
+			</Dialog.Footer>
+		</Dialog.Content>
+	</Dialog.Portal>
+</Dialog.Root>

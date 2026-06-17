@@ -164,10 +164,14 @@ Callback บน origin จริง เช่น `https://app.example.com/leave/
 
 ## E. Production deploy
 
+Deploy configs: [`docs/deploy/Caddyfile`](./deploy/Caddyfile) · [`docs/deploy/nginx-one-il.conf`](./deploy/nginx-one-il.conf)
+
 ```text
 Browser → Reverse proxy (same origin)
-  /        → one-il   (port 3000)
-  /leave/* → one-leave (port 3001, kit.paths.base = /leave)
+  /change-requests*  → one-il   (port 3000) — SCR canonical
+  /admin/audit-logs* → one-il   (port 3000) — audit viewer (SCR filter)
+  /leave/*           → one-leave (port 3001, kit.paths.base = /leave)
+  /                  → one-il   (port 3000)
 ```
 
 1. `pnpm build` ทั้งสองแอป (adapter-node)
@@ -178,7 +182,9 @@ Browser → Reverse proxy (same origin)
 
 ## F. ทดสอบหลัง deploy
 
-- [ ] `/login` → gateway home
+- [ ] `/change-requests` — SCR list (gateway)
+- [ ] `/admin/audit-logs?entityType=system_change_request` — SCR audit trail
+- [ ] `/leave/change-requests` redirects 308 → gateway SCR
 - [ ] Tile “ระบบลา” → `/leave` โหลดได้
 - [ ] `/leave/leave` สร้าง/ดูใบลาได้
 - [ ] Logout ที่ gateway → `/leave` ไม่เห็นข้อมูล

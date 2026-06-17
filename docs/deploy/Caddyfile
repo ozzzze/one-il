@@ -1,0 +1,32 @@
+# ONE-IL production reverse proxy (Caddy)
+#
+# Install: copy to VPS e.g. /etc/caddy/Caddyfile and reload caddy.
+# Replace app.example.com and upstream ports to match your deploy.
+#
+# Routing rules:
+#   /change-requests*  → one-il (SCR canonical — FR-09)
+#   /admin/audit-logs* → one-il (audit viewer — includes SCR entity filter)
+#   /leave/*           → one-leave (kit.paths.base = /leave)
+#   /*                 → one-il gateway (default)
+
+app.example.com {
+	encode gzip zstd
+
+	handle /change-requests* {
+		reverse_proxy 127.0.0.1:3000
+	}
+
+	handle /admin/audit-logs* {
+		reverse_proxy 127.0.0.1:3000
+	}
+
+	handle_path /leave/* {
+		reverse_proxy 127.0.0.1:3001
+	}
+
+	handle {
+		reverse_proxy 127.0.0.1:3000
+	}
+}
+
+# nginx equivalent — see docs/GATEWAY-ARCHITECTURE.md
