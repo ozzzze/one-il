@@ -68,10 +68,10 @@ insert into public.menu_items (
   ('gw-change-request', 'gw_hub', null, 'ขอเปลี่ยนข้อมูลบัญชี', 'Account change request', '/account/change-request', 'requests',
     array['change', 'account', 'profile'],
     array['profile:manage']::text[], 'standard', 'live', 20),
-  ('gw-roles', 'gw_hub', null, 'บทบาทและเมนู', 'Roles & menu', '/roles', 'roles',
+  ('gw-roles', 'gw_hub', null, 'กำหนดบทบาทผู้ใช้', 'User role assignment', '/roles', 'roles',
     array['roles', 'rbac', 'permissions'],
     array['roles:manage']::text[], 'admin_only', 'live', 30),
-  ('gw-menu-catalog', 'gw_hub', null, 'จัดการเมนู', 'Menu catalog', '/menu-catalog', 'gateway',
+  ('gw-menu-catalog', 'gw_hub', null, 'แคตตาล็อกเมนู', 'Menu catalog', '/menu-catalog', 'gateway',
     array['menu', 'catalog', 'navigation'],
     array['roles:manage']::text[], 'admin_only', 'live', 40)
 on conflict (id) do update set

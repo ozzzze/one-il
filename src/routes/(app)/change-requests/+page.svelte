@@ -13,13 +13,11 @@
 		ScrQueueCounts,
 	} from "$lib/server/one-leave/change-request/types.js";
 	import type { PageData } from "./$types";
-	import DownloadIcon from "@lucide/svelte/icons/download";
 	import InboxIcon from "@lucide/svelte/icons/inbox";
 	import PlusIcon from "@lucide/svelte/icons/plus";
 	import RotateCcwIcon from "@lucide/svelte/icons/rotate-ccw";
 	import SearchIcon from "@lucide/svelte/icons/search";
 	import { resolve } from "$app/paths";
-	import { SvelteURLSearchParams } from "svelte/reactivity";
 
 	let { data }: { data: PageData } = $props();
 
@@ -49,19 +47,6 @@
 			currentPage = 1;
 		}
 	});
-
-	function exportHref(): string {
-		const params = new SvelteURLSearchParams();
-		if (filter.status) params.set("status", filter.status);
-		if (filter.q) params.set("q", filter.q);
-		if (filter.changeCategory) params.set("changeCategory", filter.changeCategory);
-		if (filter.itSystemId) params.set("itSystemId", String(filter.itSystemId));
-		if (filter.exceptionTypeId) {
-			params.set("exceptionTypeId", String(filter.exceptionTypeId));
-		}
-		params.set("export", "csv");
-		return resolve(`/change-requests?${params.toString()}` as "/");
-	}
 </script>
 
 <svelte:head>
@@ -86,18 +71,7 @@
 					คิวอนุมัติ
 				</Button>
 			{/if}
-			{#if "canExport" in data && data.canExport}
-				<Button href={exportHref()} variant="outline">
-					<DownloadIcon data-icon="inline-start" />
-					ส่งออก CSV
-				</Button>
-				<Button
-					href={resolve("/admin/audit-logs?entityType=system_change_request" as "/")}
-					variant="outline"
-				>
-					ประวัติ SCR
-				</Button>
-			{/if}
+
 			<Button href={resolve("/change-requests/new" as "/")} variant="default">
 				<PlusIcon data-icon="inline-start" />
 				ยื่นคำขอเปลี่ยนแปลงระบบ
@@ -105,96 +79,91 @@
 		</div>
 	</div>
 
-	<Card.Root>
-		<Card.Header>
-			<Card.Title class="flex items-center gap-2 text-base">
-				<SearchIcon class="size-4 shrink-0" />
-				ค้นหาและตัวกรอง
-			</Card.Title>
-		</Card.Header>
-		<Card.Content>
-			<form method="GET" class="flex flex-col gap-4">
-				<div class="flex flex-wrap items-end gap-3">
-					<div class="flex min-w-40 flex-col gap-1.5">
-						<Label for="status">สถานะ</Label>
-						<NativeSelect id="status" name="status" value={filter.status}>
-							<option value="">ทุกสถานะ</option>
-							{#if "statusOptions" in data}
-								{#each data.statusOptions as opt (opt.value)}
-									<option value={opt.value}>{opt.label}</option>
-								{/each}
-							{/if}
-						</NativeSelect>
-					</div>
-					<div class="flex min-w-40 flex-col gap-1.5">
-						<Label for="changeCategory">หมวด CIS</Label>
-						<NativeSelect id="changeCategory" name="changeCategory" value={filter.changeCategory}>
-							<option value="">ทุกหมวด</option>
-							{#if "categoryOptions" in data}
-								{#each data.categoryOptions as opt (opt.value)}
-									<option value={opt.value}>{opt.label}</option>
-								{/each}
-							{/if}
-						</NativeSelect>
-					</div>
-					<div class="flex min-w-40 flex-col gap-1.5">
-						<Label for="itSystemId">ระบบ</Label>
-						<NativeSelect
-							id="itSystemId"
-							name="itSystemId"
-							value={filter.itSystemId ? String(filter.itSystemId) : ""}
-						>
-							<option value="">ทุกระบบ</option>
-							{#if "itSystems" in data}
-								{#each data.itSystems as sys (sys.id)}
-									<option value={String(sys.id)}>{sys.nameTh}</option>
-								{/each}
-							{/if}
-						</NativeSelect>
-					</div>
-					<div class="flex min-w-40 flex-col gap-1.5">
-						<Label for="exceptionTypeId">ประเภทข้อยกเว้น</Label>
-						<NativeSelect
-							id="exceptionTypeId"
-							name="exceptionTypeId"
-							value={filter.exceptionTypeId ? String(filter.exceptionTypeId) : ""}
-						>
-							<option value="">ทุกประเภท</option>
-							{#if "exceptionTypes" in data}
-								{#each data.exceptionTypes as et (et.id)}
-									<option value={String(et.id)}>{et.nameTh}</option>
-								{/each}
-							{/if}
-						</NativeSelect>
-					</div>
-					<div class="flex min-w-48 flex-1 flex-col gap-1.5">
-						<Label for="q">ค้นหา</Label>
-						<Input
-							id="q"
-							name="q"
-							type="search"
-							placeholder="เลขที่ หัวข้อ ระบบ ชื่อ"
-							value={filter.q}
-						/>
-					</div>
-				</div>
-				<div class="flex flex-col gap-2 sm:flex-row sm:justify-end">
-					<Button variant="outline" type="button" href={resolve("/change-requests" as "/")}>
-						<RotateCcwIcon data-icon="inline-start" />
-						ล้างตัวกรอง
-					</Button>
-					<Button type="submit" variant="outline">
-						<SearchIcon data-icon="inline-start" />
-						ค้นหา
-					</Button>
-				</div>
-			</form>
-		</Card.Content>
-	</Card.Root>
+	<form method="GET" class="flex flex-col gap-3 sm:flex-row sm:items-end">
+		<div class="flex min-w-0 flex-1 flex-col gap-1.5">
+			<div class="relative">
+				<SearchIcon
+					class="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2"
+				/>
+				<Input
+					id="q"
+					name="q"
+					type="search"
+					placeholder="เลขที่ หัวข้อ ระบบ ชื่อ"
+					class="pl-9"
+					value={filter.q}
+				/>
+			</div>
+		</div>
 
-	<Card.Root class="overflow-hidden">
-		<Card.Content class="overflow-x-auto p-0">
-			<Table.Root class="min-w-[800px]">
+		<div class="flex w-full min-w-0 flex-col gap-1.5 sm:w-44">
+			<NativeSelect id="status" name="status" value={filter.status} class="py-1 leading-normal">
+				<option value="">ทุกสถานะ</option>
+				{#if "statusOptions" in data}
+					{#each data.statusOptions as opt (opt.value)}
+						<option value={opt.value}>{opt.label}</option>
+					{/each}
+				{/if}
+			</NativeSelect>
+		</div>
+
+		<div class="flex w-full min-w-0 flex-col gap-1.5 sm:w-44">
+			<NativeSelect id="changeCategory" name="changeCategory" value={filter.changeCategory} class="py-1 leading-normal">
+				<option value="">ทุกหมวด</option>
+				{#if "categoryOptions" in data}
+					{#each data.categoryOptions as opt (opt.value)}
+						<option value={opt.value}>{opt.label}</option>
+					{/each}
+				{/if}
+			</NativeSelect>
+		</div>
+
+		<div class="flex w-full min-w-0 flex-col gap-1.5 sm:w-44">
+			<NativeSelect
+				id="itSystemId"
+				name="itSystemId"
+				value={filter.itSystemId ? String(filter.itSystemId) : ""}
+				class="py-1 leading-normal"
+			>
+				<option value="">ทุกระบบ</option>
+				{#if "itSystems" in data}
+					{#each data.itSystems as sys (sys.id)}
+						<option value={String(sys.id)}>{sys.nameTh}</option>
+					{/each}
+				{/if}
+			</NativeSelect>
+		</div>
+
+		<div class="flex w-full min-w-0 flex-col gap-1.5 sm:w-44">
+			<NativeSelect
+				id="exceptionTypeId"
+				name="exceptionTypeId"
+				value={filter.exceptionTypeId ? String(filter.exceptionTypeId) : ""}
+				class="py-1 leading-normal"
+			>
+				<option value="">ทุกประเภท</option>
+				{#if "exceptionTypes" in data}
+					{#each data.exceptionTypes as et (et.id)}
+						<option value={String(et.id)}>{et.nameTh}</option>
+					{/each}
+				{/if}
+			</NativeSelect>
+		</div>
+
+		<div class="flex flex-col gap-2 sm:flex-row">
+			<Button variant="outline" type="button" href={resolve("/change-requests" as "/")} class="h-9 px-3" title="ล้างตัวกรอง">
+				<RotateCcwIcon class="size-4" />
+				<span class="sr-only sm:not-sr-only">ล้าง</span>
+			</Button>
+			<Button type="submit" variant="outline" class="h-9 px-3">
+				<SearchIcon class="size-4" />
+				<span class="sr-only sm:not-sr-only">ค้นหา</span>
+			</Button>
+		</div>
+	</form>
+
+	<div class="bg-card overflow-hidden rounded-lg border shadow-sm">
+		<Table.Root class="min-w-[960px]">
 				<Table.Header>
 					<Table.Row>
 						<Table.Head>เลขที่</Table.Head>
@@ -265,6 +234,5 @@
 					locale="th"
 				/>
 			{/if}
-		</Card.Content>
-	</Card.Root>
+	</div>
 </div>

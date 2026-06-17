@@ -1,0 +1,33 @@
+/**
+ * ONE-Leave primary action colors — synced with one-leave/apps/web button default/primary (sky-500/600).
+ * Wrap any subtree in `.one-leave-theme` to scope, or rely on global :root tokens + Button default variant.
+ */
+:root {
+	--ol-action: oklch(0.685 0.169 237.323);
+	--ol-action-hover: oklch(0.588 0.158 241.031);
+	--ol-action-fg: oklch(1 0 0);
+}
+
+.dark {
+	--ol-action: oklch(0.588 0.158 241.031);
+	--ol-action-hover: oklch(0.685 0.169 237.323);
+}
+
+.one-leave-theme {
+	color-scheme: light;
+}
+
+.dark .one-leave-theme {
+	color-scheme: dark;
+}
+
+@layer components {
+	.one-leave-theme [data-slot="button"].bg-primary.text-primary-foreground {
+		background-color: var(--ol-action);
+		color: var(--ol-action-fg);
+	}
+
+	.one-leave-theme [data-slot="button"].bg-primary.text-primary-foreground:hover {
+		background-color: var(--ol-action-hover);
+	}
+}

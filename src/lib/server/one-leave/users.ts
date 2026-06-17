@@ -14,6 +14,7 @@ type UserRow = {
 	first_name_th: string | null;
 	last_name_th: string | null;
 	employee_code: string | null;
+	role_codes: string[] | null;
 };
 
 function toInt(value: string | number | null | undefined): number | null {
@@ -22,12 +23,9 @@ function toInt(value: string | number | null | undefined): number | null {
 	return Number.isFinite(n) ? n : null;
 }
 
-async function loadRoles(userId: number): Promise<LeaveRoleCode[]> {
-	const { rows } = await leaveQuery<{ role_code: string }>(
-		`SELECT role_code FROM one_leave.user_roles WHERE user_id = $1`,
-		[userId]
-	);
-	return rows.map((r: { role_code: string }) => r.role_code).filter(isLeaveRoleCode);
+function passwordChangedAtSec(row: Pick<UserRow, "password_changed_at">): number {
+	if (!row.password_changed_at) return 0;
+	return Math.floor(row.password_changed_at.getTime() / 1000);
 }
 
 function rowToAuthUser(row: UserRow, roles: LeaveRoleCode[]): LeaveAuthUser {
@@ -50,17 +48,7 @@ function rowToAuthUser(row: UserRow, roles: LeaveRoleCode[]): LeaveAuthUser {
 	};
 }
 
-export async function getPasswordChangedAt(userId: number): Promise<number> {
-	const { rows } = await leaveQuery<{ password_changed_at: Date | null }>(
-		`SELECT password_changed_at FROM one_leave.users WHERE id = $1 AND is_active = true`,
-		[userId]
-	);
-	const row = rows[0];
-	if (!row?.password_changed_at) return 0;
-	return Math.floor(row.password_changed_at.getTime() / 1000);
-}
-
-export async function getLeaveUserById(userId: number): Promise<LeaveAuthUser | null> {
+async function fetchLeaveUserRow(userId: number): Promise<UserRow | null> {
 	const { rows } = await leaveQuery<UserRow>(
 		`
 		SELECT
@@ -71,16 +59,59 @@ export async function getLeaveUserById(userId: number): Promise<LeaveAuthUser | 
 			u.password_changed_at,
 			e.first_name_th,
 			e.last_name_th,
-			e.employee_code
+			e.employee_code,
+			COALESCE(
+				array_agg(ur.role_code) FILTER (WHERE ur.role_code IS NOT NULL),
+				'{}'
+			) AS role_codes
 		FROM one_leave.users AS u
 		LEFT JOIN one_leave.employees AS e ON e.id = u.employee_id
+		LEFT JOIN one_leave.user_roles AS ur ON ur.user_id = u.id
 		WHERE u.id = $1 AND u.is_active = true
+		GROUP BY
+			u.id,
+			u.username,
+			u.employee_id,
+			u.must_change_password,
+			u.password_changed_at,
+			e.first_name_th,
+			e.last_name_th,
+			e.employee_code
 		`,
 		[userId]
 	);
-	const row = rows[0];
-	if (!row) return null;
-	const roles = await loadRoles(userId);
+	return rows[0] ?? null;
+}
+
+function authUserFromRow(row: UserRow): LeaveAuthUser | null {
+	const roles = (row.role_codes ?? []).filter(isLeaveRoleCode);
 	if (roles.length === 0) return null;
 	return rowToAuthUser(row, roles);
+}
+
+export async function getPasswordChangedAt(userId: number): Promise<number> {
+	const { rows } = await leaveQuery<{ password_changed_at: Date | null }>(
+		`SELECT password_changed_at FROM one_leave.users WHERE id = $1 AND is_active = true`,
+		[userId]
+	);
+	const row = rows[0];
+	if (!row?.password_changed_at) return 0;
+	return passwordChangedAtSec(row);
+}
+
+/** Single round-trip for session validation: user + password_changed_at + roles. */
+export async function loadLeaveAuthSessionUser(
+	userId: number
+): Promise<{ user: LeaveAuthUser; passwordChangedAtSec: number } | null> {
+	const row = await fetchLeaveUserRow(userId);
+	if (!row) return null;
+	const user = authUserFromRow(row);
+	if (!user) return null;
+	return { user, passwordChangedAtSec: passwordChangedAtSec(row) };
+}
+
+export async function getLeaveUserById(userId: number): Promise<LeaveAuthUser | null> {
+	const row = await fetchLeaveUserRow(userId);
+	if (!row) return null;
+	return authUserFromRow(row);
 }

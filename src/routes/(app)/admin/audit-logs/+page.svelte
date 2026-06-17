@@ -1,5 +1,4 @@
 <script lang="ts">
-	import GatewayAdminSubnav from "$lib/components/gateway-admin-subnav.svelte";
 	import NativeSelect from "$lib/components/native-select.svelte";
 	import ServerLinkPagination from "$lib/components/server-link-pagination.svelte";
 	import { Badge } from "$lib/components/ui/badge/index.js";
@@ -121,7 +120,6 @@
 </svelte:head>
 
 <div class="flex flex-col gap-6">
-	<GatewayAdminSubnav />
 
 	<!-- Filter Card -->
 	<Card.Root>

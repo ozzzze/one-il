@@ -49,8 +49,8 @@
 	const copy = $derived.by(() =>
 		data.locale === "th"
 			? {
-					pageTitle: "ตั้งค่า - ONE-IL",
-					title: "ตั้งค่า",
+					pageTitle: "การตั้งค่า - ONE-IL",
+					title: "การตั้งค่า",
 					description: "จัดการโปรไฟล์และค่ากำหนดของแอปพลิเคชัน",
 					tabs: {
 						profile: "โปรไฟล์",

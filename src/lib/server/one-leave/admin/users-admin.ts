@@ -55,7 +55,10 @@ function mapUserRow(row: UserListDbRow): AdminUserRow {
 	};
 }
 
-export async function listLeaveUsers(): Promise<AdminUserRow[]> {
+export async function listLeaveUsers(options?: { workingOnly?: boolean }): Promise<AdminUserRow[]> {
+	const where = options?.workingOnly
+		? `WHERE u.is_active = true AND (u.employee_id IS NULL OR e.is_active = true)`
+		: "";
 	const { rows } = await leaveQuery<UserListDbRow>(
 		`
 		SELECT
@@ -75,6 +78,7 @@ export async function listLeaveUsers(): Promise<AdminUserRow[]> {
 		FROM one_leave.users AS u
 		LEFT JOIN one_leave.employees AS e ON e.id = u.employee_id
 		LEFT JOIN one_leave.user_roles AS ur ON ur.user_id = u.id
+		${where}
 		GROUP BY u.id, e.employee_code, e.first_name_th, e.last_name_th
 		ORDER BY u.username
 		`

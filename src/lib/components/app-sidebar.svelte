@@ -81,6 +81,7 @@
 
 	function pathnameActive(href: string | null): boolean {
 		if (!href) return false;
+		if (href === "/roles" && isPathActive(page.url.pathname, "/admin/roles")) return true;
 		return isPathActive(page.url.pathname, href);
 	}
 
@@ -124,12 +125,12 @@
 	}
 </script>
 
-{#snippet menuLeaf(item: NavMenuItem)}
+{#snippet menuLeaf(item: NavMenuItem, siblings: readonly NavMenuItem[])}
 	{@const Icon = menuIconFor(item.iconKey)}
 	{@const badge = menuBadge(item.id)}
 	<Sidebar.MenuItem>
 		{#if item.accessible && item.href}
-			<Sidebar.MenuButton>
+			<Sidebar.MenuButton isActive={subItemActive(item.href, siblings)}>
 				{#snippet child({ props })}
 					<a href={resolve(item.href as "/")} {...props}>
 						<Icon class="size-4" />
@@ -449,7 +450,7 @@
 							{:else if item.children.length > 0}
 								{@render menuBranch(item)}
 							{:else}
-								{@render menuLeaf(item)}
+								{@render menuLeaf(item, group.items)}
 							{/if}
 						{/each}
 					</Sidebar.Menu>

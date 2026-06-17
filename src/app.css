@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "./lib/styles/one-leave-primary.css";
 @plugin "@tailwindcss/typography";
 
 @source "../node_modules/layerchart";

@@ -8,7 +8,7 @@ import {
 	getMockPasswordChangedAt,
 	isMockLeaveUserId,
 } from "$lib/server/one-leave/mock-auth.js";
-import { getLeaveUserById, getPasswordChangedAt } from "$lib/server/one-leave/users.js";
+import { loadLeaveAuthSessionUser, getPasswordChangedAt } from "$lib/server/one-leave/users.js";
 import type { LeaveAuthUser, LeaveSessionPayload } from "$lib/server/one-leave/types.js";
 
 export const LEAVE_SESSION_COOKIE = "one_leave_session";
@@ -103,13 +103,19 @@ export async function getLeaveSessionUser(cookies: Cookies): Promise<LeaveAuthUs
 		return getMockLeaveUserById(payload.userId);
 	}
 
-	const dbPwdAt = await getPasswordChangedAt(payload.userId);
-	if (dbPwdAt > 0 && (payload.pwdAt ?? 0) + PWD_CHANGED_SKEW_SEC < dbPwdAt) {
+	const sessionUser = await loadLeaveAuthSessionUser(payload.userId);
+	if (!sessionUser) return null;
+
+	const { user, passwordChangedAtSec } = sessionUser;
+	if (
+		passwordChangedAtSec > 0 &&
+		(payload.pwdAt ?? 0) + PWD_CHANGED_SKEW_SEC < passwordChangedAtSec
+	) {
 		cookies.delete(LEAVE_SESSION_COOKIE, { path: "/" });
 		return null;
 	}
 
-	return getLeaveUserById(payload.userId);
+	return user;
 }
 
 export function leaveLoginUrl(redirectTo: string): string {

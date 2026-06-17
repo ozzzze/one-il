@@ -101,7 +101,7 @@
 			<h1 class="text-3xl font-bold tracking-tight">{t.title}</h1>
 			<p class="text-muted-foreground text-sm">{t.subtitle}</p>
 		</div>
-		<Button href={`${base}/roles`} variant="outline" size="sm">{t.backToRoles}</Button>
+		<Button href={`${base}/admin/roles`} variant="outline" size="sm">{t.backToRoles}</Button>
 	</div>
 
 	<Card.Root>

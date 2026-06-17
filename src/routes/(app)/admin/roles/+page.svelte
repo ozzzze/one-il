@@ -1,9 +1,9 @@
 <script lang="ts">
 	import * as Table from "$lib/components/ui/table/index.js";
-	import * as Select from "$lib/components/ui/select/index.js";
 	import { Button } from "$lib/components/ui/button/index.js";
 	import { Input } from "$lib/components/ui/input/index.js";
 	import { Badge } from "$lib/components/ui/badge/index.js";
+	import NativeSelect from "$lib/components/native-select.svelte";
 	import PlusIcon from "@lucide/svelte/icons/plus";
 	import XIcon from "@lucide/svelte/icons/x";
 	import SearchIcon from "@lucide/svelte/icons/search";
@@ -11,7 +11,7 @@
 	import { toast } from "svelte-sonner";
 	import { enhance } from "$app/forms";
 	import type { SubmitFunction } from "@sveltejs/kit";
-	import { leaveRoleLabel, assignableLeaveRoles } from "$lib/auth/leave-role-labels.js";
+	import { leaveRoleLabel, assignableLeaveRoles, ALL_LEAVE_ROLES } from "$lib/auth/leave-role-labels.js";
 	import type { LeaveRoleCode } from "$lib/server/one-leave/types.js";
 
 	let { data, form } = $props();
@@ -23,6 +23,7 @@
 					title: "กำหนดบทบาทผู้ใช้",
 					description: "มอบและถอนบทบาท one-leave; บทบาท admin มอบได้เฉพาะผู้ดูแลระบบ",
 					search: "ค้นหาผู้ใช้...",
+					allRoles: "ทุกบทบาท",
 					user: "ผู้ใช้",
 					currentRoles: "บทบาทปัจจุบัน",
 					addRole: "เพิ่มบทบาท",
@@ -41,6 +42,7 @@
 					title: "User role assignment",
 					description: "Assign and revoke one-leave roles; admin role is gated to system admins.",
 					search: "Search users...",
+					allRoles: "All roles",
 					user: "User",
 					currentRoles: "Current roles",
 					addRole: "Add role",
@@ -57,21 +59,23 @@
 	);
 
 	let search = $state("");
+	let roleFilter = $state("");
 	let currentPage = $state(1);
 	const itemsPerPage = 10;
 
 	$effect(() => {
 		search;
+		roleFilter;
 		currentPage = 1;
 	});
-
-	const addPick = $state<Record<number, string>>({});
 
 	const assignable = $derived(assignableLeaveRoles(data.canGrantAdmin));
 
 	const filtered = $derived(
 		data.users.filter((u) => {
-			const q = search.toLowerCase();
+			if (roleFilter && !u.roles.includes(roleFilter as LeaveRoleCode)) return false;
+			const q = search.trim().toLowerCase();
+			if (!q) return true;
 			return u.username.toLowerCase().includes(q) || (u.fullName ?? "").toLowerCase().includes(q);
 		})
 	);
@@ -87,13 +91,6 @@
 
 	function availableToAdd(roles: LeaveRoleCode[]): LeaveRoleCode[] {
 		return assignable.filter((r) => !roles.includes(r));
-	}
-
-	function pickValue(userId: number, roles: LeaveRoleCode[]): string {
-		const current = addPick[userId];
-		const avail = availableToAdd(roles);
-		if (current && avail.includes(current as LeaveRoleCode)) return current;
-		return avail[0] ?? "";
 	}
 
 	const refreshEnhance: SubmitFunction =
@@ -113,9 +110,24 @@
 		<p class="text-muted-foreground">{t.description}</p>
 	</div>
 
-	<div class="relative max-w-sm">
-		<SearchIcon class="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
-		<Input placeholder={t.search} class="pl-9" bind:value={search} />
+	<div class="flex flex-col gap-3 sm:flex-row sm:items-end">
+		<div class="relative min-w-0 flex-1 sm:max-w-sm">
+			<SearchIcon class="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+			<Input id="user-search" placeholder={t.search} class="pl-9" bind:value={search} />
+		</div>
+		<div class="w-full sm:w-56">
+			<NativeSelect
+				id="role-filter"
+				bind:value={roleFilter}
+				selectSize="default"
+				class="py-1 leading-normal"
+			>
+				<option value="">{t.allRoles}</option>
+				{#each ALL_LEAVE_ROLES as role (role)}
+					<option value={role}>{leaveRoleLabel(role, data.locale)}</option>
+				{/each}
+			</NativeSelect>
+		</div>
 	</div>
 
 	<div class="bg-card overflow-hidden rounded-lg border shadow-sm">
@@ -177,29 +189,19 @@
 									class="flex items-center gap-2"
 								>
 									<input type="hidden" name="userId" value={u.id} />
-									<Select.Root
-										type="single"
+									<NativeSelect
 										name="roleCode"
-										value={pickValue(u.id, u.roles)}
-										onValueChange={(v) => (addPick[u.id] = v)}
+										class="min-w-50"
+										selectSize="default"
+										aria-label={t.selectRole}
 									>
-										<Select.Trigger class="w-50">
-											<span
-												>{leaveRoleLabel(
-													pickValue(u.id, u.roles) as LeaveRoleCode,
-													data.locale
-												)}</span
-											>
-										</Select.Trigger>
-										<Select.Content>
-											{#each avail as role (role)}
-												<Select.Item value={role}>{leaveRoleLabel(role, data.locale)}</Select.Item>
-											{/each}
-										</Select.Content>
-									</Select.Root>
-									<Button type="submit" size="sm" variant="outline">
-										<PlusIcon class="mr-1 size-4" />
-										{t.add}
+										<option value="">{t.selectRole}</option>
+										{#each avail as role (role)}
+											<option value={role}>{leaveRoleLabel(role, data.locale)}</option>
+										{/each}
+									</NativeSelect>
+									<Button type="submit" size="icon" variant="outline" class="size-8 shrink-0" aria-label={t.add}>
+										<PlusIcon class="size-4" />
 									</Button>
 								</form>
 							{:else}

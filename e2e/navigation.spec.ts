@@ -37,9 +37,9 @@ test.describe("Navigation", () => {
 	});
 
 	test("sidebar link to roles works", async ({ page }) => {
-		await page.click('a[href="/roles"]');
-		await page.waitForURL("/roles");
-		await expectHeading(page, "Roles");
+		await page.click('a[href="/admin/roles"]');
+		await page.waitForURL("/admin/roles");
+		await expectHeading(page, "User role assignment");
 	});
 
 	test("breadcrumbs update on navigation", async ({ page }) => {

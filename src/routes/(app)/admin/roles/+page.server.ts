@@ -17,7 +17,7 @@ function failFromError(err: unknown) {
 
 export const load: PageServerLoad = async ({ locals }) => {
 	assertPermission(locals.user, "roles:manage");
-	const users = await listLeaveUsers();
+	const users = await listLeaveUsers({ workingOnly: true });
 	return {
 		locale: locals.locale,
 		users,
@@ -40,7 +40,8 @@ export const actions: Actions = {
 			roleCode: formData.get("roleCode"),
 		});
 		if (!parsed.success) {
-			return fail(400, { message: "Invalid input", code: "validation" });
+			const msg = locals.locale === "th" ? "กรุณาเลือกบทบาท" : "Please select a role";
+			return fail(400, { message: msg, code: "validation" });
 		}
 		try {
 			await assignLeaveRole(toAdminActor(locals.user!), parsed.data.userId, parsed.data.roleCode);

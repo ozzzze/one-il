@@ -28,17 +28,12 @@ type LauncherModule = {
 
 const LEAVE_BASE = "/leave";
 
-function leaveHref(path: string): string {
-	if (path === "/") return LEAVE_BASE;
-	return `${LEAVE_BASE}${path}`;
-}
-
 /** Keep in sync with one-leave `APP_MODULES` (proxy paths). */
 const LAUNCHER_MODULES: readonly LauncherModule[] = [
 	{
 		id: "gateway-settings",
-		titleTh: "การตั้งค่า Gateway",
-		titleEn: "Gateway settings",
+		titleTh: "การตั้งค่า",
+		titleEn: "Settings",
 		descriptionTh: "โปรไฟล์และการตั้งค่าศูนย์กลาง",
 		descriptionEn: "Hub profile and preferences",
 		href: "/settings",
@@ -50,11 +45,11 @@ const LAUNCHER_MODULES: readonly LauncherModule[] = [
 	},
 	{
 		id: "gateway-roles",
-		titleTh: "บทบาทและเมนู",
-		titleEn: "Roles & menu",
-		descriptionTh: "กำหนดสิทธิ์เมนู Gateway (เมื่อมี catalog)",
-		descriptionEn: "Gateway menu RBAC (when catalog exists)",
-		href: "/roles",
+		titleTh: "กำหนดบทบาทผู้ใช้",
+		titleEn: "User role assignment",
+		descriptionTh: "มอบ/ถอนบทบาท; บทบาท admin เฉพาะผู้ดูแลระบบ",
+		descriptionEn: "Assign/revoke roles; admin role gated",
+		href: "/admin/roles",
 		groupTh: "ศูนย์กลาง",
 		groupEn: "Hub",
 		groupCode: "hub",
@@ -103,7 +98,7 @@ const LAUNCHER_MODULES: readonly LauncherModule[] = [
 	},
 	{
 		id: "change-requests-approvals",
-		titleTh: "คิวอนุมัติคำขอเปลี่ยนแปลง",
+		titleTh: "คิวอนุมัติคำขอเปลี่ยนแปลงระบบ",
 		titleEn: "Change approvals",
 		descriptionTh: "อนุมัติคำขอเปลี่ยนแปลงระบบสำหรับหัวหน้างานและ IT",
 		descriptionEn: "Approve system change requests for supervisor and IT",

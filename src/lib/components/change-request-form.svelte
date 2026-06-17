@@ -4,7 +4,7 @@
 	import * as Card from "$lib/components/ui/card/index.js";
 	import { Input } from "$lib/components/ui/input/index.js";
 	import { Label } from "$lib/components/ui/label/index.js";
-	import * as Select from "$lib/components/ui/select/index.js";
+	import NativeSelect from "$lib/components/native-select.svelte";
 	import { Textarea } from "$lib/components/ui/textarea/index.js";
 	import { CHANGE_CATEGORY_LABELS } from "$lib/change-request/labels.js";
 	import type {
@@ -69,51 +69,53 @@
 </script>
 
 <Card.Root>
-	<Card.Header>
-		<Card.Title class="text-base">รายละเอียดคำขอเปลี่ยนแปลงระบบ</Card.Title>
-	</Card.Header>
-	<Card.Content class="flex flex-col gap-4 text-sm">
-		<div class="grid gap-4 sm:grid-cols-2">
-			<div class="flex flex-col gap-1.5">
-				<Label for="itSystemId" required>ระบบที่เกี่ยวข้อง</Label>
-				{#if readonly}
-					<Input id="itSystemId" value={itSystemLabel(itSystemId)} disabled />
-					<input type="hidden" name="itSystemId" value={itSystemId} />
-				{:else}
-					<Select.Root name="itSystemId" type="single" bind:value={itSystemId} required>
-						<Select.Trigger id="itSystemId">
-							<span>{itSystemLabel(itSystemId)}</span>
-						</Select.Trigger>
-						<Select.Content>
-							{#each itSystems as sys (sys.id)}
-								<Select.Item value={String(sys.id)}>{sys.nameTh}</Select.Item>
-							{/each}
-						</Select.Content>
-					</Select.Root>
-				{/if}
-			</div>
-
-			<div class="flex flex-col gap-1.5">
-				<Label for="exceptionTypeId" required>ประเภทข้อยกเว้น</Label>
-				{#if readonly}
-					<Input id="exceptionTypeId" value={exceptionTypeLabel(exceptionTypeId)} disabled />
-					<input type="hidden" name="exceptionTypeId" value={exceptionTypeId} />
-				{:else}
-					<Select.Root name="exceptionTypeId" type="single" bind:value={exceptionTypeId} required>
-						<Select.Trigger id="exceptionTypeId">
-							<span>{exceptionTypeLabel(exceptionTypeId)}</span>
-						</Select.Trigger>
-						<Select.Content>
-							{#each exceptionTypes as et (et.id)}
-								<Select.Item value={String(et.id)}>{et.nameTh}</Select.Item>
-							{/each}
-						</Select.Content>
-					</Select.Root>
-				{/if}
-			</div>
+	<Card.Content class="grid gap-4 lg:grid-cols-3 md:grid-cols-2 text-sm pt-6">
+		<div class="flex flex-col gap-1.5">
+			<Label for="itSystemId" required>ระบบที่เกี่ยวข้อง</Label>
+			{#if readonly}
+				<Input id="itSystemId" value={itSystemLabel(itSystemId)} disabled />
+				<input type="hidden" name="itSystemId" value={itSystemId} />
+			{:else}
+				<NativeSelect id="itSystemId" name="itSystemId" bind:value={itSystemId} required selectSize="default">
+					<option value="">— เลือกระบบ —</option>
+					{#each itSystems as sys (sys.id)}
+						<option value={String(sys.id)}>{sys.nameTh}</option>
+					{/each}
+				</NativeSelect>
+			{/if}
 		</div>
 
 		<div class="flex flex-col gap-1.5">
+			<Label for="exceptionTypeId" required>ประเภทข้อยกเว้น</Label>
+			{#if readonly}
+				<Input id="exceptionTypeId" value={exceptionTypeLabel(exceptionTypeId)} disabled />
+				<input type="hidden" name="exceptionTypeId" value={exceptionTypeId} />
+			{:else}
+				<NativeSelect id="exceptionTypeId" name="exceptionTypeId" bind:value={exceptionTypeId} required selectSize="default">
+					<option value="">— เลือกประเภท —</option>
+					{#each exceptionTypes as et (et.id)}
+						<option value={String(et.id)}>{et.nameTh}</option>
+					{/each}
+				</NativeSelect>
+			{/if}
+		</div>
+
+		<div class="flex flex-col gap-1.5">
+			<Label for="changeCategory" required>ประเภทการดำเนินการ (CIS)</Label>
+			{#if readonly}
+				<Input id="changeCategory" value={changeCategoryLabel(changeCategory)} disabled />
+				<input type="hidden" name="changeCategory" value={changeCategory} />
+			{:else}
+				<NativeSelect id="changeCategory" name="changeCategory" bind:value={changeCategory} required selectSize="default">
+					<option value="">— เลือกหมวด —</option>
+					{#each categoryOptions as [code, label] (code)}
+						<option value={code}>{label}</option>
+					{/each}
+				</NativeSelect>
+			{/if}
+		</div>
+
+		<div class="flex flex-col gap-1.5 lg:col-span-3 md:col-span-2">
 			<Label for="title" required>หัวข้อข้อยกเว้น</Label>
 			<Input
 				id="title"
@@ -125,26 +127,7 @@
 			/>
 		</div>
 
-		<div class="flex flex-col gap-1.5">
-			<Label for="changeCategory" required>ประเภทการดำเนินการ (CIS)</Label>
-			{#if readonly}
-				<Input id="changeCategory" value={changeCategoryLabel(changeCategory)} disabled />
-				<input type="hidden" name="changeCategory" value={changeCategory} />
-			{:else}
-				<Select.Root name="changeCategory" type="single" bind:value={changeCategory} required>
-					<Select.Trigger id="changeCategory">
-						<span>{changeCategoryLabel(changeCategory)}</span>
-					</Select.Trigger>
-					<Select.Content>
-						{#each categoryOptions as [code, label] (code)}
-							<Select.Item value={code}>{label}</Select.Item>
-						{/each}
-					</Select.Content>
-				</Select.Root>
-			{/if}
-		</div>
-
-		<div class="flex flex-col gap-1.5">
+		<div class="flex flex-col gap-1.5 lg:col-span-3 md:col-span-2">
 			<Label for="description" required>รายละเอียดข้อยกเว้น</Label>
 			<Textarea
 				id="description"
@@ -185,7 +168,7 @@
 			<Textarea
 				id="compensatingControls"
 				name="compensatingControls"
-				rows={2}
+				rows={3}
 				disabled={readonly}
 				placeholder="ไม่บังคับ"
 				bind:value={compensatingControls}
@@ -197,39 +180,38 @@
 			<Textarea
 				id="impactDescription"
 				name="impactDescription"
-				rows={2}
+				rows={3}
 				disabled={readonly}
 				placeholder="ไม่บังคับ"
 				bind:value={impactDescription}
 			/>
 		</div>
 
-		<div class="grid gap-4 sm:grid-cols-2">
-			<div class="flex flex-col gap-1.5">
-				<Label for="exceptionStartDate" required>เริ่มข้อยกเว้น</Label>
-				<Input
-					id="exceptionStartDate"
-					name="exceptionStartDate"
-					type="date"
-					required
-					disabled={readonly}
-					bind:value={exceptionStartDate}
-				/>
-			</div>
-			<div class="flex flex-col gap-1.5">
-				<Label for="exceptionEndDate" required>สิ้นสุดข้อยกเว้น</Label>
-				<Input
-					id="exceptionEndDate"
-					name="exceptionEndDate"
-					type="date"
-					required
-					disabled={readonly}
-					bind:value={exceptionEndDate}
-				/>
-			</div>
+		<div class="flex flex-col gap-1.5">
+			<Label for="exceptionStartDate" required>เริ่มข้อยกเว้น</Label>
+			<Input
+				id="exceptionStartDate"
+				name="exceptionStartDate"
+				type="date"
+				required
+				disabled={readonly}
+				bind:value={exceptionStartDate}
+			/>
 		</div>
 
 		<div class="flex flex-col gap-1.5">
+			<Label for="exceptionEndDate" required>สิ้นสุดข้อยกเว้น</Label>
+			<Input
+				id="exceptionEndDate"
+				name="exceptionEndDate"
+				type="date"
+				required
+				disabled={readonly}
+				bind:value={exceptionEndDate}
+			/>
+		</div>
+
+		<div class="flex flex-col gap-1.5 lg:col-span-3 md:col-span-2">
 			<Label for="rollbackPlan" required>Rollback</Label>
 			<Textarea
 				id="rollbackPlan"
@@ -252,36 +234,33 @@
 			/>
 		</div>
 
-		{#if !readonly}
-			<div class="rounded-lg border p-4">
-				<div class="flex flex-col gap-1.5">
-					<Label for="request_supporting">เอกสารประกอบคำขอ (PDF/PNG/JPEG · สูงสุด 10 MB)</Label>
-					<input
-						id="request_supporting"
-						name="request_supporting"
-						type="file"
-						accept=".pdf,.png,.jpg,.jpeg,.webp"
-						class="file:bg-muted text-sm file:mr-3 file:rounded-md file:border-0 file:px-3 file:py-1.5 file:text-sm"
-					/>
-				</div>
+		<div class="flex flex-col gap-1.5 lg:col-span-2 md:col-span-1">
+			<Label for="request_supporting">เอกสารประกอบคำขอ (PDF/PNG/JPEG · สูงสุด 10 MB)</Label>
+			<input
+				id="request_supporting"
+				name="request_supporting"
+				type="file"
+				accept=".pdf,.png,.jpg,.jpeg,.webp"
+				class="file:bg-muted text-sm file:mr-3 file:rounded-md file:border-0 file:px-3 file:py-1.5 file:text-sm w-full"
+			/>
+		</div>
+
+			<div class="lg:col-span-3 md:col-span-2">
+				<FormRequiredNote
+					details="กรอกครบก่อนส่งเรื่อง · วันสิ้นสุดต้องไม่ก่อนวันเริ่ม · แนบเอกสารประกอบได้ (ไม่บังคับ)"
+				/>
+			</div>
+
+			<div class="flex flex-wrap justify-end gap-2 pt-2 lg:col-span-3 md:col-span-2">
+				<Button type="submit" formaction="?/saveDraft" variant="outline">
+					<NotepadTextDashedIcon data-icon="inline-start" />
+					บันทึกร่าง
+				</Button>
+				<Button type="submit" formaction="?/submit" variant="default">
+					<SaveIcon data-icon="inline-start" />
+					ส่งเรื่อง
+				</Button>
 			</div>
 		{/if}
 	</Card.Content>
 </Card.Root>
-
-{#if !readonly}
-	<FormRequiredNote
-		details="กรอกครบก่อนส่งเรื่อง · วันสิ้นสุดต้องไม่ก่อนวันเริ่ม · แนบเอกสารประกอบได้ (ไม่บังคับ)"
-	/>
-
-	<div class="flex flex-wrap justify-end gap-2 pt-2">
-		<Button type="submit" formaction="?/saveDraft" variant="outline">
-			<NotepadTextDashedIcon data-icon="inline-start" />
-			บันทึกร่าง
-		</Button>
-		<Button type="submit" formaction="?/submit" variant="default">
-			<SaveIcon data-icon="inline-start" />
-			ส่งเรื่อง
-		</Button>
-	</div>
-{/if}
