@@ -17,7 +17,7 @@ export function rewriteLeaveProxyPath(path) {
 		"login",
 		"logout",
 		"org",
-		"change-requests",
+		// SCR (FR-09) — canonical on gateway /change-requests; one-leave hooks redirect (308)
 		"work-activity",
 		"approvals",
 		"admin",

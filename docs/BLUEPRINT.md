@@ -128,8 +128,8 @@
 
 > สถานะ ณ ตอนเขียน blueprint นี้ — SCR โครงดีแล้ว แต่ยังขาด:
 
-- [ ] **เทสต์ `change-request/access.ts`** — ฟังก์ชัน SoD ทั้งหมดยังไม่มีเทสต์ (เสี่ยงสูงสุดเชิง audit)
-- [ ] **เทสต์ `change-request/schemas.ts`** — ยังไม่มีเทสต์ valid/invalid/cross-field
+- [x] **เทสต์ `change-request/access.ts`** — SoD helpers (`access.test.ts`)
+- [x] **เทสต์ `change-request/schemas.ts`** — valid/invalid/cross-field (`schemas.test.ts`)
 
 ปิด 2 ข้อนี้เมื่อไหร่ SCR ถึงเป็น reference module ที่สมบูรณ์จริง และใช้เป็น "มาตรฐานทอง" ได้เต็มปาก
 

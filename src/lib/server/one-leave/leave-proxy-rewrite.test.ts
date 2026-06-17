@@ -20,6 +20,7 @@ describe("rewriteLeaveProxyPath", () => {
 
 	it("maps other app roots", () => {
 		expect(rewriteLeaveProxyPath("/leave/org")).toBe("/org");
+		// /leave/change-requests → /change-requests on one-leave → 308 redirect to gateway
 		expect(rewriteLeaveProxyPath("/leave/change-requests/new")).toBe("/change-requests/new");
 		expect(rewriteLeaveProxyPath("/leave/login")).toBe("/login");
 	});

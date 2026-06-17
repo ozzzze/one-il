@@ -23,6 +23,7 @@ Decisions in effect for this milestone:
 | App launcher (waffle menu)                         | `src/lib/components/apps-menu.svelte`                                                                                   |
 | Profile / settings                                 | `src/routes/(app)/settings/`                                                                                            |
 | User change request                                | `src/routes/(app)/account/change-request/`                                                                              |
+| **System change request (SCR, FR-09)**             | `src/routes/(app)/change-requests/` — **canonical**; one-leave redirects `/change-requests/*` → gateway (308)          |
 | Role center                                        | `src/routes/(app)/roles/`                                                                                               |
 | Menu catalog admin                                 | `src/routes/(app)/menu-catalog/`                                                                                        |
 | Central RBAC catalog                               | `src/lib/auth/roles.ts` (all apps' permission keys)                                                                     |
@@ -75,6 +76,9 @@ pnpm dev
 
 ```caddy
 app.example.com {
+    handle /change-requests* {
+        reverse_proxy 127.0.0.1:3000   # one-il gateway (SCR canonical)
+    }
     handle_path /leave/* {
         reverse_proxy 127.0.0.1:3001   # one-leave (adapter-node)
     }

@@ -20,7 +20,7 @@ const MAX_ATTACHMENT_BYTES = 10 * 1024 * 1024;
 
 function uploadRoot(): string {
 	const raw =
-		env.CHANGE_UPLOAD_DIR ?? path.join(process.cwd(), "uploads", "change-request-gateway");
+		env.CHANGE_UPLOAD_DIR ?? path.join(process.cwd(), "uploads", "change-request");
 	if (raw.startsWith("\\\\")) {
 		const clean = raw.replace(/\\+/g, "\\");
 		return "\\\\" + clean.slice(1);
