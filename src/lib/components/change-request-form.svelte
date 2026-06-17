@@ -50,6 +50,24 @@
 	let rollbackPlan = $state(record?.rollbackPlan ?? "");
 	let plannedImplementationAt = $state(toDatetimeLocalValue(record?.plannedImplementationAt));
 
+	$effect(() => {
+		if (record) {
+			itSystemId = record.itSystemId ? String(record.itSystemId) : "";
+			exceptionTypeId = record.exceptionTypeId ? String(record.exceptionTypeId) : "";
+			changeCategory = record.changeCategory ?? "";
+			title = record.title ?? "";
+			description = record.description ?? "";
+			businessJustification = record.businessJustification ?? "";
+			riskAssessment = record.riskAssessment ?? "";
+			compensatingControls = record.compensatingControls ?? "";
+			impactDescription = record.impactDescription ?? "";
+			exceptionStartDate = record.exceptionStartDate ?? defaultToday;
+			exceptionEndDate = record.exceptionEndDate ?? defaultToday;
+			rollbackPlan = record.rollbackPlan ?? "";
+			plannedImplementationAt = toDatetimeLocalValue(record.plannedImplementationAt);
+		}
+	});
+
 	const categoryOptions = Object.entries(CHANGE_CATEGORY_LABELS) as [ChangeCategory, string][];
 
 	function itSystemLabel(id: string): string {
