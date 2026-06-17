@@ -20,6 +20,7 @@ type EmployeeDbRow = {
 	org_unit_name_en: string | null;
 	job_position_title: string | null;
 	employee_line: string;
+	employment_track: string;
 	employment_category: string;
 	email: string | null;
 	is_active: boolean;
@@ -45,6 +46,7 @@ function mapEmployeeRow(row: EmployeeDbRow): AdminEmployeeRow {
 		orgUnitNameEn: row.org_unit_name_en,
 		positionTitle: row.job_position_title,
 		employeeLine: row.employee_line,
+		employmentTrack: row.employment_track,
 		employmentCategory: row.employment_category,
 		email: row.email,
 		isActive: Boolean(row.is_active),
@@ -65,6 +67,7 @@ export async function listLeaveEmployees(): Promise<AdminEmployeeRow[]> {
 			o.name_en AS org_unit_name_en,
 			e.job_position_title,
 			e.employee_line,
+			e.employment_track,
 			e.employment_category,
 			e.email,
 			e.is_active

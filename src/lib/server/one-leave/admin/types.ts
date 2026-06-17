@@ -30,6 +30,7 @@ export interface AdminEmployeeRow {
 	orgUnitNameEn: string | null;
 	positionTitle: string | null;
 	employeeLine: string;
+	employmentTrack: string;
 	employmentCategory: string;
 	email: string | null;
 	isActive: boolean;

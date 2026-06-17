@@ -234,16 +234,17 @@
 			/>
 		</div>
 
-		<div class="flex flex-col gap-1.5 lg:col-span-2 md:col-span-1">
-			<Label for="request_supporting">เอกสารประกอบคำขอ (PDF/PNG/JPEG · สูงสุด 10 MB)</Label>
-			<input
-				id="request_supporting"
-				name="request_supporting"
-				type="file"
-				accept=".pdf,.png,.jpg,.jpeg,.webp"
-				class="file:bg-muted text-sm file:mr-3 file:rounded-md file:border-0 file:px-3 file:py-1.5 file:text-sm w-full"
-			/>
-		</div>
+		{#if !readonly}
+			<div class="flex flex-col gap-1.5 lg:col-span-2 md:col-span-1">
+				<Label for="request_supporting">เอกสารประกอบคำขอ (PDF/PNG/JPEG · สูงสุด 10 MB)</Label>
+				<input
+					id="request_supporting"
+					name="request_supporting"
+					type="file"
+					accept=".pdf,.png,.jpg,.jpeg,.webp"
+					class="file:bg-muted text-sm file:mr-3 file:rounded-md file:border-0 file:px-3 file:py-1.5 file:text-sm w-full"
+				/>
+			</div>
 
 			<div class="lg:col-span-3 md:col-span-2">
 				<FormRequiredNote

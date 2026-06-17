@@ -83,19 +83,7 @@ const LAUNCHER_MODULES: readonly LauncherModule[] = [
 		iconKey: "git-pull-request",
 		gatewayOnly: true,
 	},
-	{
-		id: "change-requests-new",
-		titleTh: "ยื่นคำขอเปลี่ยนแปลงระบบ",
-		titleEn: "New change request",
-		descriptionTh: "ยื่นคำขอเปลี่ยนแปลงระบบใหม่",
-		descriptionEn: "Submit a new system change request",
-		href: "/change-requests/new",
-		groupTh: "คำขอเปลี่ยนแปลงระบบ",
-		groupEn: "System change requests",
-		groupCode: "change-request",
-		iconKey: "git-pull-request",
-		gatewayOnly: true,
-	},
+
 	{
 		id: "change-requests-approvals",
 		titleTh: "คิวอนุมัติคำขอเปลี่ยนแปลงระบบ",

@@ -56,7 +56,7 @@
 <div class="flex flex-col gap-6 p-6">
 	<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 		<div>
-			<h1 class="text-2xl font-bold tracking-tight">{data.pageTitle}</h1>
+			<h1 class="text-3xl font-bold tracking-tight">{data.pageTitle}</h1>
 			<p class="text-muted-foreground text-sm">
 				{requests.length} รายการ
 				{#if queueCounts.supervisorPending > 0 || queueCounts.itPending > 0}

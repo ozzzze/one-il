@@ -2,6 +2,7 @@
 	import * as Table from "$lib/components/ui/table/index.js";
 	import * as Dialog from "$lib/components/ui/dialog/index.js";
 	import * as Select from "$lib/components/ui/select/index.js";
+	import NativeSelect from "$lib/components/native-select.svelte";
 	import { Button } from "$lib/components/ui/button/index.js";
 	import { Input } from "$lib/components/ui/input/index.js";
 	import { Label } from "$lib/components/ui/label/index.js";
@@ -111,6 +112,7 @@
 	let editId = $state(0);
 	let editUsername = $state("");
 	let editEmployeeId = $state("0");
+	let editIsActive = $state(true);
 	let resetId = $state(0);
 
 	let createEmployeeId = $state("0");
@@ -118,6 +120,16 @@
 
 	const roleOptions = $derived(assignableLeaveRoles(data.canGrantAdmin));
 	const employeeOptions = $derived([{ id: 0, label: t.none }, ...data.employees]);
+	const academicEmployees = $derived(
+		data.employees
+			.filter((e) => e.track === "academic")
+			.sort((a, b) => a.label.localeCompare(b.label, data.locale))
+	);
+	const supportEmployees = $derived(
+		data.employees
+			.filter((e) => e.track === "support")
+			.sort((a, b) => a.label.localeCompare(b.label, data.locale))
+	);
 
 	const filtered = $derived(
 		data.users.filter((u) => {
@@ -169,6 +181,7 @@
 		editId = u.id;
 		editUsername = u.username;
 		editEmployeeId = String(u.employeeId ?? 0);
+		editIsActive = u.isActive;
 		editOpen = true;
 	}
 
@@ -241,20 +254,9 @@
 							</div>
 						</Table.Cell>
 						<Table.Cell>
-							<form
-								method="POST"
-								action="?/setActive"
-								use:enhance={enhanceClose(() => {})}
-								class="flex items-center"
-							>
-								<input type="hidden" name="id" value={u.id} />
-								<input type="hidden" name="isActive" value={(!u.isActive).toString()} />
-								<button type="submit" class="cursor-pointer">
-									<Badge variant={u.isActive ? "outline" : "destructive"}>
-										{u.isActive ? t.active : t.inactive}
-									</Badge>
-								</button>
-							</form>
+							<Badge variant={u.isActive ? "outline" : "destructive"}>
+								{u.isActive ? t.active : t.inactive}
+							</Badge>
 						</Table.Cell>
 						<Table.Cell>
 							<div class="flex items-center gap-1">
@@ -307,15 +309,30 @@
 					/>
 				</div>
 				<div class="grid gap-2">
-					<Label>{t.linkEmployee}</Label>
-					<Select.Root name="employeeId" type="single" bind:value={createEmployeeId}>
-						<Select.Trigger><span>{employeeLabel(createEmployeeId)}</span></Select.Trigger>
-						<Select.Content>
-							{#each employeeOptions as e (e.id)}
-								<Select.Item value={String(e.id)}>{e.label}</Select.Item>
-							{/each}
-						</Select.Content>
-					</Select.Root>
+					<Label for="c-employeeId">{t.linkEmployee}</Label>
+					<NativeSelect
+						id="c-employeeId"
+						name="employeeId"
+						bind:value={createEmployeeId}
+						selectSize="default"
+						class="w-full"
+					>
+						<option value="0">{t.none}</option>
+						{#if academicEmployees.length > 0}
+							<optgroup label="Academic">
+								{#each academicEmployees as e (e.id)}
+									<option value={String(e.id)}>{e.label}</option>
+								{/each}
+							</optgroup>
+						{/if}
+						{#if supportEmployees.length > 0}
+							<optgroup label="Support">
+								{#each supportEmployees as e (e.id)}
+									<option value={String(e.id)}>{e.label}</option>
+								{/each}
+							</optgroup>
+						{/if}
+					</NativeSelect>
 				</div>
 				<div class="grid gap-2">
 					<Label>{t.roles}</Label>
@@ -363,16 +380,35 @@
 					<Input id="e-username" name="username" bind:value={editUsername} required />
 				</div>
 				<div class="grid gap-2">
-					<Label>{t.linkEmployee}</Label>
-					<Select.Root name="employeeId" type="single" bind:value={editEmployeeId}>
-						<Select.Trigger><span>{employeeLabel(editEmployeeId)}</span></Select.Trigger>
-						<Select.Content>
-							{#each employeeOptions as e (e.id)}
-								<Select.Item value={String(e.id)}>{e.label}</Select.Item>
-							{/each}
-						</Select.Content>
-					</Select.Root>
+					<Label for="e-employeeId">{t.linkEmployee}</Label>
+					<NativeSelect
+						id="e-employeeId"
+						name="employeeId"
+						bind:value={editEmployeeId}
+						selectSize="default"
+						class="w-full"
+					>
+						<option value="0">{t.none}</option>
+						{#if academicEmployees.length > 0}
+							<optgroup label="Academic">
+								{#each academicEmployees as e (e.id)}
+									<option value={String(e.id)}>{e.label}</option>
+								{/each}
+							</optgroup>
+						{/if}
+						{#if supportEmployees.length > 0}
+							<optgroup label="Support">
+								{#each supportEmployees as e (e.id)}
+									<option value={String(e.id)}>{e.label}</option>
+								{/each}
+							</optgroup>
+						{/if}
+					</NativeSelect>
 				</div>
+				<label class="flex items-center gap-2 text-sm">
+					<input type="checkbox" name="isActive" bind:checked={editIsActive} class="accent-primary size-4" />
+					{t.active}
+				</label>
 			</div>
 			<Dialog.Footer>
 				<SaveSubmitButton pending={savePending} idleLabel={t.save} savingLabel={t.saving} />

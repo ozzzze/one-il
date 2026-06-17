@@ -34,7 +34,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 		users,
 		employees: employees.map((e) => ({
 			id: e.id,
-			label: `${e.firstNameTh} ${e.lastNameTh}${e.employeeCode ? ` (${e.employeeCode})` : ""}`,
+			label: `${e.firstNameTh} ${e.lastNameTh}`,
+			track: e.employmentTrack,
 		})),
 		canGrantAdmin: toAdminActor(locals.user!).canGrantAdmin,
 		currentLeaveUserId: locals.user!.leaveUserId,
@@ -53,6 +54,7 @@ const updateSchema = z.object({
 	id: z.coerce.number().int().positive(),
 	username: z.string().trim().min(1).optional(),
 	employeeId: z.union([z.coerce.number().int().positive(), z.literal(0)]).optional(),
+	isActive: z.boolean().optional(),
 });
 
 export const actions: Actions = {
@@ -93,6 +95,7 @@ export const actions: Actions = {
 			id: formData.get("id"),
 			username: formData.get("username") || undefined,
 			employeeId: formData.get("employeeId") || undefined,
+			isActive: formData.has("isActive") ? formData.get("isActive") === "true" || formData.get("isActive") === "on" : false,
 		});
 		if (!parsed.success) {
 			return fail(400, { message: "Invalid input", code: "validation" });
@@ -107,6 +110,7 @@ export const actions: Actions = {
 						: parsed.data.employeeId === 0
 							? null
 							: parsed.data.employeeId,
+				isActive: parsed.data.isActive,
 			});
 			return { success: true };
 		} catch (err) {
