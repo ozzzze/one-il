@@ -7,6 +7,7 @@
 	import * as Card from "$lib/components/ui/card/index.js";
 	import { Input } from "$lib/components/ui/input/index.js";
 	import { Label } from "$lib/components/ui/label/index.js";
+	import { Textarea } from "$lib/components/ui/textarea/index.js";
 	import ScrApprovalStepper from "$lib/components/scr-approval-stepper.svelte";
 	import { buildScrApprovalStepper } from "$lib/change-request/scr-stepper.js";
 	import {
@@ -460,23 +461,21 @@
 						</div>
 						<div class="flex flex-col gap-1.5">
 							<Label for="testResultSummary" required>สรุปผลการทดสอบ</Label>
-							<textarea
+							<Textarea
 								id="testResultSummary"
 								name="testResultSummary"
-								rows="3"
+								rows={3}
 								required
-								class="border-input bg-background w-full rounded-lg border px-3 py-2 text-sm"
-							></textarea>
+							/>
 						</div>
 						<div class="flex flex-col gap-1.5">
 							<Label for="implementationNotes" required>บันทึกการดำเนินการ</Label>
-							<textarea
+							<Textarea
 								id="implementationNotes"
 								name="implementationNotes"
-								rows="3"
+								rows={3}
 								required
-								class="border-input bg-background w-full rounded-lg border px-3 py-2 text-sm"
-							></textarea>
+							/>
 						</div>
 						<div class="flex flex-wrap gap-2">
 							<Button
@@ -550,23 +549,21 @@
 					</div>
 					<div class="flex flex-col gap-1.5">
 						<Label for="em-testResultSummary" required>สรุปผลการทดสอบ</Label>
-						<textarea
+						<Textarea
 							id="em-testResultSummary"
 							name="em-testResultSummary"
-							rows="3"
+							rows={3}
 							required
-							class="border-input bg-background w-full rounded-lg border px-3 py-2 text-sm"
-						></textarea>
+						/>
 					</div>
 					<div class="flex flex-col gap-1.5">
 						<Label for="em-implementationNotes" required>บันทึกการดำเนินการ</Label>
-						<textarea
+						<Textarea
 							id="em-implementationNotes"
 							name="em-implementationNotes"
-							rows="3"
+							rows={3}
 							required
-							class="border-input bg-background w-full rounded-lg border px-3 py-2 text-sm"
-						></textarea>
+						/>
 					</div>
 					<Button type="submit" class="bg-emerald-600 text-white shadow-xs hover:bg-emerald-600/90">
 						<CheckIcon class="mr-2 size-4" />

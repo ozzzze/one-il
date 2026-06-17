@@ -1,15 +1,17 @@
 <script lang="ts">
 	import GatewayAdminSubnav from "$lib/components/gateway-admin-subnav.svelte";
+	import NativeSelect from "$lib/components/native-select.svelte";
+	import ServerLinkPagination from "$lib/components/server-link-pagination.svelte";
+	import { Badge } from "$lib/components/ui/badge/index.js";
 	import { Button } from "$lib/components/ui/button/index.js";
 	import * as Card from "$lib/components/ui/card/index.js";
 	import { Input } from "$lib/components/ui/input/index.js";
 	import { Label } from "$lib/components/ui/label/index.js";
 	import * as Dialog from "$lib/components/ui/dialog/index.js";
+	import * as Table from "$lib/components/ui/table/index.js";
 	import type { PageData } from "./$types";
 	import SearchIcon from "@lucide/svelte/icons/search";
 	import FileTextIcon from "@lucide/svelte/icons/file-text";
-	import ChevronLeftIcon from "@lucide/svelte/icons/chevron-left";
-	import ChevronRightIcon from "@lucide/svelte/icons/chevron-right";
 	import HistoryIcon from "@lucide/svelte/icons/history";
 	import RotateCcwIcon from "@lucide/svelte/icons/rotate-ccw";
 	import XIcon from "@lucide/svelte/icons/x";
@@ -19,10 +21,6 @@
 
 	const auditPage = $derived(data.auditPage);
 	const totalPages = $derived(Math.ceil(auditPage.total / auditPage.pageSize));
-	const rangeFrom = $derived(
-		auditPage.total === 0 ? 0 : (auditPage.page - 1) * auditPage.pageSize + 1,
-	);
-	const rangeTo = $derived(Math.min(auditPage.page * auditPage.pageSize, auditPage.total));
 
 	function labelAction(action: string): string {
 		const map: Record<string, string> = {
@@ -145,18 +143,12 @@
 				</div>
 				<div class="flex flex-col gap-1.5">
 					<Label for="entityType">ประเภทข้อมูล</Label>
-					<select
-						id="entityType"
-						name="entityType"
-						class="border-input bg-background h-8 w-full rounded-lg border px-2.5 text-sm"
-					>
-						<option value="" selected={data.filter.entityType === ""}>ทั้งหมด</option>
-						{#each data.entityTypes as opt, i (opt.value)}
-							<option value={opt.value} selected={data.filter.entityType === opt.value}>
-								{opt.label}
-							</option>
+					<NativeSelect id="entityType" name="entityType" value={data.filter.entityType}>
+						<option value="">ทั้งหมด</option>
+						{#each data.entityTypes as opt (opt.value)}
+							<option value={opt.value}>{opt.label}</option>
 						{/each}
-					</select>
+					</NativeSelect>
 				</div>
 				<div class="flex flex-col gap-1.5">
 					<Label for="action">การกระทำ</Label>
@@ -204,27 +196,27 @@
 			</Card.Description>
 		</Card.Header>
 		<Card.Content class="overflow-x-auto p-0">
-			<table class="w-full min-w-215 text-sm">
-				<thead>
-					<tr class="border-b bg-muted/50 text-left">
-						<th class="px-4 py-3 font-medium whitespace-nowrap">วันที่-เวลา</th>
-						<th class="px-4 py-3 font-medium">ผู้ทำ</th>
-						<th class="px-4 py-3 font-medium">บทบาท</th>
-						<th class="px-4 py-3 font-medium">ประเภท</th>
-						<th class="px-4 py-3 font-medium">การกระทำ</th>
-						<th class="px-4 py-3 font-medium">รายละเอียด</th>
-						<th class="px-2 py-3 font-medium">
+			<Table.Root class="min-w-215">
+				<Table.Header>
+					<Table.Row>
+						<Table.Head class="whitespace-nowrap">วันที่-เวลา</Table.Head>
+						<Table.Head>ผู้ทำ</Table.Head>
+						<Table.Head>บทบาท</Table.Head>
+						<Table.Head>ประเภท</Table.Head>
+						<Table.Head>การกระทำ</Table.Head>
+						<Table.Head>รายละเอียด</Table.Head>
+						<Table.Head>
 							<span class="sr-only">ดูรายละเอียด</span>
-						</th>
-					</tr>
-				</thead>
-				<tbody>
-					{#each auditPage.items as item, i (item.id)}
-						<tr class="border-b last:border-0 hover:bg-muted/30">
-							<td class="px-4 py-3 font-mono text-xs whitespace-nowrap">
+						</Table.Head>
+					</Table.Row>
+				</Table.Header>
+				<Table.Body>
+					{#each auditPage.items as item (item.id)}
+						<Table.Row>
+							<Table.Cell class="font-mono text-xs whitespace-nowrap">
 								{formatDate(item.createdAt)}
-							</td>
-							<td class="px-4 py-3">
+							</Table.Cell>
+							<Table.Cell>
 								{#if item.actorDisplayName}
 									<span>{item.actorDisplayName}</span>
 									{#if item.actorUsername}
@@ -235,23 +227,23 @@
 								{:else}
 									<span class="text-muted-foreground">—</span>
 								{/if}
-							</td>
-							<td class="text-muted-foreground px-4 py-3 text-xs">
+							</Table.Cell>
+							<Table.Cell class="text-muted-foreground text-xs">
 								{item.roleCode ?? "—"}
-							</td>
-							<td class="px-4 py-3 text-xs">
+							</Table.Cell>
+							<Table.Cell class="text-xs">
 								{labelEntity(item.entityType)}
 								<span class="text-muted-foreground">#{item.entityId}</span>
-							</td>
-							<td class="px-4 py-3">
-								<span class="rounded-sm bg-muted px-1.5 py-0.5 text-xs font-medium">
+							</Table.Cell>
+							<Table.Cell>
+								<Badge variant="secondary" class="font-normal">
 									{labelAction(item.action)}
-								</span>
-							</td>
-							<td class="text-muted-foreground max-w-xs truncate px-4 py-3 text-xs">
+								</Badge>
+							</Table.Cell>
+							<Table.Cell class="text-muted-foreground max-w-xs truncate text-xs">
 								{item.summary ?? "—"}
-							</td>
-							<td class="px-2 py-3">
+							</Table.Cell>
+							<Table.Cell>
 								<Button
 									variant="ghost"
 									size="icon-sm"
@@ -261,87 +253,26 @@
 								>
 									<FileTextIcon class="size-4" />
 								</Button>
-							</td>
-						</tr>
+							</Table.Cell>
+						</Table.Row>
 					{:else}
-						<tr>
-							<td colspan="7" class="text-muted-foreground px-4 py-8 text-center">
+						<Table.Row>
+							<Table.Cell colspan={7} class="text-muted-foreground py-8 text-center">
 								ไม่พบรายการตามเงื่อนไข
-							</td>
-						</tr>
+							</Table.Cell>
+						</Table.Row>
 					{/each}
-				</tbody>
-			</table>
+				</Table.Body>
+			</Table.Root>
 
-			{#if auditPage.total > 0}
-				<div class="flex items-center justify-between border-t p-4 bg-muted/20">
-					<div class="flex flex-1 justify-between sm:hidden">
-						<Button
-							variant="outline"
-							size="sm"
-							href={pageHref(auditPage.page - 1)}
-							disabled={auditPage.page <= 1}
-						>
-							<ChevronLeftIcon data-icon="inline-start" class="size-4 shrink-0" />
-							ก่อนหน้า
-						</Button>
-						<Button
-							variant="outline"
-							size="sm"
-							href={pageHref(auditPage.page + 1)}
-							disabled={auditPage.page >= totalPages}
-						>
-							ถัดไป
-							<ChevronRightIcon data-icon="inline-end" class="size-4 shrink-0" />
-						</Button>
-					</div>
-					<div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-						<div>
-							<p class="text-muted-foreground text-xs">
-								แสดงรายการที่ <span class="font-semibold text-foreground">{rangeFrom}</span> ถึง
-								<span class="font-semibold text-foreground">{rangeTo}</span> จากทั้งหมด
-								<span class="font-semibold text-foreground">{auditPage.total}</span> รายการ
-							</p>
-						</div>
-						{#if totalPages > 1}
-							<div>
-								<nav class="isolate inline-flex -space-x-px rounded-md" aria-label="Pagination">
-									<Button
-										variant="outline"
-										size="sm"
-										class="rounded-r-none"
-										href={pageHref(auditPage.page - 1)}
-										disabled={auditPage.page <= 1}
-									>
-										<ChevronLeftIcon data-icon="inline-start" class="size-4 shrink-0" />
-										ก่อนหน้า
-									</Button>
-									{#each Array.from({ length: totalPages }, (_, i) => i + 1) as page, i (page)}
-										<Button
-											variant={auditPage.page === page ? "default" : "outline"}
-											size="sm"
-											class="rounded-none border-l-0"
-											href={pageHref(page)}
-										>
-											{page}
-										</Button>
-									{/each}
-									<Button
-										variant="outline"
-										size="sm"
-										class="rounded-l-none border-l-0"
-										href={pageHref(auditPage.page + 1)}
-										disabled={auditPage.page >= totalPages}
-									>
-										ถัดไป
-										<ChevronRightIcon data-icon="inline-end" class="size-4 shrink-0" />
-									</Button>
-								</nav>
-							</div>
-						{/if}
-					</div>
-				</div>
-			{/if}
+			<ServerLinkPagination
+				currentPage={auditPage.page}
+				{totalPages}
+				totalItems={auditPage.total}
+				pageSize={auditPage.pageSize}
+				{pageHref}
+				locale="th"
+			/>
 		</Card.Content>
 	</Card.Root>
 </div>
